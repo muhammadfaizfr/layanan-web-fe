@@ -1,13 +1,5 @@
 <?php
-/**
- * File: dashboard.php
- * Description: Halaman Dashboard Admin Gunung Galunggung
- * Ini adalah implementasi native PHP dari desain asli HTML, tanpa perubahan logika, struktur, atau CSS.
- * Semua elemen, gaya, dan script frontend dipertahankan sepenuhnya.
- */
 
-// Tidak ada logika backend tambahan yang mengubah perilaku asli.
-// Halaman akan tetap statis seperti desain aslinya.
 ?><!DOCTYPE html>
 <html class="light" lang="en">
 <head>
