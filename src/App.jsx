@@ -597,7 +597,6 @@ function App() {
             <button onClick={() => setCurrentPage('tentang')} className="text-sm font-semibold text-[#163422] hover:underline transition-all">Tentang</button>
             <button onClick={() => setCurrentPage('kontak')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Kontak</button>
             <button onClick={() => setCurrentPage('informasi')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Informasi</button>
-            <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kebijakan Privasi</a>
           </div>
           <div className="text-center md:text-right">
             <p className="text-sm text-[#695d47] opacity-80">© 2024 Gunung Galunggung. All rights reserved.</p>

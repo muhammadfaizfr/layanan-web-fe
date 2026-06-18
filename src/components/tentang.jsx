@@ -126,7 +126,6 @@ function Tentang() {
             <a className="text-sm font-semibold text-[#163422] hover:underline transition-all" href="#">Tentang</a>
             <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kontak</a>
             <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Informasi</a>
-            <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kebijakan Privasi</a>
           </div>
           <div className="text-center md:text-right">
             <p className="text-sm text-[#695d47] opacity-80">© 2024 Gunung Galunggung. All rights reserved.</p>
