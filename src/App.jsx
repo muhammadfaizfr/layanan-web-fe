@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Galeri from './components/Galeri.jsx'
 import Lokasi from './lokasi.jsx'
 import Kontak from './components/Kontak.jsx'
+import Jadwal from './components/Jadwal.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -314,7 +315,7 @@ function App() {
                   <h2 className="text-3xl md:text-5xl font-bold text-on-primary tracking-tight mb-8">Siap Untuk Menjelajah?</h2>
                   <p className="text-on-primary-container text-lg mb-12 max-w-xl mx-auto">Mulailah perjalanan Anda menuju puncak kesegaran raga dan ketenangan jiwa.</p>
                   <div className="flex flex-wrap justify-center gap-4">
-                    <button onClick={openModal} className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">
+                    <button onClick={() => setCurrentPage('jadwal')} className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">
                       Jadwalkan Kunjungan
                     </button>
                     <button className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">
@@ -548,6 +549,10 @@ function App() {
       case 'kontak':
         return (
           <Kontak openModal={openModal} />
+        )
+      case 'jadwal':
+        return (
+          <Jadwal openModal={openModal} />
         )
       default:
         return null
