@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Galeri from './components/Galeri.jsx'
 import Lokasi from './lokasi.jsx'
+import Kontak from './components/Kontak.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -37,6 +38,13 @@ function App() {
 
   // ===== STATE UNTUK NAVIGASI =====
   const [currentPage, setCurrentPage] = useState('home')
+
+  // Scroll to top when page changes (so new page appears at top)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [currentPage])
 
   // ===== FUNGSI RENDER KONTEN PER HALAMAN =====
   const renderPage = () => {
@@ -537,6 +545,10 @@ function App() {
         return (
           <Lokasi openModal={openModal} />
         )
+      case 'kontak':
+        return (
+          <Kontak openModal={openModal} />
+        )
       default:
         return null
     }
@@ -578,7 +590,7 @@ function App() {
           </div>
           <div className="flex gap-8">
             <button onClick={() => setCurrentPage('tentang')} className="text-sm font-semibold text-[#163422] hover:underline transition-all">Tentang</button>
-            <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kontak</a>
+            <button onClick={() => setCurrentPage('kontak')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Kontak</button>
             <button onClick={() => setCurrentPage('informasi')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Informasi</button>
             <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kebijakan Privasi</a>
           </div>
