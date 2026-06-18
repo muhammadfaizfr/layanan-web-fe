@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Galeri from './components/Galeri.jsx'
+import Lokasi from './lokasi.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -534,17 +535,7 @@ function App() {
         )
       case 'lokasi':
         return (
-          <div className="py-32 px-8 text-center">
-            <h2 className="text-4xl font-bold text-primary mb-6">Lokasi & Akses</h2>
-            <p className="text-on-surface-variant max-w-2xl mx-auto">Peta lokasi dan panduan arah menuju Gunung Galunggung akan segera ditampilkan.</p>
-          </div>
-        )
-      case 'hotel':
-        return (
-          <div className="py-32 px-8 text-center">
-            <h2 className="text-4xl font-bold text-primary mb-6">Hotel & Penginapan</h2>
-            <p className="text-on-surface-variant max-w-2xl mx-auto">Rekomendasi akomodasi di sekitar Tasikmalaya akan segera hadir.</p>
-          </div>
+          <Lokasi openModal={openModal} />
         )
       default:
         return null
@@ -564,7 +555,6 @@ function App() {
             <button onClick={() => setCurrentPage('informasi')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'informasi' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Informasi</button>
             <button onClick={() => setCurrentPage('galeri')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'galeri' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Galeri</button>
             <button onClick={() => setCurrentPage('lokasi')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'lokasi' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Lokasi</button>
-            <button onClick={() => setCurrentPage('hotel')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'hotel' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Hotel</button>
           </div>
           <button 
             onClick={openModal}

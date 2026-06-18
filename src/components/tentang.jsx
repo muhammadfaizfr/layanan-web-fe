@@ -12,7 +12,6 @@ function Tentang() {
             <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Informasi</a>
             <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Galeri</a>
             <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Lokasi</a>
-            <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Hotel</a>
           </div>
           <button className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]">
             Pesan Tiket
