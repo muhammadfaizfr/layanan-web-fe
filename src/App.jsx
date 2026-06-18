@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Galeri from './components/Galeri.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -529,10 +530,7 @@ function App() {
 
       case 'galeri':
         return (
-          <div className="py-32 px-8 text-center">
-            <h2 className="text-4xl font-bold text-primary mb-6">Galeri Foto</h2>
-            <p className="text-on-surface-variant max-w-2xl mx-auto">Koleksi foto-foto indah Gunung Galunggung akan segera hadir.</p>
-          </div>
+          <Galeri />
         )
       case 'lokasi':
         return (
