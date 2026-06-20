@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-export default function Pembayaran({ order, formatRupiah, navigate }) {
+export default function Pembayaran({ order, formatRupiah, navigate, onComplete }) {
   const ord = order || {}
   const qty = ord.qty ?? 1
   const price = ord.price ?? ord.unitPrice ?? 25000
@@ -139,12 +139,13 @@ export default function Pembayaran({ order, formatRupiah, navigate }) {
                 </div>
                 <div className="pt-8">
                   <button onClick={() => {
-                      if(!selectedMethod) {
+                      if (!selectedMethod) {
                         alert('Pilih metode pembayaran terlebih dahulu (Bank atau E-Wallet).')
                         return
                       }
-                      console.log('Proceed payment with', selectedMethod)
-                      alert(`Memproses pembayaran via ${selectedMethod}. Total: ${fmt(total)}`)
+                      if (typeof onComplete === 'function') {
+                        onComplete(selectedMethod)
+                      }
                     }}
                     className="w-full py-5 bg-primary text-on-primary rounded-full font-headline font-bold text-lg flex items-center justify-center space-x-3 shadow-lg shadow-primary/10 hover:bg-primary-container transition-all active:scale-[0.98]">
                     <span className="material-symbols-outlined">lock</span>
