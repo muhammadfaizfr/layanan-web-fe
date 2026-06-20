@@ -1,19 +1,19 @@
 // src/components/Tentang.jsx
-function Tentang() {
+function Tentang({ navigate }) {
   return (
     <>
       {/* TopAppBar - sama seperti sebelumnya */}
       <nav className="fixed top-0 w-full z-50 bg-[#f9f9f7]/80 backdrop-blur-md shadow-[0_4px_40px_0_rgba(22,52,34,0.04)]">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto w-full">
-          <a className="text-xl font-bold tracking-tighter text-[#163422]" href="#">Gunung Galunggung</a>
+          <button type="button" onClick={() => navigate?.('home')} className="text-xl font-bold tracking-tighter text-[#163422]">Gunung Galunggung</button>
           <div className="hidden md:flex items-center gap-8">
-            <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Home</a>
-            <a className="text-[#163422] border-b-2 border-[#163422] pb-1 text-sm tracking-wide font-medium" href="#">Tentang</a>
-            <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Informasi</a>
-            <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Galeri</a>
-            <a className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300" href="#">Lokasi</a>
+            <button type="button" onClick={() => navigate?.('home')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Home</button>
+            <button type="button" className="text-[#163422] border-b-2 border-[#163422] pb-1 text-sm tracking-wide font-medium">Tentang</button>
+            <button type="button" onClick={() => navigate?.('informasi')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Informasi</button>
+            <button type="button" onClick={() => navigate?.('galeri')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Galeri</button>
+            <button type="button" onClick={() => navigate?.('lokasi')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Lokasi</button>
           </div>
-          <button className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]">
+          <button onClick={() => navigate?.('jadwal')} className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]">
             Pesan Tiket
           </button>
         </div>
@@ -107,8 +107,8 @@ function Tentang() {
               <h2 className="text-3xl md:text-5xl font-bold text-on-primary tracking-tight mb-8">Siap Untuk Menjelajah?</h2>
               <p className="text-on-primary-container text-lg mb-12 max-w-xl mx-auto">Mulailah perjalanan Anda menuju puncak kesegaran raga dan ketenangan jiwa.</p>
               <div className="flex flex-wrap justify-center gap-4">
-                <button className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">Jadwalkan Kunjungan</button>
-                <button className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">Panduan Pendakian</button>
+                <button onClick={() => navigate?.('jadwal')} className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">Jadwalkan Kunjungan</button>
+                <button onClick={() => navigate?.('informasi')} className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">Panduan Pendakian</button>
               </div>
             </div>
           </div>
@@ -123,9 +123,9 @@ function Tentang() {
             <p className="text-[10px] tracking-widest uppercase text-[#695d47] font-medium">Destinasi Alam Premium</p>
           </div>
           <div className="flex gap-8">
-            <a className="text-sm font-semibold text-[#163422] hover:underline transition-all" href="#">Tentang</a>
-            <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Kontak</a>
-            <a className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all" href="#">Informasi</a>
+            <button type="button" onClick={() => navigate?.('tentang')} className="text-sm font-semibold text-[#163422] hover:underline transition-all">Tentang</button>
+            <button type="button" onClick={() => navigate?.('kontak')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Kontak</button>
+            <button type="button" onClick={() => navigate?.('informasi')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Informasi</button>
           </div>
           <div className="text-center md:text-right">
             <p className="text-sm text-[#695d47] opacity-80">© 2024 Gunung Galunggung. All rights reserved.</p>
