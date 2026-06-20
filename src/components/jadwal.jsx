@@ -1,7 +1,7 @@
 // src/components/Jadwal.jsx
 import React, { useState } from 'react'
 
-function Jadwal({ openModal }) {
+function Jadwal({ openModal, onSaveSchedule }) {
   const [selectedRoute, setSelectedRoute] = useState('tangga')
   const today = new Date()
   const [calendarMonth, setCalendarMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
@@ -237,7 +237,18 @@ function Jadwal({ openModal }) {
                   <div className="text-3xl font-black">IDR {estimatedCost.toLocaleString('id-ID')}</div>
                 </div>
                 <button 
-                  onClick={openModal}
+                  onClick={() => {
+                    if (typeof onSaveSchedule === 'function') {
+                      onSaveSchedule({
+                        route: selectedRoute,
+                        date: selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                        teamName,
+                        teamCount,
+                        contact,
+                      })
+                    }
+                    openModal()
+                  }}
                   className="w-full bg-surface-bright text-primary py-5 rounded-full font-bold text-lg hover:bg-white active:scale-95 transition-all shadow-xl shadow-black/10"
                 >
                   Lanjutkan Pendaftaran

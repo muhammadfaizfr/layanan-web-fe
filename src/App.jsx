@@ -44,11 +44,16 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home')
   const [order, setOrder] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState(null)
+  const [scheduleInfo, setScheduleInfo] = useState(null)
+
+  const handleSaveSchedule = (schedule) => {
+    setScheduleInfo(schedule)
+  }
 
   const handleProceedToPayment = (orderData) => {
-    setOrder(orderData)
+    setOrder({ ...scheduleInfo, ...orderData })
     setPaymentMethod(null)
-    // close modal then navigate to pembayaran
+    setScheduleInfo(null)
     setIsModalOpen(false)
     setCurrentPage('pembayaran')
   }
@@ -580,7 +585,7 @@ function App() {
         )
       case 'jadwal':
         return (
-          <Jadwal openModal={openModal} />
+          <Jadwal openModal={openModal} onSaveSchedule={handleSaveSchedule} />
         )
       default:
         return null

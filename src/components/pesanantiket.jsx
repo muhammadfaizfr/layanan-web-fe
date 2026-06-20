@@ -6,7 +6,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
   if (isOpen === false) return null
 
   const [name, setName] = useState("");
-  const [date, setDate] = useState("2024-05-24");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [keterangan, setKeterangan] = useState("");
 
   // internal ticket state/fallbacks if parent doesn't control it
@@ -15,7 +15,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
   const inc = incrementTicket ?? (() => setLocalCount((c) => c + 1));
   const dec = decrementTicket ?? (() => setLocalCount((c) => Math.max(1, c - 1)));
 
-  const unitPrice = 15000;
+  const unitPrice = 25000;
   const computedTotal = totalPrice ?? tc * unitPrice;
   const fmt = formatRupiah ?? ((n) => `IDR ${n.toLocaleString("id-ID")}`);
 
