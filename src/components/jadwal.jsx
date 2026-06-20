@@ -1,5 +1,51 @@
 // src/components/Jadwal.jsx
+import React, { useState } from 'react'
+
 function Jadwal({ openModal }) {
+  const [selectedRoute, setSelectedRoute] = useState('tangga')
+  const today = new Date()
+  const [calendarMonth, setCalendarMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
+  const [selectedDate, setSelectedDate] = useState(today)
+  const [teamName, setTeamName] = useState('')
+  const [teamCount, setTeamCount] = useState(1)
+  const [contact, setContact] = useState('')
+
+  const routeOptions = [
+    {
+      key: 'tangga',
+      title: 'Rute Tangga 620',
+      badge: 'MODERAT',
+      duration: '45-60 Menit',
+      details: '620 Anak Tangga',
+      selectedLabel: 'Rute Terpilih',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAH8SpkvELynxvVRRI4fcMuxcJBozR4S1yFEQ6cON0ESN5B1yNLcG7oq-mibVURM20gVFCCXG0YYAgqSYzGvrZfIqRbb86zFXR6J1CUjrDSVeBLAkoaGdlzC8x2z-7IfGQ29VbNNsMEaQePMAJNwiy23EdtLzxyJNcgmn8IyIQPPNLA58NfMnGWoM1YEX1TksYMqMcHiGmbSRM5u7pNs3teogx6KnxayJKcnIDq25JVx3Cd2Cxin6Rdmu1UxHUv2xu80WzxBOpVJw',
+    },
+    {
+      key: 'hutan',
+      title: 'Rute Hutan Cipanas',
+      badge: 'MENANTANG',
+      duration: '2-3 Jam',
+      details: 'Jalur Alami',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCezAdxjeSRRDCOtxHquFlE1oZCUIedRCeHCovkRG6ViG_hAT9ACkYcSIbakbl48FY13yx3FFN5d0W-Tg4m0ZFxyEko-We8Mp76BU7BFghHDa3Degjtk_bwtGSnK4hnbhQaMTRhpDnsBLno5VEH4BUqOOcNCNHQWWnPckfOPWo1WcN8-RnBr7a0t0_6IvDY932YYGN4NVEB_6w9CN8LGJDVoonzljON2z4ZUNjDPAqkhqjK_B2yqCTkSpwlOA7ADYkRZxXzgj-gtg',
+    },
+  ]
+
+  const dayNames = ['S', 'S', 'R', 'K', 'J', 'S', 'M']
+  const selectedYear = calendarMonth.getFullYear()
+  const selectedMonth = calendarMonth.getMonth()
+  const monthLabel = calendarMonth.toLocaleDateString('id-ID', { month: 'long' })
+  const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
+  const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay()
+  const estimatedCost = 25000 * teamCount
+
+  const changeMonth = (offset) => {
+    setCalendarMonth((current) => {
+      const next = new Date(current)
+      next.setMonth(current.getMonth() + offset)
+      return next
+    })
+  }
+
   return (
     <>
       {/* Hero Section */}
@@ -23,61 +69,47 @@ function Jadwal({ openModal }) {
               <h2 className="text-2xl font-display font-bold text-primary">Pilihan Rute Pendakian</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Route Card 1 - Selected */}
-              <div className="group relative bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer border-2 border-primary">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                    alt="dramatic stone staircase leading into mist on a green mountain side with volcanic rock textures" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH8SpkvELynxvVRRI4fcMuxcJBozR4S1yFEQ6cON0ESN5B1yNLcG7oq-mibVURM20gVFCCXG0YYAgqSYzGvrZfIqRbb86zFXR6J1CUjrDSVeBLAkoaGdlzC8x2z-7IfGQ29VbNNsMEaQePMAJNwiy23EdtLzxyJNcgmn8IyIQPPNLA58NfMnGWoM1YEX1TksYMqMcHiGmbSRM5u7pNs3teogx6KnxayJKcnIDq25JVx3Cd2Cxin6Rdmu1UxHUv2xu80WzxBOpVJw" 
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold text-primary">Rute Tangga 620</h3>
-                    <span className="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full">MODERAT</span>
-                  </div>
-                  <div className="flex gap-4 text-sm text-on-surface-variant">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">schedule</span> 45-60 Menit
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">landscape</span> 620 Anak Tangga
-                    </span>
-                  </div>
-                  <div className="mt-6 flex items-center gap-2 text-primary font-bold">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                    <span>Rute Terpilih</span>
-                  </div>
-                </div>
+                {routeOptions.map((route) => {
+                  const selected = selectedRoute === route.key
+                  return (
+                    <button
+                      key={route.key}
+                      type="button"
+                      onClick={() => setSelectedRoute(route.key)}
+                      className={`group relative rounded-2xl overflow-hidden border transition-all duration-500 cursor-pointer text-left ${selected ? 'border-2 border-primary shadow-xl bg-white' : 'border border-outline-variant/10 shadow-sm bg-surface-container-lowest hover:shadow-xl'}`}
+                    >
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          alt={route.title}
+                          src={route.image}
+                        />
+                      </div>
+                      <div className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-xl font-bold text-primary">{route.title}</h3>
+                          <span className={`px-3 py-1 text-xs font-bold rounded-full ${selected ? 'bg-primary text-on-primary' : 'bg-tertiary-container text-on-tertiary-container'}`}>{route.badge}</span>
+                        </div>
+                        <div className="flex gap-4 text-sm text-on-surface-variant">
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">schedule</span> {route.duration}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">landscape</span> {route.details}
+                          </span>
+                        </div>
+                        {selected && (
+                          <div className="mt-6 flex items-center gap-2 text-primary font-bold">
+                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                            <span>{route.selectedLabel}</span>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
-
-              {/* Route Card 2 */}
-              <div className="group relative bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                    alt="dense tropical forest trail with atmospheric morning sunlight filtering through tall trees and mist" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCezAdxjeSRRDCOtxHquFlE1oZCUIedRCeHCovkRG6ViG_hAT9ACkYcSIbakbl48FY13yx3FFN5d0W-Tg4m0ZFxyEko-We8Mp76BU7BFghHDa3Degjtk_bwtGSnK4hnbhQaMTRhpDnsBLno5VEH4BUqOOcNCNHQWWnPckfOPWo1WcN8-RnBr7a0t0_6IvDY932YYGN4NVEB_6w9CN8LGJDVoonzljON2z4ZUNjDPAqkhqjK_B2yqCTkSpwlOA7ADYkRZxXzgj-gtg" 
-                  />
-                </div>
-                <div className="p-6 opacity-80 group-hover:opacity-100">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold text-primary">Rute Hutan Cipanas</h3>
-                    <span className="px-3 py-1 bg-tertiary-container text-on-tertiary-container text-xs font-bold rounded-full">MENANTANG</span>
-                  </div>
-                  <div className="flex gap-4 text-sm text-on-surface-variant">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">schedule</span> 2-3 Jam
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">nature_people</span> Jalur Alami
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
 
           {/* Date Selection */}
           <section>
@@ -88,35 +120,39 @@ function Jadwal({ openModal }) {
             <div className="bg-surface-container-low rounded-2xl p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h4 className="font-bold text-primary">Oktober 2024</h4>
+                  <h4 className="font-bold text-primary">{monthLabel} {selectedYear}</h4>
                   <div className="flex gap-2">
-                    <button className="p-2 rounded-full hover:bg-surface-variant transition-colors">
+                    <button type="button" onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-surface-variant transition-colors">
                       <span className="material-symbols-outlined">chevron_left</span>
                     </button>
-                    <button className="p-2 rounded-full hover:bg-surface-variant transition-colors">
+                    <button type="button" onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-surface-variant transition-colors">
                       <span className="material-symbols-outlined">chevron_right</span>
                     </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-on-surface-variant mb-4">
-                  <div>S</div><div>S</div><div>R</div><div>K</div><div>J</div><div>S</div><div>M</div>
+                  {dayNames.map((label) => (
+                    <div key={label}>{label}</div>
+                  ))}
                 </div>
                 <div className="grid grid-cols-7 gap-2">
-                  {/* Calendar Days */}
-                  <div className="h-10 flex items-center justify-center text-outline text-sm">28</div>
-                  <div className="h-10 flex items-center justify-center text-outline text-sm">29</div>
-                  <div className="h-10 flex items-center justify-center text-outline text-sm">30</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">1</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">2</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">3</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">4</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-primary text-on-primary text-sm font-bold shadow-md shadow-primary/20">5</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">6</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">7</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">8</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">9</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">10</div>
-                  <div className="h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary transition-colors cursor-pointer text-sm font-medium">11</div>
+                  {Array.from({ length: firstDayIndex }).map((_, index) => (
+                    <div key={`blank-${index}`} className="h-10"></div>
+                  ))}
+                  {Array.from({ length: daysInMonth }).map((_, index) => {
+                    const dayNumber = index + 1
+                    const isSelected = selectedDate.getDate() === dayNumber && selectedDate.getMonth() === selectedMonth && selectedDate.getFullYear() === selectedYear
+                    return (
+                      <button
+                        key={dayNumber}
+                        type="button"
+                        onClick={() => setSelectedDate(new Date(selectedYear, selectedMonth, dayNumber))}
+                        className={`h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${isSelected ? 'bg-primary text-on-primary shadow-md shadow-primary/20' : 'bg-surface-container-lowest text-on-surface hover:bg-primary hover:text-on-primary'}`}
+                      >
+                        {dayNumber}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
               <div className="flex flex-col justify-center border-l border-outline-variant/30 pl-8 hidden md:flex">
@@ -126,7 +162,7 @@ function Jadwal({ openModal }) {
                     <span className="material-symbols-outlined">wb_sunny</span>
                     Terpilih
                   </div>
-                  <div className="text-2xl font-display font-black text-primary">Sabtu, 5 Okt</div>
+                  <div className="text-2xl font-display font-black text-primary">{selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
                 </div>
               </div>
             </div>
@@ -145,6 +181,8 @@ function Jadwal({ openModal }) {
                   className="w-full bg-surface-container-lowest border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface" 
                   placeholder="Masukkan nama lengkap" 
                   type="text" 
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -154,7 +192,8 @@ function Jadwal({ openModal }) {
                     className="w-full bg-surface-container-lowest border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface" 
                     min="1" 
                     type="number" 
-                    defaultValue="1" 
+                    value={teamCount}
+                    onChange={(e) => setTeamCount(Math.max(1, Number(e.target.value)))}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm font-medium">Orang</span>
                 </div>
@@ -165,6 +204,8 @@ function Jadwal({ openModal }) {
                   className="w-full bg-surface-container-lowest border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface" 
                   placeholder="+62 8xx xxxx xxxx" 
                   type="tel" 
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
                 />
               </div>
             </div>
@@ -181,19 +222,19 @@ function Jadwal({ openModal }) {
               <div className="space-y-6 relative z-10">
                 <div className="flex justify-between items-start pb-4 border-b border-white/10">
                   <span className="text-on-primary-container text-sm">Rute Terpilih</span>
-                  <span className="font-bold text-right">Rute Tangga 620</span>
+                  <span className="font-bold text-right">{routeOptions.find((route) => route.key === selectedRoute)?.title ?? 'Rute Tangga 620'}</span>
                 </div>
                 <div className="flex justify-between items-start pb-4 border-b border-white/10">
                   <span className="text-on-primary-container text-sm">Tanggal</span>
-                  <span className="font-bold text-right">05 Oktober 2024</span>
+                  <span className="font-bold text-right">{selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
                 <div className="flex justify-between items-start pb-4 border-b border-white/10">
                   <span className="text-on-primary-container text-sm">Anggota Tim</span>
-                  <span className="font-bold text-right">1 Orang</span>
+                  <span className="font-bold text-right">{teamCount} Orang</span>
                 </div>
                 <div className="pt-4">
                   <div className="text-sm text-on-primary-container mb-1">Estimasi Biaya Retribusi</div>
-                  <div className="text-3xl font-black">IDR 25.000</div>
+                  <div className="text-3xl font-black">IDR {estimatedCost.toLocaleString('id-ID')}</div>
                 </div>
                 <button 
                   onClick={openModal}
