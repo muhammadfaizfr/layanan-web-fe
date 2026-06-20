@@ -1,25 +1,7 @@
 // src/components/Tentang.jsx
 function Tentang({ navigate }) {
   return (
-    <>
-      {/* TopAppBar - sama seperti sebelumnya */}
-      <nav className="fixed top-0 w-full z-50 bg-[#f9f9f7]/80 backdrop-blur-md shadow-[0_4px_40px_0_rgba(22,52,34,0.04)]">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto w-full">
-          <button type="button" onClick={() => navigate?.('home')} className="text-xl font-bold tracking-tighter text-[#163422]">Gunung Galunggung</button>
-          <div className="hidden md:flex items-center gap-8">
-            <button type="button" onClick={() => navigate?.('home')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Home</button>
-            <button type="button" className="text-[#163422] border-b-2 border-[#163422] pb-1 text-sm tracking-wide font-medium">Tentang</button>
-            <button type="button" onClick={() => navigate?.('informasi')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Informasi</button>
-            <button type="button" onClick={() => navigate?.('galeri')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Galeri</button>
-            <button type="button" onClick={() => navigate?.('lokasi')} className="text-[#695d47] pb-1 text-sm tracking-wide font-medium hover:text-[#163422] transition-colors duration-300">Lokasi</button>
-          </div>
-          <button onClick={() => navigate?.('jadwal')} className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]">
-            Pesan Tiket
-          </button>
-        </div>
-      </nav>
-
-      <main className="pt-24 overflow-hidden">
+    <main className="pt-24 overflow-hidden">
         {/* Hero Section */}
         <section className="relative min-h-[819px] flex items-center px-8 py-20 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -114,25 +96,6 @@ function Tentang({ navigate }) {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="w-full border-t border-[#163422]/5 bg-[#f4f4f2]">
-        <div className="flex flex-col md:flex-row justify-between items-center px-8 py-12 gap-6 w-full max-w-7xl mx-auto">
-          <div className="flex flex-col gap-2">
-            <span className="text-lg font-bold text-[#163422]">Gunung Galunggung</span>
-            <p className="text-[10px] tracking-widest uppercase text-[#695d47] font-medium">Destinasi Alam Premium</p>
-          </div>
-          <div className="flex gap-8">
-            <button type="button" onClick={() => navigate?.('tentang')} className="text-sm font-semibold text-[#163422] hover:underline transition-all">Tentang</button>
-            <button type="button" onClick={() => navigate?.('kontak')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Kontak</button>
-            <button type="button" onClick={() => navigate?.('informasi')} className="text-sm text-[#695d47] hover:text-[#163422] hover:underline transition-all">Informasi</button>
-          </div>
-          <div className="text-center md:text-right">
-            <p className="text-sm text-[#695d47] opacity-80">© 2024 Gunung Galunggung. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </>
   );
 }
 

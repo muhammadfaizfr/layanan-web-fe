@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import Galeri from './components/Galeri.jsx'
-import Lokasi from './lokasi.jsx'
+import Informasi from './components/Informasi.jsx'
 import Kontak from './components/Kontak.jsx'
-import Jadwal from './components/jadwal.jsx'
+import Jadwal from './components/Jadwal.jsx'
 import Tentang from './components/Tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
@@ -254,6 +254,26 @@ function App() {
       case 'tentang':
         return (
           <Tentang navigate={setCurrentPage} />
+        )
+      case 'informasi':
+        return (
+          <Informasi openModal={openModal} />
+        )
+      case 'galeri':
+        return (
+          <Galeri />
+        )
+      case 'lokasi':
+        return (
+          <Lokasi openModal={openModal} />
+        )
+      case 'kontak':
+        return (
+          <Kontak openModal={openModal} />
+        )
+      case 'jadwal':
+        return (
+          <Jadwal openModal={openModal} onSaveSchedule={handleSaveSchedule} />
         )
       default:
         return null
