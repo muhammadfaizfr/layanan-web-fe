@@ -3,6 +3,7 @@ import Galeri from './components/Galeri.jsx'
 import Informasi from './components/Informasi.jsx'
 import Kontak from './components/Kontak.jsx'
 import Jadwal from './components/Jadwal.jsx'
+import Lokasi from './components/Lokasi.jsx'
 import Tentang from './components/Tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
@@ -138,7 +139,7 @@ function App() {
                           Nikmati panorama kawah gunung berapi dengan danau berwarna hijau zamrud yang menakjubkan. Dikelilingi dinding tebing yang megah, menciptakan suasana magis.
                         </p>
                       </div>
-                      <button className="mt-8 text-primary font-bold flex items-center gap-2 underline underline-offset-8">
+                      <button onClick={() => setCurrentPage('lokasi')} className="mt-8 text-primary font-bold flex items-center gap-2 underline underline-offset-8">
                         Lihat Detail Kawah
                         <span className="material-symbols-outlined text-sm">arrow_forward</span>
                       </button>
