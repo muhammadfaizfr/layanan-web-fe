@@ -2,6 +2,21 @@ import React, { useState } from 'react'
 
 export default function PembayaranPendakian({ order, formatRupiah, navigate, onComplete }) {
   const [selectedMethod, setSelectedMethod] = useState(null)
+
+  const bankLogos = {
+    bca: "https://lh3.googleusercontent.com/aida-public/AB6AXuBfOAnG3HAqVOlNidbi0XdybamHpCxv5vm7Y0kpQsYUg9Jg-vaDFEqau-NVE5fBiC6YQGXEuyZS87AN8uySExNnTKxr9TmndZ2SiVvOpqSIic0bWq1gD4LdNgsd-Ni1qQ62fg1mHpff4rRNatST1whu7mv7sha8t33WCdYMsQmTTEg0zTqpiPOJgTHcne9TUKOlOnIBLQU6w_lQ2n6ROzgQD_R-L6P7CPDIwXwTWY6T25FzTDS8XATPCeBRrQPcEP-srypP6L4RPw",
+    mandiri: "https://lh3.googleusercontent.com/aida-public/AB6AXuC181rpVr77M7bvrkGfoeAB2Z0c2kZEYng-vFK4A-y3DjgIKaoiLX0z_iKW2VqVnFkJGKfJX5acZuIXHwOsaAz4iZsCTsm-iBIfuDX0UWocUaEwU13JJipbDGD84mv15g6DFD23saPq50PlzyODhsuzTp8cc8VgRcR4t6SwHSOSfV5sdzHkXMvIRdDe4B4yZVrE9laNlx769gRSdvbbC6IparRXqEwT8SZqaY1FQ8XU26LL1ifBXo-7nxOkJZ8HL2bsEr3XnfY7NA",
+    bni: "https://lh3.googleusercontent.com/aida-public/AB6AXuAQzN1DQEYunvqgpXUSuKG300mDN8rsmSJgxvRDmPn1SIPjV14MvW0DBGs43d8D0CDIisgPVENMrxzbhAqIDr6KDHlCP83c0RZZBT3Ew0ejzCpnYw6cqAmJZIFPWr6lcjTgWXmN1ljOw4jKqE7g1gfLlaNI7JbjRY-Q3YEF0zT4prsTNGY4UJuvM_2H-laxMGrDBCo1bzfQFHtiEKmwcm8m90jxc8yPOeeUzDeARWsrPaGUifipUtRc2gFNrakqDicPDu8L5sPITg",
+    bri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBTaIQaxXpcUAaPmrnH7PR-C8E8NARomPQZZcEaPvj2rGoHtKuj1JZrDhAhj9TEpDnDS0Vzhf9yTmnhhornTQdn7W-2cwuXAMG4NB8FEK2n8J3VfIDsywkvzQCLt7e1TKP0G8VlhHTHs1sFkyKr7yUa8lP6J9u0-jjrrTyxEY0kWeOJenFlv9FWVfkcwEGA43iyZKzuhOUBt6kUXh7vA9w_44qXTz8_gRJRuPF-6k4CPR0eJNogEXX0Udu4Jqx9yjXz43bPpCjbKA"
+  };
+
+  const activeCategory = !selectedMethod || ['bca', 'mandiri', 'bni', 'bri'].includes(selectedMethod)
+    ? 'va'
+    : ['gopay', 'ovo', 'dana'].includes(selectedMethod)
+    ? 'ewallet'
+    : selectedMethod === 'cc'
+    ? 'cc'
+    : null;
   const qty = order?.qty ?? 1
   const route = order?.route ?? 'Tangga 620'
   const date = order?.date ?? 'Sabtu, 5 Okt'
@@ -85,53 +100,117 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
               </h2>
 
               <div className="space-y-4">
-                <div className="p-6 rounded-2xl bg-surface-container-lowest border-2 border-primary shadow-[0_10px_30px_rgba(22,52,34,0.03)] transition-all">
+                {/* Virtual Account */}
+                <div 
+                  onClick={() => {
+                    if (activeCategory !== 'va') {
+                      setSelectedMethod('bca'); // Default to bca when clicking the category
+                    }
+                  }}
+                  className={`p-6 rounded-2xl cursor-pointer transition-all ${
+                    activeCategory === 'va'
+                      ? 'bg-surface-container-lowest border-2 border-primary shadow-[0_10px_30px_rgba(22,52,34,0.03)]'
+                      : 'bg-surface-container-low border border-outline-variant/20 hover:border-primary/30'
+                  }`}
+                >
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-jakarta font-bold text-primary">Virtual Account</h3>
-                    <div className="w-5 h-5 rounded-full border-4 border-primary bg-on-primary"></div>
+                    <h3 className={`font-jakarta font-bold transition-colors ${activeCategory === 'va' ? 'text-primary' : 'text-on-surface-variant'}`}>Virtual Account</h3>
+                    <div className={`w-5 h-5 rounded-full border-2 transition-all ${
+                      activeCategory === 'va' 
+                        ? 'border-4 border-primary bg-on-primary' 
+                        : 'border-outline-variant'
+                    }`}></div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['BCA', 'Mandiri', 'BNI', 'BRI'].map((bank) => (
-                      <button
-                        key={bank}
-                        type="button"
-                        onClick={() => setSelectedMethod(bank.toLowerCase())}
-                        className={`bg-surface-container-low p-4 rounded-xl flex items-center justify-center border ${selectedMethod === bank.toLowerCase() ? 'border-primary bg-white shadow-sm' : 'border-outline-variant/30'} transition-all`}
-                      >
-                        <img alt={bank} className="h-6 object-contain" src="https://via.placeholder.com/70x24?text=" />
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4" onClick={(e) => e.stopPropagation()}>
+                    {['BCA', 'Mandiri', 'BNI', 'BRI'].map((bank) => {
+                      const bankKey = bank.toLowerCase();
+                      const isSelected = selectedMethod === bankKey;
+                      return (
+                        <button
+                          key={bank}
+                          type="button"
+                          onClick={() => setSelectedMethod(bankKey)}
+                          className={`bg-surface-container-low p-4 rounded-xl flex items-center justify-center border transition-all ${
+                            isSelected 
+                              ? 'border-primary bg-white shadow-sm ring-1 ring-primary' 
+                              : 'border-outline-variant/30 hover:border-primary/50'
+                          }`}
+                        >
+                          <img 
+                            alt={bank} 
+                            className={`h-6 object-contain transition-all ${isSelected ? 'grayscale-0 opacity-100' : 'grayscale opacity-70'}`} 
+                            src={bankLogos[bankKey]} 
+                          />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/20 hover:border-primary/30 transition-all">
+                {/* E-Wallet */}
+                <div 
+                  onClick={() => {
+                    if (activeCategory !== 'ewallet') {
+                      setSelectedMethod('gopay'); // Default to gopay when clicking the category
+                    }
+                  }}
+                  className={`p-6 rounded-2xl cursor-pointer transition-all ${
+                    activeCategory === 'ewallet'
+                      ? 'bg-surface-container-lowest border-2 border-primary shadow-[0_10px_30px_rgba(22,52,34,0.03)]'
+                      : 'bg-surface-container-low border border-outline-variant/20 hover:border-primary/30'
+                  }`}
+                >
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-jakarta font-bold text-on-surface-variant">E-Wallet</h3>
-                    <div className="w-5 h-5 rounded-full border-2 border-outline-variant"></div>
+                    <h3 className={`font-jakarta font-bold transition-colors ${activeCategory === 'ewallet' ? 'text-primary' : 'text-on-surface-variant'}`}>E-Wallet</h3>
+                    <div className={`w-5 h-5 rounded-full border-2 transition-all ${
+                      activeCategory === 'ewallet' 
+                        ? 'border-4 border-primary bg-on-primary' 
+                        : 'border-outline-variant'
+                    }`}></div>
                   </div>
-                  <div className="flex gap-4 flex-wrap">
-                    {['GoPay', 'OVO', 'DANA'].map((wallet) => (
-                      <button
-                        key={wallet}
-                        type="button"
-                        onClick={() => setSelectedMethod(wallet.toLowerCase())}
-                        className={`bg-surface-container-lowest px-6 py-3 rounded-xl border ${selectedMethod === wallet.toLowerCase() ? 'border-primary bg-white shadow-sm' : 'border-outline-variant/10'} transition-all text-sm font-bold tracking-widest ${wallet === 'GoPay' ? 'text-[#00BAF2]' : wallet === 'OVO' ? 'text-[#391584]' : 'text-[#118EEA]'}`}
-                      >
-                        {wallet}
-                      </button>
-                    ))}
+                  <div className="flex gap-4 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                    {['GoPay', 'OVO', 'DANA'].map((wallet) => {
+                      const walletKey = wallet.toLowerCase();
+                      const isSelected = selectedMethod === walletKey;
+                      return (
+                        <button
+                          key={wallet}
+                          type="button"
+                          onClick={() => setSelectedMethod(walletKey)}
+                          className={`bg-surface-container-lowest px-6 py-3 rounded-xl border transition-all text-sm font-bold tracking-widest ${
+                            isSelected 
+                              ? 'border-primary bg-white shadow-sm ring-1 ring-primary' 
+                              : 'border-outline-variant/10 hover:border-primary/50'
+                          } ${wallet === 'GoPay' ? 'text-[#00BAF2]' : wallet === 'OVO' ? 'text-[#391584]' : 'text-[#118EEA]'}`}
+                        >
+                          {wallet}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/20 hover:border-primary/30 transition-all">
+                {/* Credit Card */}
+                <div 
+                  onClick={() => setSelectedMethod('cc')}
+                  className={`p-6 rounded-2xl cursor-pointer transition-all ${
+                    activeCategory === 'cc'
+                      ? 'bg-surface-container-lowest border-2 border-primary shadow-[0_10px_30px_rgba(22,52,34,0.03)]'
+                      : 'bg-surface-container-low border border-outline-variant/20 hover:border-primary/30'
+                  }`}
+                >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-jakarta font-bold text-on-surface-variant">Kartu Kredit</h3>
+                      <h3 className={`font-jakarta font-bold transition-colors ${activeCategory === 'cc' ? 'text-primary' : 'text-on-surface-variant'}`}>Kartu Kredit</h3>
                       <div className="flex gap-1">
-                        <span className="material-symbols-outlined text-sm opacity-50">credit_card</span>
+                        <span className={`material-symbols-outlined text-sm transition-colors ${activeCategory === 'cc' ? 'text-primary opacity-100' : 'opacity-50'}`}>credit_card</span>
                       </div>
                     </div>
-                    <div className="w-5 h-5 rounded-full border-2 border-outline-variant"></div>
+                    <div className={`w-5 h-5 rounded-full border-2 transition-all ${
+                      activeCategory === 'cc' 
+                        ? 'border-4 border-primary bg-on-primary' 
+                        : 'border-outline-variant'
+                    }`}></div>
                   </div>
                 </div>
               </div>

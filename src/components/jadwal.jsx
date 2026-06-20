@@ -1,7 +1,7 @@
 // src/components/Jadwal.jsx
 import React, { useState } from 'react'
 
-function Jadwal({ openModal, onSaveSchedule }) {
+function Jadwal({ onSaveSchedule, onProceedToPayment }) {
   const [selectedRoute, setSelectedRoute] = useState('tangga')
   const today = new Date()
   const [calendarMonth, setCalendarMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
@@ -238,16 +238,29 @@ function Jadwal({ openModal, onSaveSchedule }) {
                 </div>
                 <button 
                   onClick={() => {
-                    if (typeof onSaveSchedule === 'function') {
-                      onSaveSchedule({
-                        route: selectedRoute,
-                        date: selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-                        teamName,
-                        teamCount,
-                        contact,
-                      })
+                    if (!teamName.trim()) {
+                      alert('Mohon masukkan nama ketua tim.');
+                      return;
                     }
-                    openModal()
+                    if (!contact.trim()) {
+                      alert('Mohon masukkan kontak darurat (WhatsApp).');
+                      return;
+                    }
+
+                    const scheduleData = {
+                      route: selectedRoute,
+                      date: selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                      teamName,
+                      teamCount,
+                      contact,
+                    };
+
+                    if (typeof onSaveSchedule === 'function') {
+                      onSaveSchedule(scheduleData);
+                    }
+                    if (typeof onProceedToPayment === 'function') {
+                      onProceedToPayment(scheduleData);
+                    }
                   }}
                   className="w-full bg-surface-bright text-primary py-5 rounded-full font-bold text-lg hover:bg-white active:scale-95 transition-all shadow-xl shadow-black/10"
                 >

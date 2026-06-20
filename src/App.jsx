@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import Galeri from './components/Galeri.jsx'
-import Informasi from './components/Informasi.jsx'
-import Kontak from './components/Kontak.jsx'
-import Jadwal from './components/Jadwal.jsx'
-import Lokasi from './components/Lokasi.jsx'
-import Tentang from './components/Tentang.jsx'
+import Galeri from './components/galeri.jsx'
+import Informasi from './components/informasi.jsx'
+import Kontak from './components/kontak.jsx'
+import Jadwal from './components/jadwal.jsx'
+import Lokasi from './components/lokasi.jsx'
+import Tentang from './components/tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
@@ -50,6 +50,24 @@ function App() {
 
   const handleSaveSchedule = (schedule) => {
     setScheduleInfo(schedule)
+  }
+
+  const handleProceedToPaymentDirectly = (scheduleData) => {
+    const selectedRouteObj = scheduleData.route === 'hutan' ? 'Rute Hutan Cipanas' : 'Rute Tangga 620'
+    const orderData = {
+      name: scheduleData.teamName || 'Pengunjung',
+      date: scheduleData.date,
+      qty: scheduleData.teamCount,
+      unitPrice: pricePerTicket,
+      total: pricePerTicket * scheduleData.teamCount,
+      route: selectedRouteObj,
+      teamName: scheduleData.teamName,
+      contact: scheduleData.contact,
+    }
+    setOrder(orderData)
+    setPaymentMethod(null)
+    setScheduleInfo(null)
+    setCurrentPage('pembayaran')
   }
 
   const handleProceedToPayment = (orderData) => {
@@ -274,7 +292,10 @@ function App() {
         )
       case 'jadwal':
         return (
-          <Jadwal openModal={openModal} onSaveSchedule={handleSaveSchedule} />
+          <Jadwal 
+            onSaveSchedule={handleSaveSchedule} 
+            onProceedToPayment={handleProceedToPaymentDirectly} 
+          />
         )
       default:
         return null
