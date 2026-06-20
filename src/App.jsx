@@ -3,6 +3,7 @@ import Galeri from './components/Galeri.jsx'
 import Lokasi from './lokasi.jsx'
 import Kontak from './components/Kontak.jsx'
 import Jadwal from './components/Jadwal.jsx'
+import PesanTiket from './components/pesanantiket.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -604,48 +605,16 @@ function App() {
         </div>
       </footer>
 
-      {/* Modal Booking (sama seperti sebelumnya) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100]">
-          <div className="absolute inset-0 bg-primary/40 backdrop-blur-sm" onClick={closeModal}></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-surface p-10 rounded-3xl shadow-2xl">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-bold text-primary">Pesan Tiket</h3>
-              <button onClick={closeModal} className="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-2">Tanggal Kunjungan</label>
-                <input className="w-full bg-surface-container-lowest border-none rounded-xl p-4 focus:ring-2 focus:ring-primary-container/20 text-on-surface" type="date" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-2">Jumlah Tiket</label>
-                  <div className="flex items-center gap-4 bg-surface-container-lowest rounded-xl p-2 px-4">
-                    <button onClick={decrementTicket} className="text-primary font-bold text-lg hover:bg-surface-container-high w-8 h-8 rounded-full transition">-</button>
-                    <span className="flex-1 text-center font-bold text-lg">{ticketCount}</span>
-                    <button onClick={incrementTicket} className="text-primary font-bold text-lg hover:bg-surface-container-high w-8 h-8 rounded-full transition">+</button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-2">Total Harga</label>
-                  <div className="h-14 flex items-center justify-end">
-                    <span className="text-xl font-extrabold text-primary">{formatRupiah(totalPrice)}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="pt-4">
-                <button className="w-full bg-primary text-on-primary py-5 rounded-full font-bold text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 transition">
-                  Konfirmasi Pembayaran
-                </button>
-                <p className="text-center text-[10px] text-on-surface-variant mt-4 leading-relaxed px-8">Dengan menekan tombol konfirmasi, Anda menyetujui syarat dan ketentuan kunjungan wisata Gunung Galunggung.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal Booking (komponen terpisah) */}
+      <PesanTiket
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        ticketCount={ticketCount}
+        incrementTicket={incrementTicket}
+        decrementTicket={decrementTicket}
+        totalPrice={totalPrice}
+        formatRupiah={formatRupiah}
+      />
     </>
   )
 }
