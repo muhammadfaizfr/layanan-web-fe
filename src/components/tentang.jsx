@@ -1,7 +1,7 @@
 // src/components/Tentang.jsx
 function Tentang({ navigate }) {
   return (
-    <main className="pt-24 overflow-hidden">
+    <section className="pt-24 overflow-hidden">
         {/* Hero Section */}
         <section className="relative min-h-[819px] flex items-center px-8 py-20 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -95,7 +95,7 @@ function Tentang({ navigate }) {
             </div>
           </div>
         </section>
-      </main>
+      </section>
   );
 }
 

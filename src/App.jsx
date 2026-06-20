@@ -282,6 +282,26 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
+  const isStandalonePage = currentPage === 'pembayaran'
+
+  if (isStandalonePage) {
+    return (
+      <>
+        {renderPage()}
+        <PesanTiket
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          ticketCount={ticketCount}
+          incrementTicket={incrementTicket}
+          decrementTicket={decrementTicket}
+          totalPrice={totalPrice}
+          formatRupiah={formatRupiah}
+          onProceed={handleProceedToPayment}
+        />
+      </>
+    )
+  }
+
   return (
     <>
       {/* Navbar */}
