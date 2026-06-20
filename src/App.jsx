@@ -8,6 +8,7 @@ import Tentang from './components/tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
+import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -267,7 +268,7 @@ function App() {
 
       case 'berhasil':
         return (
-          <BerhasilPembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} paymentMethod={paymentMethod} />
+          <PendaftaranSelesai order={order} navigate={setCurrentPage} />
         )
 
       case 'tentang':
@@ -303,7 +304,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran'
+  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil'
 
   if (isStandalonePage) {
     return (
