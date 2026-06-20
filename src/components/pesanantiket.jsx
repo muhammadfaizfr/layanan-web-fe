@@ -1,7 +1,7 @@
 // src/components/PesanTiket.jsx
 import React, { useState } from "react";
 
-function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTicket, totalPrice, formatRupiah }) {
+function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTicket, totalPrice, formatRupiah, onProceed }) {
   // if parent explicitly passes isOpen=false, hide. If undefined, render (for backward compatibility)
   if (isOpen === false) return null
 
@@ -46,9 +46,20 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
           className="p-6 space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
-            // Sederhana: tampilkan data; integrasikan backend jika diperlukan
-            console.log({ name, date, keterangan, ticketCount: tc, total: computedTotal });
-            alert(`Pesanan:\nNama: ${name || "-"}\nTanggal: ${date || "-"}\nJumlah: ${tc}\nKeterangan: ${keterangan || "-"}\nTotal: ${fmt(computedTotal)}`);
+            const order = {
+              name,
+              date,
+              keterangan,
+              qty: tc,
+              unitPrice,
+              total: computedTotal,
+            }
+            console.log('order', order)
+            if (typeof onProceed === 'function') {
+              onProceed(order)
+            } else {
+              alert(`Pesanan:\nNama: ${name || "-"}\nTanggal: ${date || "-"}\nJumlah: ${tc}\nKeterangan: ${keterangan || "-"}\nTotal: ${fmt(computedTotal)}`)
+            }
           }}
         >
           {/* Name Input */}

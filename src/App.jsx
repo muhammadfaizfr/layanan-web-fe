@@ -4,6 +4,7 @@ import Lokasi from './lokasi.jsx'
 import Kontak from './components/Kontak.jsx'
 import Jadwal from './components/Jadwal.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
+import Pembayaran from './components/pembayaran.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -40,6 +41,14 @@ function App() {
 
   // ===== STATE UNTUK NAVIGASI =====
   const [currentPage, setCurrentPage] = useState('home')
+  const [order, setOrder] = useState(null)
+
+  const handleProceedToPayment = (orderData) => {
+    setOrder(orderData)
+    // close modal then navigate to pembayaran
+    setIsModalOpen(false)
+    setCurrentPage('pembayaran')
+  }
 
   // Scroll to top when page changes (so new page appears at top)
   useEffect(() => {
@@ -216,6 +225,11 @@ function App() {
               </div>
             </section>
           </>
+        )
+
+      case 'pembayaran':
+        return (
+          <Pembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} />
         )
 
       case 'tentang':
@@ -614,6 +628,7 @@ function App() {
         decrementTicket={decrementTicket}
         totalPrice={totalPrice}
         formatRupiah={formatRupiah}
+        onProceed={handleProceedToPayment}
       />
     </>
   )
