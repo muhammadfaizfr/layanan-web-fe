@@ -1,4 +1,12 @@
 // src/components/Tentang.jsx
+import img1 from '../assets/images/1.jpg'
+import img2 from '../assets/images/2.jpg'
+import img3 from '../assets/images/3.jpg'
+import img4 from '../assets/images/4.jpg'
+import img5 from '../assets/images/5.jpg'
+import img6 from '../assets/images/6.webp'
+import img7 from '../assets/images/7.jpg'
+
 function Tentang({ navigate }) {
   return (
     <section className="pt-24 overflow-hidden">
@@ -19,7 +27,7 @@ function Tentang({ navigate }) {
                 <img 
                   alt="Majestic view of green crater lake" 
                   className="w-full h-[600px] object-cover" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXnIXJVJZvdhES79o-EspLYkBYfmKKI9kwBFPXnotLrTZAQPTz7FFrhMbmcLuPDkiXTstjmFBf9_-nwsCQVA_mUr8DoleebGOBD7fE5Tfb2CWb34RO_gNl76S-6wJvUkRdslHYf3gZaxwt83hfX1XOJqHb68NOKkb2PSef8JvPB7lz55BOP_rlh4MsjRZ3FcSHRGnMq86LB2hmWlipzXK0IBpwwDISj-dGptOR3sIMd_wWo8F6btAa6oB5HiDZ4X-wSeyDHTc1qQ" 
+                  src={img1} 
                 />
               </div>
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-tertiary-fixed rounded-xl -z-10 opacity-50"></div>
@@ -43,12 +51,12 @@ function Tentang({ navigate }) {
                 </div>
               </div>
               <div className="w-full md:w-1/2 space-y-12">
-                <img className="w-full h-96 object-cover rounded-xl shadow-sm" alt="Volcanic rock textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUXA0OiAf2OkdlTyuz_VEMPpleo_Dd9avbMz8MPcHD4xhOO3x-5VO_bec4_1ZYqWqDRj5IIUmR-EaVfE_wE8cYDAqh5SX_Wtk29rE3LptuN9mw7TMzERSEcaPsipnnbUeFWojJ1fNy9-4CSqqkRzS9heVv4lmkrmqsvc9oS9AbzM08-909xNUC4ABH-OooGirTE9eHevmnEuaRWA1420_-aufo2x74F8hwx75bbtNUvNwmTkI0hxWjJ9bhB8ayS0pcZLgaJAyaPw" />
+                <img className="w-full h-96 object-cover rounded-xl shadow-sm" alt="Volcanic rock textures" src={img2} />
                 <div className="bg-surface p-12 rounded-xl shadow-[0_40px_80px_-20px_rgba(22,52,34,0.08)]">
                   <h3 className="text-xl font-bold text-primary mb-4 italic">"Alam tidak terburu-buru, namun segalanya tercapai."</h3>
                   <p className="text-sm text-on-surface-variant">Lanskap Galunggung mengajarkan kita tentang ketahanan. Setiap lapisan tanah bercerita tentang kehancuran yang bertransformasi menjadi keindahan yang megah.</p>
                 </div>
-                <img className="w-full h-[500px] object-cover rounded-xl shadow-sm" alt="Steep stairs to crater" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACk_J6pdQmgO9ENaNyAzhbw5qYS42Y7OHR3q0Zr-mHfo5LrtoTvGRzYEHpwJ1WEVrUUSZaAhnp3Zah-WqvdsURLYUfb1-d8TbjSqcYL72t1ru58-zPny32Z-A_1KvzUDtpsKhyogV_KbWNxBNA9hgQDVlEKjpwf4ct5__y5lZeehT5KS7BqFjz2VoZo7qsbwSWJIU5EttbEXPiyPmzl01jrfyBuDlieR3SGQpQEoF7kkLJ3YQx2inRnukU3nOCG0aoXEVR5GJL6Q" />
+                <img className="w-full h-[500px] object-cover rounded-xl shadow-sm" alt="Steep stairs to crater" src={img3} />
               </div>
             </div>
           </div>
@@ -63,16 +71,16 @@ function Tentang({ navigate }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[800px]">
               <div className="md:col-span-8 overflow-hidden rounded-tr-xl rounded-bl-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Crater sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr9zbRfpupvkZmwh8ru5bicwSDa45bhT7gD6jUzUR2mU13QYYWHRe8tMaCx57CMV1OPHwp0vofvgTpBvegjsnEao4prvAtCRMLoByzDv-M-daCi4ev1HeTnFoGb8fijN82Av_hiFKZCuI81f1qpIuVNPr0bDd6TEDYTXjTuOgIf37nye4mQ_Rg8155-wZBZLYACpswljIX0Bb1dWq-8mODCcjngo0xeu1rdZGifyFcWEspfngYMpcO1bKJM5a1G6Ow4z2wFwAeHA" />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Crater sunset" src={img4} />
               </div>
               <div className="md:col-span-4 overflow-hidden rounded-tl-xl rounded-br-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Pine forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA2aqhJbaNn-is4VI7tN3uJ_jdEssAvQYcV6FeYtGwjBZMoQi_39h12kHXwGst23BRzo_emRtc2j_HDLyuuL9nnUGpE4S42yvh1B0Z4ZGFBpgxZwXn7aPE0GdFN57GoYVudk-hTr5Deo7wQkQklRBNdUS-I251-NxkH_sViD8iL2p_cmccuX6CzaSrFnGX0YPtxhXPxdVSdW5xz9tuSdf1A6v7q23Hc-iZXhGGnBgZGuA2NpQxMEp-dhx80hdIOmfwvSNbvc7NGA" />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Pine forest" src={img5} />
               </div>
               <div className="md:col-span-4 overflow-hidden rounded-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hot springs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZmZf4iQG1j-CYsHdcvvY24xgvPFk0kml778o8xN2wLIC8tYYXK_dzZQLaZyrgMIrtCOBVT775PdAHdtrVnwJBVy5vHzk19oTTSbNJ0Fc8kGHbxJ_T_GMBb2eogCWG4PZoLMa3jsTLX_wl-pgMVYkEmjcU47xDpZct2mKxJeEo7ZkD-zERoxK8rYWp1oZHOOEd8DbpyLOrGhyelkjRwwinWMTxnmvnXMp8SnHy7MQONi67ZPbP7Gs29iXwIrtPUpT1Bv2sZgStWg" />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hot springs" src={img6} />
               </div>
               <div className="md:col-span-8 overflow-hidden rounded-tr-[5rem] rounded-bl-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Night stars" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYqxoEvvN6vz0yop7VvDwrSlRbkc83wO3yP_fu7BwFf3G_Uyanc5alBuUzy33rxZhB2-QG2X8TGAJFaRzSzCyEUWx2wTEHB6rpeAS6h-6XdSxwNPhC-4OTNyH5FtcNxbdKDuyaUzAogDK6_GP_4YYwlse8R2bbRzhIw2WfS9M_mr_H89ci8kXnIBvJ7R8xwdGE-gZfWXf-2hU1Wau9RTCBDqbS58nV50L8A1DlMIknJNzowpj_R5y_dSS36KK8k3Qerwz9ZJr-Eg" />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Night stars" src={img7} />
               </div>
             </div>
           </div>
