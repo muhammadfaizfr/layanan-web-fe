@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-export default function PembayaranPendakian({ order, formatRupiah, navigate, onComplete }) {
+export default function PembayaranPendakian({ order, formatRupiah, navigate, onComplete, onBack }) {
   const [selectedMethod, setSelectedMethod] = useState(null)
 
   const bankLogos = {
@@ -69,6 +69,16 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
 
       <main className="pt-28 pb-32 px-6 max-w-7xl mx-auto min-h-screen">
         <div className="mb-12">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="group inline-flex items-center gap-2 text-on-surface-variant hover:text-primary font-jakarta font-bold text-sm mb-6 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+              Kembali
+            </button>
+          )}
           <h1 className="text-4xl md:text-5xl font-extrabold text-primary tracking-tight mb-8">Pembayaran Pendaftaran Pendakian</h1>
 
           <div className="flex items-center space-x-4 mb-12 overflow-x-auto pb-2">

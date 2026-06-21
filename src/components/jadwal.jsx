@@ -1,14 +1,14 @@
 // src/components/Jadwal.jsx
 import React, { useState } from 'react'
 
-function Jadwal({ onSaveSchedule, onProceedToPayment }) {
-  const [selectedRoute, setSelectedRoute] = useState('tangga')
+function Jadwal({ onSaveSchedule, onProceedToPayment, initialData }) {
+  const [selectedRoute, setSelectedRoute] = useState(initialData?.route?.includes('Hutan') ? 'hutan' : 'tangga')
   const today = new Date()
-  const [calendarMonth, setCalendarMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
-  const [selectedDate, setSelectedDate] = useState(today)
-  const [teamName, setTeamName] = useState('')
-  const [teamCount, setTeamCount] = useState(1)
-  const [contact, setContact] = useState('')
+  const [calendarMonth, setCalendarMonth] = useState(initialData?.dateObj ? new Date(initialData.dateObj.getFullYear(), initialData.dateObj.getMonth(), 1) : new Date(today.getFullYear(), today.getMonth(), 1))
+  const [selectedDate, setSelectedDate] = useState(initialData?.dateObj ?? today)
+  const [teamName, setTeamName] = useState(initialData?.teamName ?? '')
+  const [teamCount, setTeamCount] = useState(initialData?.qty ?? 1)
+  const [contact, setContact] = useState(initialData?.contact ?? '')
 
   const routeOptions = [
     {
@@ -250,6 +250,7 @@ function Jadwal({ onSaveSchedule, onProceedToPayment }) {
                     const scheduleData = {
                       route: selectedRoute,
                       date: selectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                      dateObj: selectedDate,
                       teamName,
                       teamCount,
                       contact,

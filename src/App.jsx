@@ -58,11 +58,12 @@ function App() {
     setScheduleInfo(schedule)
   }
 
-  const handleProceedToPaymentDirectly = (scheduleData) => {
+   const handleProceedToPaymentDirectly = (scheduleData) => {
     const selectedRouteObj = scheduleData.route === 'hutan' ? 'Rute Hutan Cipanas' : 'Rute Tangga 620'
     const orderData = {
       name: scheduleData.teamName || 'Pengunjung',
       date: scheduleData.date,
+      dateObj: scheduleData.dateObj,
       qty: scheduleData.teamCount,
       unitPrice: pricePerTicket,
       total: pricePerTicket * scheduleData.teamCount,
@@ -82,6 +83,15 @@ function App() {
     setScheduleInfo(null)
     setIsModalOpen(false)
     setCurrentPage('pembayaran')
+  }
+
+  const handleBackFromPayment = () => {
+    if (order && order.route) {
+      setCurrentPage('jadwal')
+    } else {
+      setCurrentPage('home')
+      setIsModalOpen(true)
+    }
   }
 
   const handleCompletePayment = (method) => {
@@ -268,7 +278,7 @@ function App() {
 
       case 'pembayaran':
         return (
-          <PembayaranPendakian order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={handleCompletePayment} />
+          <PembayaranPendakian order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={handleCompletePayment} onBack={handleBackFromPayment} />
         )
 
       case 'berhasil':
@@ -313,6 +323,7 @@ function App() {
           <Jadwal 
             onSaveSchedule={handleSaveSchedule} 
             onProceedToPayment={handleProceedToPaymentDirectly} 
+            initialData={order}
           />
         )
       default:
@@ -336,6 +347,7 @@ function App() {
           totalPrice={totalPrice}
           formatRupiah={formatRupiah}
           onProceed={handleProceedToPayment}
+          order={order}
         />
       </>
     )
@@ -396,6 +408,7 @@ function App() {
         totalPrice={totalPrice}
         formatRupiah={formatRupiah}
         onProceed={handleProceedToPayment}
+        order={order}
       />
     </>
   )
