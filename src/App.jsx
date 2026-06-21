@@ -12,6 +12,8 @@ import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
 import PanduanPendakian from './components/panduanpendakian.jsx'
 import RiwayatTiket from './components/riwayattiket.jsx'
+import mtGalunggungImg from './assets/images/Mt_galunggung_volcanic_crater.jpg'
+import mountainStaircaseImg from './assets/images/mountain-staircase.jpg'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -106,7 +108,7 @@ function App() {
                 <img 
                   className="w-full h-full object-cover" 
                   alt="cinematic wide shot of Gunung Galunggung crater lake with morning mist, lush green slopes, and soft sunlight filtering through clouds" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuA42XsE07zyyGw-IbxxFucWw5gQnfKjrX9pAMFZ3iX1wyiE7ysSfTSKfaN18re9YNx1kZ79j1BJAxJCxRHS40OEyPdMG-GjJCvNIQNiCxfp2mOuw79ULADt2t_qmeGpInyzeH7C8Sbo9O3o1Ung0aFdumIjkxOJbY1HWjWIgL61CFKucwOUtWD9kBp15vc33Qa9EHpbhJiVzHTzqGA0uHrvswg_iwHxUXUL9ih3RnrWd77xxivpaPe3-lpMQhlN3_qqDuXA-EGHGA" 
+                  src={mtGalunggungImg} 
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/20 to-transparent"></div>
               </div>
@@ -214,7 +216,7 @@ function App() {
                   <img 
                     className="rounded-[3rem] shadow-2xl relative z-10 w-full aspect-[4/5] object-cover" 
                     alt="dramatic mountain staircase" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuB62f5fYAYI0GZTGrd_Humv31MIVKyzZDJGGakf1W1BQoGcu5a39_PUQp6yjqhvQ1ptGFOimh7k4qWanP1uVrSc1CMRJNHg3ZNqfgBwa3gnd2fOBTLtT_hMAUxYAS29Yj0uExVMrTQ-N4RLHuNpS1MwZ1A_KehOR0G44Ie1BhCuNBE89Wd847jXlT7I_fnyXFyml0CYAoz4KdVt3AVq9U0FC0zIzdaXSLdU1_-2ITinP4MrHOo2PSVAd8LjGMC_Bsh5wE59j-XMyg" 
+                    src={mountainStaircaseImg} 
                   />
                   <div className="absolute -bottom-8 -right-8 bg-surface p-6 rounded-2xl shadow-xl z-20 max-w-xs">
                     <p className="text-xs font-bold text-primary tracking-widest uppercase mb-2">Highlight Hari Ini</p>
