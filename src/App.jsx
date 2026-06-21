@@ -10,6 +10,7 @@ import PembayaranPendakian from './components/PembayaranPendakian.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
 import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
+import PanduanPendakian from './components/panduanpendakian.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -275,6 +276,10 @@ function App() {
         return (
           <ETiket order={order} navigate={setCurrentPage} />
         )
+      case 'panduan-pendakian':
+        return (
+          <PanduanPendakian navigate={setCurrentPage} />
+        )
 
       case 'tentang':
         return (
@@ -309,7 +314,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket'
+  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian'
 
   if (isStandalonePage) {
     return (

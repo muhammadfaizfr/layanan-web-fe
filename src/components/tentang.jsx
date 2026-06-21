@@ -90,7 +90,7 @@ function Tentang({ navigate }) {
               <p className="text-on-primary-container text-lg mb-12 max-w-xl mx-auto">Mulailah perjalanan Anda menuju puncak kesegaran raga dan ketenangan jiwa.</p>
               <div className="flex flex-wrap justify-center gap-4">
                 <button onClick={() => navigate?.('jadwal')} className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">Jadwalkan Kunjungan</button>
-                <button onClick={() => navigate?.('informasi')} className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">Panduan Pendakian</button>
+                <button onClick={() => navigate?.('panduan-pendakian')} className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">Panduan Pendakian</button>
               </div>
             </div>
           </div>
