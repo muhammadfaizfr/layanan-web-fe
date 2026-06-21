@@ -1,4 +1,4 @@
-function Lokasi({ openModal }) {
+function Lokasi({ openModal, navigate }) {
   return (
     <>
       {/* Hero Section & Map Canvas */}
@@ -36,15 +36,24 @@ function Lokasi({ openModal }) {
                   </div>
                 </div>
               </div>
-              <a
-                className="inline-flex items-center justify-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1"
-                href="https://maps.google.com"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="material-symbols-outlined">map</span>
-                Buka Maps
-              </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  className="inline-flex items-center justify-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 w-full"
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="material-symbols-outlined">map</span>
+                  Buka Maps
+                </a>
+                <button
+                  onClick={() => navigate?.('riwayat-tiket')}
+                  className="inline-flex items-center justify-center gap-3 bg-surface-container-highest text-primary px-8 py-4 rounded-full font-bold transition-all hover:bg-surface-container-high hover:shadow-md w-full"
+                >
+                  <span className="material-symbols-outlined">history</span>
+                  Lihat Riwayat Tiket
+                </button>
+              </div>
             </div>
 
             <div className="bg-primary text-on-primary p-10 rounded-xl relative overflow-hidden group">

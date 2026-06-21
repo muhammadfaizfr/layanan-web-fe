@@ -11,6 +11,7 @@ import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
 import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
 import PanduanPendakian from './components/panduanpendakian.jsx'
+import RiwayatTiket from './components/riwayattiket.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -295,7 +296,11 @@ function App() {
         )
       case 'lokasi':
         return (
-          <Lokasi openModal={openModal} />
+          <Lokasi openModal={openModal} navigate={setCurrentPage} />
+        )
+      case 'riwayat-tiket':
+        return (
+          <RiwayatTiket navigate={setCurrentPage} />
         )
       case 'kontak':
         return (
@@ -346,6 +351,7 @@ function App() {
             <button onClick={() => setCurrentPage('informasi')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'informasi' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Informasi</button>
             <button onClick={() => setCurrentPage('galeri')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'galeri' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Galeri</button>
             <button onClick={() => setCurrentPage('lokasi')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'lokasi' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Lokasi</button>
+            <button onClick={() => setCurrentPage('riwayat-tiket')} className={`text-sm tracking-wide font-medium pb-1 transition-colors duration-300 ${currentPage === 'riwayat-tiket' ? 'text-[#163422] border-b-2 border-[#163422]' : 'text-[#695d47] hover:text-[#163422]'}`}>Tiket Saya</button>
           </div>
           <button 
             onClick={openModal}
