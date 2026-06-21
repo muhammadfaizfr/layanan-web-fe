@@ -9,6 +9,7 @@ import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
 import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
+import ETiket from './components/e-tiket.jsx'
 
 function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
@@ -270,6 +271,10 @@ function App() {
         return (
           <PendaftaranSelesai order={order} navigate={setCurrentPage} />
         )
+      case 'e-tiket':
+        return (
+          <ETiket order={order} navigate={setCurrentPage} />
+        )
 
       case 'tentang':
         return (
@@ -304,7 +309,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil'
+  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket'
 
   if (isStandalonePage) {
     return (

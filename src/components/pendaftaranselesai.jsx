@@ -10,7 +10,10 @@ export default function PendaftaranSelesai({ order, navigate }) {
   }, [order])
 
   const handleDownload = () => {
-    window.print()
+    if (order && !order.reference) {
+      order.reference = reference
+    }
+    navigate?.('e-tiket')
   }
 
   return (
