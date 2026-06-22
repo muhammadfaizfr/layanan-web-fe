@@ -12,6 +12,8 @@ export default function RingkasanAdmin({ navigate }) {
     { id: 'manajemen-tiket', label: 'Manajemen Tiket', icon: 'confirmation_number' },
     { id: 'jadwal-pendakian', label: 'Jadwal Pendakian', icon: 'explore' },
     { id: 'manajemen-pengguna', label: 'Manajemen Pengguna', icon: 'group' },
+    { id: 'kotak-masuk', label: 'Kotak Masuk', icon: 'inbox' },
+    { id: 'manajemen-galeri', label: 'Manajemen Galeri', icon: 'photo_library' },
     { id: 'laporan', label: 'Laporan', icon: 'analytics' },
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
@@ -130,11 +132,11 @@ export default function RingkasanAdmin({ navigate }) {
                 </span>
               </div>
               <span className="text-base font-black text-[#163422] font-['Plus_Jakarta_Sans'] leading-tight">
-                Galunggung Admin
+                Galunggung
               </span>
             </div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-bold pl-11">
-              Management Portal
+              Otoritas Pariwisata
             </p>
           </div>
 
@@ -166,21 +168,12 @@ export default function RingkasanAdmin({ navigate }) {
             ))}
           </nav>
 
-          <div className="mt-auto pt-8 border-t border-stone-200/30 space-y-0.5">
-            <button className="w-full bg-primary text-on-primary rounded-full py-3 px-6 mb-4 font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all">
-              <span className="material-symbols-outlined text-sm">add</span>
-              Entri Baru
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-stone-500 hover:text-[#163422] transition-all duration-200">
-              <span className="material-symbols-outlined">contact_support</span>
-              <span className="font-['Plus_Jakarta_Sans'] uppercase tracking-[0.1em] text-xs">Bantuan</span>
-            </button>
+          <div className="mt-auto pt-4">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 text-stone-500 hover:text-error transition-all duration-200"
+              className="w-full bg-error text-on-error rounded-full py-3 px-6 font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-error/90 transition-all active:scale-[0.98] shadow-sm"
             >
-              <span className="material-symbols-outlined">logout</span>
-              <span className="font-['Plus_Jakarta_Sans'] uppercase tracking-[0.1em] text-xs">Keluar</span>
+              logout
             </button>
           </div>
         </aside>
