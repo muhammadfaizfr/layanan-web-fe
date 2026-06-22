@@ -25,13 +25,11 @@ export default function ManajemenTiketAdmin({ navigate }) {
     } else if (id === 'manajemen-tiket') {
       // Stay here
     } else {
-      // Navigate to ringkasan but we pass custom local tab if needed, 
-      // or we can just redirect to ringkasan page
       navigate('admin-ringkasan')
     }
   }
 
-  // Initial tickets list from the design image
+  // Initial tickets list
   const [tickets, setTickets] = useState([
     {
       id: 'GAL-2023-8841',
@@ -83,14 +81,12 @@ export default function ManajemenTiketAdmin({ navigate }) {
     },
   ])
 
-  // Delete ticket action
   const handleDelete = (id) => {
     if (window.confirm(`Apakah Anda yakin ingin menghapus tiket ${id}?`)) {
       setTickets(tickets.filter(t => t.id !== id))
     }
   }
 
-  // Confirm/Verify pending ticket action
   const handleVerify = (id) => {
     setTickets(tickets.map(t => t.id === id ? { ...t, status: 'Lunas' } : t))
   }
@@ -119,7 +115,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
             <div className="w-8 h-8 bg-[#163422] rounded-lg flex items-center justify-center">
               <span className="material-symbols-outlined text-white text-xl filled-icon">terrain</span>
             </div>
-            <span className="text-lg font-black text-[#163422] font-['Plus_Jakarta_Sans'] leading-tight">
+            <span className="text-base font-black text-[#163422] font-['Plus_Jakarta_Sans'] leading-tight">
               Galunggung
             </span>
           </div>
@@ -168,16 +164,19 @@ export default function ManajemenTiketAdmin({ navigate }) {
 
       {/* Content wrapper to shift past fixed sidebar */}
       <div className="flex-1 ml-64 flex flex-col min-h-screen">
-        {/* TopAppBar */}
+        
+        {/* TopAppBar - DIPERBAIKI (Sama persis dengan Ringkasan) */}
         <header className="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 bg-[#f9f9f7]/90 backdrop-blur-md shadow-sm shadow-[#163422]/5">
-          <div className="flex items-center gap-8">
-            <span className="text-xl font-bold text-[#163422] font-['Plus_Jakarta_Sans'] tracking-tight">
-              Gunung Galunggung Admin
-            </span>
-            <div className="hidden md:flex items-center bg-[#eeeeec] px-4 py-1.5 rounded-full">
+          
+          {/* Kolom Kiri (Kosong untuk penyeimbang flexbox) */}
+          <div className="flex-1"></div>
+
+          {/* Kolom Tengah (Pencarian Dipusatkan) */}
+          <div className="flex-1 flex justify-center">
+            <div className="hidden md:flex items-center bg-[#eeeeec] px-4 py-1.5 rounded-full w-full max-w-md">
               <span className="material-symbols-outlined text-[#727972] text-sm mr-2">search</span>
               <input
-                className="bg-transparent border-none focus:ring-0 text-sm w-64 font-body outline-none"
+                className="bg-transparent border-none focus:ring-0 text-sm w-full font-body outline-none"
                 placeholder="Cari data..."
                 type="text"
                 value={searchTerm}
@@ -185,7 +184,9 @@ export default function ManajemenTiketAdmin({ navigate }) {
               />
             </div>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Kolom Kanan (Notifikasi & Profil) */}
+          <div className="flex-1 flex items-center justify-end gap-4">
             <button className="p-2 rounded-full hover:bg-[#f4f4f2] transition-colors duration-300 relative">
               <span className="material-symbols-outlined text-[#163422]">notifications</span>
               <span className="absolute top-2 right-2 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
