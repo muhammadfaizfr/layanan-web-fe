@@ -99,51 +99,62 @@ export default function RingkasanAdmin({ navigate }) {
         }
       `}</style>
 
-      {/* Top App Bar */}
-      <header className="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 bg-[#f9f9f7]/90 backdrop-blur-md shadow-sm shadow-[#163422]/5">
-        <div className="flex items-center gap-8">
-          <span className="text-xl font-bold text-[#163422] font-['Plus_Jakarta_Sans'] tracking-tight">
-            Gunung Galunggung Admin
-          </span>
-          <div className="hidden md:flex items-center bg-surface-container-low px-4 py-1.5 rounded-full">
-            <span className="material-symbols-outlined text-outline text-sm mr-2">search</span>
+      {/* Top App Bar - DIPERBAIKI */}
+      <header className="sticky top-0 z-40 ml-64 flex items-center justify-between px-8 h-16 bg-[#f9f9f7]/90 backdrop-blur-md shadow-sm shadow-[#163422]/5">
+        
+        {/* Kiri (Kosong untuk menyeimbangkan flexbox) */}
+        <div className="flex-1"></div>
+
+        {/* Tengah (Pencarian Dipusatkan) */}
+        <div className="flex-1 flex justify-center">
+          <div className="hidden md:flex items-center bg-[#eeeeec] px-4 py-1.5 rounded-full w-full max-w-md">
+            <span className="material-symbols-outlined text-[#727972] text-sm mr-2">search</span>
             <input
-              className="bg-transparent border-none focus:ring-0 text-sm w-64 font-body outline-none"
+              className="bg-transparent border-none focus:ring-0 text-sm w-full font-body outline-none"
               placeholder="Cari data..."
               type="text"
             />
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors duration-300 relative">
+
+        {/* Kanan (Notifikasi & Profil) */}
+        <div className="flex-1 flex items-center justify-end gap-4">
+          <button className="p-2 rounded-full hover:bg-[#f4f4f2] transition-colors duration-300 relative">
             <span className="material-symbols-outlined text-[#163422]">notifications</span>
+            <span className="absolute top-2 right-2 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
           </button>
-          <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors duration-300">
-            <span className="material-symbols-outlined text-[#163422]">help_outline</span>
+          <button className="p-2 rounded-full hover:bg-[#f4f4f2] transition-colors duration-300">
+            <span className="material-symbols-outlined text-[#163422]">settings</span>
           </button>
-          <div className="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center ml-2 ring-2 ring-primary-container">
-            <span className="material-symbols-outlined text-primary text-base filled-icon">admin_panel_settings</span>
+          <div className="flex items-center gap-3 border-l border-stone-200 pl-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs font-bold text-[#163422]">Admin Galunggung</p>
+              <p className="text-[10px] text-[#727972]">Administrator Super</p>
+            </div>
+            <div className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-[#2d4b37]">
+              <img
+                alt="Administrator profile photo"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEy3ZMPHYxyyhwS7DR5qkNP1ejh99n8ppgmWxaO1NYqUL9qlVJ3yHZ6DGb2l_e3sNvvZQpk-cLdamEdAhqDAqwnmRE3o6lpg4tQNZO1nstr38wZJCRhOD6r4Qg8xyOGf3OEC8k6EUYXxX1mAG_2ibm9_H2Qvvbk2vdNKZUy2kYWJiTu7FCCvSzmwcHOoidlRu6pu_9XgARG11DqjnxyFk1qYuoEnk3DFOxkw7U71jQ2rrhUohmWk3QEHDm_vxlZitm9terkPMw2w"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </header>
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-0 h-full flex flex-col py-8 px-4 w-64 bg-[#f9f9f7] border-r border-stone-200/30 z-50">
-          <div className="mb-10 px-4">
+        <aside className="fixed left-0 top-0 h-full flex flex-col py-8 px-5 w-64 bg-[#f9f9f7] border-r border-[#163422]/10 z-50">
+          <div className="mb-10 px-2">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-on-primary text-xl filled-icon"
-                >
-                  terrain
-                </span>
+              <div className="w-8 h-8 bg-[#163422] rounded-lg flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-xl filled-icon">terrain</span>
               </div>
               <span className="text-base font-black text-[#163422] font-['Plus_Jakarta_Sans'] leading-tight">
                 Galunggung
               </span>
             </div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-bold pl-11">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#727972] font-bold pl-11">
               Otoritas Pariwisata
             </p>
           </div>
@@ -179,7 +190,7 @@ export default function RingkasanAdmin({ navigate }) {
           <div className="mt-auto pt-4">
             <button
               onClick={handleLogout}
-              className="w-full bg-error text-on-error rounded-full py-3 px-6 font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-error/90 transition-all active:scale-[0.98] shadow-sm"
+              className="w-full bg-[#ba1a1a] text-white rounded-full py-3 px-6 font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-[#ba1a1a]/90 transition-all active:scale-[0.98] shadow-sm font-['Plus_Jakarta_Sans']"
             >
               logout
             </button>
@@ -191,201 +202,196 @@ export default function RingkasanAdmin({ navigate }) {
           {activeNav === 'ringkasan' && (
             <>
               {/* Page Header */}
-              <section className="mb-10 flex justify-between items-end">
+              <section className="mb-8 flex justify-between items-center">
                 <div>
-                  <h1 className="text-3xl font-extrabold text-primary tracking-tight mb-2 font-['Plus_Jakarta_Sans']">
+                  <h1 className="text-3xl font-extrabold text-[#163422] tracking-tight mb-2 font-['Plus_Jakarta_Sans']">
                     Ringkasan Dashboard
                   </h1>
-                  <p className="text-on-surface-variant max-w-lg text-sm">
-                    Selamat datang kembali, Administrator. Berikut status terkini ekosistem pendakian Gunung Galunggung.
+                  <p className="text-[#424843] max-w-lg text-sm">
+                    Memantau kabut di atas Gunung Galunggung hari ini.
                   </p>
                 </div>
-                <div className="flex gap-3">
-                  <button className="px-6 py-2 rounded-full border border-outline-variant text-primary text-sm font-semibold hover:bg-surface-container-low transition-all flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base">download</span>
-                    Unduh Laporan
-                  </button>
-                  <button className="px-6 py-2 rounded-full bg-primary text-on-primary text-sm font-semibold hover:shadow-lg transition-all flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base">refresh</span>
-                    Perbarui Data
+                <div>
+                  <button className="px-5 py-2.5 rounded-full bg-[#163422] text-white text-xs font-bold hover:shadow-md transition-all flex items-center gap-2 shadow-sm font-['Plus_Jakarta_Sans']">
+                    <span className="material-symbols-outlined text-sm">calendar_today</span>
+                    24 Agt 2024
                   </button>
                 </div>
               </section>
 
-              {/* Stats Cards */}
+              {/* Stats Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 {/* Card 1 - Total Pengunjung */}
-                <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm shadow-primary/5 hover:scale-[1.02] transition-transform cursor-default">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200/20 hover:scale-[1.02] transition-transform cursor-default relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-primary-container rounded-xl">
-                      <span className="material-symbols-outlined text-primary">groups</span>
+                    <div>
+                      <p className="text-[#727972] text-[10px] font-bold uppercase tracking-widest mb-2">Total Pengunjung</p>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-3xl font-extrabold text-[#163422] font-['Plus_Jakarta_Sans']">12.482</h2>
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#c8ebd0] text-[#022110]">
+                          <span className="material-symbols-outlined text-[10px]">trending_up</span>
+                          +14%
+                        </span>
+                      </div>
                     </div>
+                    <span className="material-symbols-outlined text-[#727972]/30 text-3xl">person_add</span>
                   </div>
-                  <p className="text-on-surface-variant text-xs font-medium uppercase tracking-widest mb-1">Total Pengunjung</p>
-                  <h2 className="text-2xl font-bold text-primary font-['Plus_Jakarta_Sans']">—</h2>
-                  <p className="text-[10px] text-outline mt-1">Data akan tersedia setelah terhubung backend</p>
                 </div>
 
                 {/* Card 2 - Tiket Terjual */}
-                <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm shadow-primary/5 hover:scale-[1.02] transition-transform cursor-default">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-secondary-container rounded-xl">
-                      <span className="material-symbols-outlined text-on-secondary-container">confirmation_number</span>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200/20 hover:scale-[1.02] transition-transform cursor-default relative overflow-hidden flex flex-col justify-between">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-[#727972] text-[10px] font-bold uppercase tracking-widest mb-2">Tiket Terjual</p>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-3xl font-extrabold text-[#163422] font-['Plus_Jakarta_Sans']">8.920</h2>
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#c8ebd0] text-[#022110]">
+                          <span className="material-symbols-outlined text-[10px]">trending_up</span>
+                          +8,2%
+                        </span>
+                      </div>
                     </div>
+                    <span className="material-symbols-outlined text-[#727972]/30 text-3xl">confirmation_number</span>
                   </div>
-                  <p className="text-on-surface-variant text-xs font-medium uppercase tracking-widest mb-1">Tiket Terjual</p>
-                  <h2 className="text-2xl font-bold text-primary font-['Plus_Jakarta_Sans']">—</h2>
-                  <p className="text-[10px] text-outline mt-1">Data akan tersedia setelah terhubung backend</p>
+                  <p className="text-[10px] text-[#727972]">Pemesanan aktif hari ini</p>
                 </div>
 
                 {/* Card 3 - Pendaki Aktif */}
-                <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm shadow-primary/5 hover:scale-[1.02] transition-transform cursor-default">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-tertiary-container rounded-xl">
-                      <span className="material-symbols-outlined text-tertiary-fixed-dim">hiking</span>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200/20 hover:scale-[1.02] transition-transform cursor-default relative overflow-hidden flex flex-col justify-between">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-[#727972] text-[10px] font-bold uppercase tracking-widest mb-2">Pendaki Aktif</p>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-3xl font-extrabold text-[#163422] font-['Plus_Jakarta_Sans']">154</h2>
+                        <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-[#ffdad6] text-[#ba1a1a]">
+                          <span className="material-symbols-outlined text-[10px] filled-icon">warning</span>
+                          Puncak
+                        </span>
+                      </div>
                     </div>
+                    <span className="material-symbols-outlined text-[#727972]/30 text-3xl">hiking</span>
                   </div>
-                  <p className="text-on-surface-variant text-xs font-medium uppercase tracking-widest mb-1">Pendaki Aktif</p>
-                  <h2 className="text-2xl font-bold text-primary font-['Plus_Jakarta_Sans']">—</h2>
-                  <p className="text-[10px] text-outline mt-1">Data akan tersedia setelah terhubung backend</p>
+                  <p className="text-[10px] text-[#727972]">Saat ini di jalur</p>
                 </div>
 
-                {/* Card 4 - Pendapatan (dark) */}
-                <div className="bg-primary p-6 rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform cursor-default">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-white/10 rounded-xl">
-                      <span className="material-symbols-outlined text-white">payments</span>
+                {/* Card 4 - Pendapatan */}
+                <div className="bg-[#163422] p-6 rounded-2xl shadow-lg shadow-[#163422]/20 hover:scale-[1.02] transition-transform cursor-default relative overflow-hidden flex flex-col justify-between text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2">Pendapatan</p>
+                      <h2 className="text-3xl font-extrabold font-['Plus_Jakarta_Sans'] tracking-tight">Rp.500.000</h2>
                     </div>
-                    <span className="text-xs font-bold text-white px-2 py-1 bg-white/20 rounded-full">Bulan Ini</span>
+                    <span className="material-symbols-outlined text-white/30 text-3xl">payments</span>
                   </div>
-                  <p className="text-white/70 text-xs font-medium uppercase tracking-widest mb-1">Pendapatan</p>
-                  <h2 className="text-2xl font-bold text-white font-['Plus_Jakarta_Sans']">—</h2>
-                  <p className="text-white/40 text-[10px] mt-1">Data akan tersedia setelah terhubung backend</p>
+                  <p className="text-[10px] text-white/60">Pertumbuhan bulanan <span className="font-bold text-[#adcfb4]">+22%</span></p>
                 </div>
               </div>
 
-              {/* Charts & Activity Row */}
+              {/* Lower Section (Logs and Crater Live) */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Weekly Activity Chart */}
-                <div className="lg:col-span-2 bg-surface-container-low rounded-xl p-8">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-primary font-['Plus_Jakarta_Sans']">Aktivitas Mingguan</h3>
-                    <div className="flex gap-2">
-                      <button className="px-3 py-1 text-xs font-bold bg-surface-container-highest rounded-full text-primary">
-                        Pengunjung
-                      </button>
-                      <button className="px-3 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
-                        Tiket
-                      </button>
-                    </div>
-                  </div>
+                {/* Recent Visitor Logs */}
+                <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-stone-200/20 shadow-sm">
+                  <h3 className="text-lg font-bold text-[#163422] font-['Plus_Jakarta_Sans'] mb-6">Log Pengunjung Terbaru</h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="text-[10px] font-extrabold text-[#727972] uppercase tracking-wider border-b border-[#eeeeec] pb-3">
+                          <th className="pb-4 font-bold">Nama Pendaki</th>
+                          <th className="pb-4 font-bold">ID Tiket</th>
+                          <th className="pb-4 font-bold text-center">Status Jalur</th>
+                          <th className="pb-4 font-bold text-right">Waktu Masuk</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#eeeeec]/50">
+                        {/* Row 1 */}
+                        <tr className="group hover:bg-[#f4f4f2]/20 transition-colors">
+                          <td className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-full bg-[#f1e1c4] text-[#221a09] flex items-center justify-center text-[10px] font-bold">
+                                AS
+                              </div>
+                              <span className="text-xs font-semibold text-[#1a1c1b]">Andi Saputra</span>
+                            </div>
+                          </td>
+                          <td className="py-4 text-xs font-semibold text-[#727972]">#GNG-2024-001</td>
+                          <td className="py-4 text-center">
+                            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[9px] font-bold bg-[#c8ebd0]/40 text-[#022110]">
+                              DI JALUR
+                            </span>
+                          </td>
+                          <td className="py-4 text-xs text-right font-medium text-[#424843]">06:45 AM</td>
+                        </tr>
 
-                  {/* Empty state chart */}
-                  <div className="relative h-64 w-full flex items-end justify-between px-4 pb-4 border-b border-outline-variant/20">
-                    {chartBars.map((bar) => (
-                      <div key={bar.day} className="flex flex-col items-center gap-2 w-12">
-                        <div className="w-full h-1 bg-primary/10 rounded-t-lg" />
-                      </div>
-                    ))}
-                    {/* Empty state overlay */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="material-symbols-outlined text-4xl text-outline/30 mb-2">bar_chart</span>
-                      <p className="text-xs text-outline/50 font-medium">Data grafik akan muncul setelah terhubung backend</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between px-4 mt-3 text-[10px] font-bold text-outline tracking-widest">
-                    {chartBars.map((bar) => (
-                      <span key={bar.day}>{bar.day}</span>
-                    ))}
+                        {/* Row 2 */}
+                        <tr className="group hover:bg-[#f4f4f2]/20 transition-colors">
+                          <td className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-full bg-[#adcfb4] text-[#022110] flex items-center justify-center text-[10px] font-bold">
+                                ML
+                              </div>
+                              <span className="text-xs font-semibold text-[#1a1c1b]">Maria L.</span>
+                            </div>
+                          </td>
+                          <td className="py-4 text-xs font-semibold text-[#727972]">#GNG-2024-002</td>
+                          <td className="py-4 text-center">
+                            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[9px] font-bold bg-[#f1e1c4] text-[#504531]">
+                              SELESAI
+                            </span>
+                          </td>
+                          <td className="py-4 text-xs text-right font-medium text-[#424843]">07:12 AM</td>
+                        </tr>
+
+                        {/* Row 3 */}
+                        <tr className="group hover:bg-[#f4f4f2]/20 transition-colors">
+                          <td className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-full bg-[#dce4de] text-[#161d19] flex items-center justify-center text-[10px] font-bold">
+                                RK
+                              </div>
+                              <span className="text-xs font-semibold text-[#1a1c1b]">Rizky Kurniawan</span>
+                            </div>
+                          </td>
+                          <td className="py-4 text-xs font-semibold text-[#727972]">#GNG-2024-003</td>
+                          <td className="py-4 text-center">
+                            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[9px] font-bold bg-[#ffdad6] text-[#ba1a1a]">
+                              TERDAFTAR
+                            </span>
+                          </td>
+                          <td className="py-4 text-xs text-right font-medium text-[#424843]">08:00 AM</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
-                {/* Sidebar: Recent Activity + Status */}
-                <div className="lg:col-span-1 flex flex-col gap-6">
-                  {/* Recent Activity */}
-                  <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm shadow-primary/5">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Aktivitas Terkini</h3>
-                      <span className="material-symbols-outlined text-outline cursor-pointer hover:text-primary transition-colors">
-                        more_vert
-                      </span>
-                    </div>
+                {/* Crater Live View Widget */}
+                <div className="lg:col-span-1 rounded-2xl overflow-hidden relative min-h-[360px] shadow-sm border border-stone-200/10 flex flex-col justify-between p-6 text-white group">
+                  <div className="absolute inset-0 z-0">
+                    <img 
+                      alt="Mount Galunggung landscape live preview" 
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCgrh8UH49VRI7WW78tGrBZF32i1q-64yTdY4MhwL5igTLk84LbpXpAwD3MimIkhXZc57Q-Db464DkSFO-W0nvIfpgqtLTFTzHj_PlcOYctjttujrZU1r-xzjYzThxMXm0kVX17z-y4zRFOL0Pcltv1sJQQKbZDCHprgshIFOgiXU30V94Ekin6zxDk2IhZskfEDQ09ezvNKfIk6z5GAJF0tVsoktKJQHUQctq2zQnNuis5LjCrfd4yLkdvZtklwOfuB8K5qcEHg" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/30"></div>
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <p className="text-[#adcfb4] text-[9px] font-bold uppercase tracking-widest mb-1">Tampilan Langsung Kawah</p>
+                    <h4 className="text-xl font-bold font-['Plus_Jakarta_Sans'] leading-snug">Kondisi Atmosfer: Optimal</h4>
+                  </div>
 
-                    {/* Empty state */}
-                    <div className="flex flex-col items-center justify-center py-8 gap-3">
-                      <span className="material-symbols-outlined text-4xl text-outline/30">history</span>
-                      <p className="text-xs text-outline/50 text-center font-medium">
-                        Belum ada aktivitas terkini.<br/>Data akan muncul setelah terhubung backend.
-                      </p>
-                    </div>
-
-                    <button className="w-full mt-4 py-2 text-xs font-bold text-primary border-t border-outline-variant hover:text-primary/70 transition-colors">
-                      Lihat Semua Log
+                  <div className="relative z-10 space-y-4">
+                    <p className="text-white/80 text-xs leading-relaxed font-light">
+                      Puncak saat ini mengalami jarak pandang yang jelas dengan kabut pagi yang lembut. Kondisi ideal untuk grup pendakian terpandu jam 10:00 pagi.
+                    </p>
+                    <button className="w-full py-3 bg-white text-[#1a1c1b] rounded-full text-xs font-bold flex items-center justify-center gap-2 hover:bg-white/95 transition-all shadow-md active:scale-[0.98]">
+                      <span className="material-symbols-outlined text-sm">videocam</span>
+                      Lihat Siaran Langsung
                     </button>
                   </div>
-
-                  {/* Status Kawasan Card */}
-                  <div className="bg-primary rounded-xl overflow-hidden relative min-h-[140px]">
-                    <div className="relative z-10 p-6 flex flex-col justify-between h-full">
-                      <div>
-                        <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Status Kawasan</p>
-                        <h4 className="text-white text-lg font-bold font-['Plus_Jakarta_Sans']">Memuat data...</h4>
-                        <p className="text-white/50 text-[10px] mt-1">Status akan tersedia setelah terhubung backend</p>
-                      </div>
-                      <div className="mt-4 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></div>
-                        <span className="text-white/80 text-[10px] font-medium">Sistem Monitoring Aktif</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
-
-              {/* Jadwal Pendakian Table */}
-              <section className="mt-8 bg-surface-container-lowest rounded-xl p-8 shadow-sm shadow-primary/5">
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-lg font-bold text-primary font-['Plus_Jakarta_Sans']">Jadwal Pendakian Mendatang</h3>
-                  <div className="flex gap-2">
-                    <select className="bg-surface-container-low border-none rounded-full text-xs font-bold text-primary px-4 py-2 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
-                      <option>Semua Jalur</option>
-                      <option>Cipanas</option>
-                      <option>Guntur</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="border-b border-outline-variant/30">
-                      <tr className="text-[10px] font-bold text-outline uppercase tracking-widest">
-                        <th className="pb-4 font-bold">ID Grup</th>
-                        <th className="pb-4 font-bold">Pemimpin</th>
-                        <th className="pb-4 font-bold">Jalur</th>
-                        <th className="pb-4 font-bold">Anggota</th>
-                        <th className="pb-4 font-bold">Tanggal</th>
-                        <th className="pb-4 font-bold">Status</th>
-                        <th className="pb-4 font-bold text-right">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* Empty state row */}
-                      <tr>
-                        <td colSpan={7} className="py-16 text-center">
-                          <div className="flex flex-col items-center gap-3">
-                            <span className="material-symbols-outlined text-5xl text-outline/25">explore</span>
-                            <p className="text-sm text-outline/50 font-medium">
-                              Belum ada jadwal pendakian.
-                            </p>
-                            <p className="text-xs text-outline/40">
-                              Data akan muncul setelah dihubungkan dengan backend Anda.
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
             </>
           )}
 
