@@ -1,4 +1,5 @@
 import React from 'react'
+import heroPanduan from '../assets/images/Screenshot_2023_0618_2140241.png'
 
 export default function PanduanPendakian({ navigate }) {
   return (
@@ -64,7 +65,7 @@ export default function PanduanPendakian({ navigate }) {
                 <img 
                   alt="Mountain path" 
                   className="w-full h-[500px] object-cover" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLGqSlg5fwl4DWjMy7GM8SDELTWTlE6OyDuK1e5YhOQYYLxQkHBGvN9yEqbKW6S0KMjDOdqh17UFl76ZdCZsb3-Dmietmoq3Ajy-J9545zWMjfWRfoeF_nI0B81vQfMIhQ2r78dq8lSfnvGypHre1M0cehPbdtjTQ9rh2jKD2yLi7WX0FBKDfMFKJKgW_EvB9tNtxMqgwgRjPQhykN3AWUDTh7N3gwjkgYmhO46zd9W6hzrjQ7pLGmIjxUiei03eg1Yc64KA-WUA"
+                  src={heroPanduan}
                 />
               </div>
             </div>

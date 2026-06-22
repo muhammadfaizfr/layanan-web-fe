@@ -29,10 +29,10 @@ export default function PendaftaranSelesai({ order, navigate }) {
             Galunggung
           </button>
           <div className="hidden md:flex items-center gap-8">
-            <button type="button" onClick={() => navigate?.('home')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display">Trails</button>
-            <button type="button" onClick={() => navigate?.('tentang')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display">Experience</button>
-            <button type="button" onClick={() => navigate?.('informasi')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display">Conservation</button>
-            <button type="button" onClick={() => navigate?.('lokasi')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display">Safety</button>
+            <button type="button" onClick={() => navigate?.('home')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display"></button>
+            <button type="button" onClick={() => navigate?.('tentang')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display"></button>
+            <button type="button" onClick={() => navigate?.('informasi')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display"></button>
+            <button type="button" onClick={() => navigate?.('lokasi')} className="text-[#163422]/60 font-medium hover:text-[#163422] transition-colors font-display"></button>
           </div>
           <button 
             type="button"
