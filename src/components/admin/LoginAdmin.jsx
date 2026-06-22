@@ -2,13 +2,19 @@ import React, { useState } from 'react'
 
 export default function LoginAdmin({ navigate }) {
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // TODO: tambahkan logika autentikasi di sini
-    console.log('Login dengan:', email, password)
+    setError('')
+    // Validasi login sederhana (nanti diganti dengan autentikasi backend)
+    if (username === 'admin' && password === 'admin') {
+      navigate('admin-ringkasan')
+    } else {
+      setError('Username atau password salah!')
+    }
   }
 
   return (
@@ -74,27 +80,33 @@ export default function LoginAdmin({ navigate }) {
 
             {/* Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {error && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl">
+                  <span className="material-symbols-outlined text-error text-lg">error</span>
+                  <p className="text-sm text-on-error-container font-medium">{error}</p>
+                </div>
+              )}
               <div className="space-y-4">
-                {/* Email Input */}
+                {/* Username Input */}
                 <div className="space-y-2">
                   <label
                     className="block font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1"
-                    htmlFor="email"
+                    htmlFor="username"
                   >
-                    Alamat Email
+                    Username
                   </label>
                   <div className="relative group">
                     <input
                       className="w-full px-5 py-4 bg-surface-container-lowest border-none rounded-xl focus:ring-2 focus:ring-primary-container/20 focus:bg-surface-bright transition-all text-on-surface placeholder:text-outline/40 shadow-sm outline-none"
-                      id="email"
-                      placeholder="nama@galunggung.id"
+                      id="username"
+                      placeholder="Masukkan username"
                       required
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                     <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline/50 group-focus-within:text-primary transition-colors">
-                      mail
+                      person
                     </span>
                   </div>
                 </div>
