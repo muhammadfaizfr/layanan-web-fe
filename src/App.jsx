@@ -12,6 +12,7 @@ import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
 import PanduanPendakian from './components/panduanpendakian.jsx'
 import RiwayatTiket from './components/riwayattiket.jsx'
+import LoginAdmin from './components/admin/LoginAdmin.jsx'
 import mtGalunggungImg from './assets/images/Mt_galunggung_volcanic_crater.jpg'
 import mountainStaircaseImg from './assets/images/mountain-staircase.jpg'
 
@@ -314,6 +315,10 @@ function App() {
         return (
           <RiwayatTiket navigate={setCurrentPage} />
         )
+      case 'admin-login':
+        return (
+          <LoginAdmin navigate={setCurrentPage} />
+        )
       case 'kontak':
         return (
           <Kontak openModal={openModal} />
@@ -332,7 +337,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian'
+  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login'
 
   if (isStandalonePage) {
     return (
