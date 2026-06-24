@@ -4,7 +4,15 @@ export default function ManajemenGaleriAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-galeri')
   const [isDragging, setIsDragging] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState([])
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const fileInputRef = useRef(null)
+
+  const triggerSuccessPopup = () => {
+    setShowSuccessPopup(true)
+    setTimeout(() => {
+      setShowSuccessPopup(false)
+    }, 3500)
+  }
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -53,6 +61,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
         size: (f.size / 1024 / 1024).toFixed(2),
       }))
       setUploadedFiles((prev) => [...prev, ...previews])
+      triggerSuccessPopup()
     }
   }, [])
 
@@ -67,6 +76,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
         size: (f.size / 1024 / 1024).toFixed(2),
       }))
       setUploadedFiles((prev) => [...prev, ...previews])
+      triggerSuccessPopup()
     }
   }
 
@@ -79,6 +89,19 @@ export default function ManajemenGaleriAdmin({ navigate }) {
       <style>{`
         .material-symbols-outlined {
           font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(1rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out forwards;
         }
       `}</style>
 
@@ -258,6 +281,30 @@ export default function ManajemenGaleriAdmin({ navigate }) {
           </div>
         </div>
       </main>
+
+      {/* Success Popup Modal */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-all duration-300">
+          <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(22,52,34,0.15)] overflow-hidden w-full max-w-sm border-t-[8px] border-[#163422] p-8 text-center relative mx-4 animate-fade-in-up">
+            {/* Double-layered Success Checkmark Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 rounded-full bg-[#eeeeec] flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-[#163422] flex items-center justify-center shadow-md">
+                  <span className="material-symbols-outlined text-white text-3xl font-bold" style={{ fontVariationSettings: "'wght' 700" }}>check</span>
+                </div>
+              </div>
+            </div>
+            {/* Headline */}
+            <h3 className="font-display font-extrabold text-[#163422] text-xl tracking-tight mb-3">
+              Foto Berhasil Diunggah
+            </h3>
+            {/* Description */}
+            <p className="text-[#695d47] font-['Inter'] text-sm leading-relaxed max-w-[280px] mx-auto font-medium">
+              Foto Anda telah berhasil ditambahkan ke Galeri Galunggung dan kini dapat dilihat oleh publik.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
