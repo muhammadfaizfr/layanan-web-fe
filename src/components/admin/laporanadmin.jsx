@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 
 export default function LaporanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('laporan')
+  const [showExportPopup, setShowExportPopup] = useState(false)
+  const [selectedFormat, setSelectedFormat] = useState('csv')
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -45,6 +47,19 @@ export default function LaporanAdmin({ navigate }) {
       <style>{`
         .material-symbols-outlined {
           font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(1rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out forwards;
         }
       `}</style>
 
@@ -139,7 +154,10 @@ export default function LaporanAdmin({ navigate }) {
               <button className="px-6 py-2.5 bg-surface-container-high text-[#695d47] hover:bg-surface-container-highest transition-colors rounded-full font-bold text-xs tracking-wide">
                 Filter Periode
               </button>
-              <button className="px-6 py-2.5 bg-primary text-white hover:opacity-90 rounded-full font-bold text-xs tracking-wide flex items-center gap-2 shadow-lg shadow-primary/10 active:scale-95 duration-200">
+              <button 
+                onClick={() => setShowExportPopup(true)}
+                className="px-6 py-2.5 bg-primary text-white hover:opacity-90 rounded-full font-bold text-xs tracking-wide flex items-center gap-2 shadow-lg shadow-primary/10 active:scale-95 duration-200"
+              >
                 <span className="material-symbols-outlined text-sm font-bold">download</span>
                 Export Semua
               </button>
@@ -240,6 +258,90 @@ export default function LaporanAdmin({ navigate }) {
           </div>
         </div>
       </main>
+
+      {/* Export Popup Modal */}
+      {showExportPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-all duration-300">
+          <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(22,52,34,0.15)] overflow-hidden w-full max-w-sm p-8 text-left relative mx-4 animate-fade-in-up border border-[#e2e3e1]">
+            {/* Headline */}
+            <h3 className="font-display font-extrabold text-[#163422] text-xl tracking-tight mb-2">
+              Ekspor Semua Data
+            </h3>
+            {/* Description */}
+            <p className="text-[#695d47] font-['Inter'] text-xs leading-relaxed mb-6 font-medium">
+              Pilih format file untuk mengunduh seluruh data laporan periode Oktober 2023.
+            </p>
+
+            {/* Option Cards */}
+            <div className="space-y-3 mb-8">
+              {/* CSV Option */}
+              <div 
+                onClick={() => setSelectedFormat('csv')}
+                className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
+                  selectedFormat === 'csv'
+                    ? 'border-[#163422] bg-[#f4f4f2]'
+                    : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#eeeeec] flex items-center justify-center text-primary shadow-sm flex-shrink-0">
+                  <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>table_chart</span>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format CSV (.csv)</h4>
+                  <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
+                    Cocok untuk pengolahan data di Excel atau Sheets.
+                  </p>
+                </div>
+              </div>
+
+              {/* PDF Option */}
+              <div 
+                onClick={() => setSelectedFormat('pdf')}
+                className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
+                  selectedFormat === 'pdf'
+                    ? 'border-[#163422] bg-[#f4f4f2]'
+                    : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#eeeeec] flex items-center justify-center text-primary shadow-sm flex-shrink-0">
+                  <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0", color: '#ba1a1a' }}>picture_as_pdf</span>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format PDF (.pdf)</h4>
+                  <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
+                    Format dokumen siap cetak dan presentasi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 w-full mb-6">
+              <button 
+                className="flex-1 py-3 bg-[#eeeeec] hover:bg-[#e2e3e1] text-[#1a1c1b] font-headline font-bold rounded-full transition-all duration-300 active:scale-95 text-xs shadow-sm"
+                onClick={() => setShowExportPopup(false)}
+              >
+                Batal
+              </button>
+              <button 
+                className="flex-1 py-3 bg-[#163422] text-[#f9f9f7] font-headline font-bold rounded-full transition-all duration-300 active:scale-95 shadow-md hover:opacity-90 text-xs flex items-center justify-center gap-1.5"
+                onClick={() => {
+                  alert(`Downloading as ${selectedFormat.toUpperCase()}...`)
+                  setShowExportPopup(false)
+                }}
+              >
+                <span className="material-symbols-outlined text-sm font-bold">download</span>
+                Unduh Sekarang
+              </button>
+            </div>
+
+            {/* Footer Metadata */}
+            <div className="text-[9px] font-label font-bold tracking-widest text-secondary/40 text-center uppercase border-t border-[#eeeeec] pt-4">
+              WAKTU PEMBUATAN: 12 OKT 2023, 14:20 WIB
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
