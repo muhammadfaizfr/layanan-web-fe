@@ -149,7 +149,10 @@ export default function ManajemenTiketAdmin({ navigate }) {
               <p className="text-secondary body-lg mt-2 font-medium">Pantau akses ke kawah dan jalur pendakian Gunung Galunggung. Pantau pembaruan status waktu nyata dan dokumentasi pengunjung.</p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2.5 rounded-full bg-[#f1e1c4] text-[#163422] font-bold text-sm hover:bg-[#e6d3af] transition-colors flex items-center gap-2">
+              <button 
+                onClick={() => navigate('admin-scan-tiket')}
+                className="px-6 py-2.5 rounded-full bg-[#f1e1c4] text-[#163422] font-bold text-sm hover:bg-[#e6d3af] transition-colors flex items-center gap-2"
+              >
                 <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
                 Pindai Tiket
               </button>
