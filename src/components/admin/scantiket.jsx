@@ -7,15 +7,16 @@ export default function ScanTiketAdmin({ navigate }) {
   // Simulation of successful scan after 4 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowToast(true)
-      const hideTimer = setTimeout(() => {
-        setShowToast(false)
-      }, 3000)
-      return () => clearTimeout(hideTimer)
+      navigate('admin-tiket-berhasil', {
+        id: 'GAL-2023-8841',
+        name: 'Aditya Surya',
+        type: 'Pendakian Puncak',
+        time: '08:42 AM'
+      })
     }, 4000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [navigate])
 
   // Close scanner on Escape key
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import LoginAdmin from './components/admin/loginadmin.jsx'
@@ -8,6 +8,7 @@ import RingkasanAdmin from './components/admin/ringkasanadmin.jsx'
 import ManajemenTiketAdmin from './components/admin/manajementiket.jsx'
 import AturTiketAdmin from './components/admin/aturtiket.jsx'
 import ScanTiketAdmin from './components/admin/scantiket.jsx'
+import TiketBerhasilAdmin from './components/admin/tiketberhasil.jsx'
 import JadwalPendakianAdmin from './components/admin/jadwalpendakian.jsx'
 import ManajemenPenggunaAdmin from './components/admin/manajemenpengguna.jsx'
 import KotakMasukAdmin from './components/admin/kotakmasuk.jsx'
@@ -118,13 +119,15 @@ function AdminAturTiketPage() {
 // Wrapper agar ScanTiketAdmin bisa navigate via React Router
 function AdminScanTiketPage() {
   const nav = useNavigate()
-  const navigate = (page) => {
+  const navigate = (page, state) => {
     if (page === 'admin-login') {
       nav('/admin')
     } else if (page === 'admin-ringkasan') {
       nav('/admin/ringkasan')
     } else if (page === 'admin-manajemen-tiket') {
       nav('/admin/manajemen-tiket')
+    } else if (page === 'admin-tiket-berhasil') {
+      nav('/admin/tiket-berhasil', { state })
     } else if (page === 'admin-manajemen-galeri') {
       nav('/admin/manajemen-galeri')
     } else if (page === 'admin-kotak-masuk') {
@@ -142,6 +145,20 @@ function AdminScanTiketPage() {
     }
   }
   return <ScanTiketAdmin navigate={navigate} />
+}
+
+// Wrapper agar TiketBerhasilAdmin bisa navigate via React Router
+function AdminTiketBerhasilPage() {
+  const nav = useNavigate()
+  const location = useLocation()
+  const navigate = (page) => {
+    if (page === 'admin-manajemen-tiket') {
+      nav('/admin/manajemen-tiket')
+    } else {
+      nav('/')
+    }
+  }
+  return <TiketBerhasilAdmin navigate={navigate} ticketData={location.state} />
 }
 
 // Wrapper agar JadwalPendakianAdmin bisa navigate via React Router
@@ -320,6 +337,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/admin/manajemen-tiket" element={<AdminManajemenTiketPage />} />
         <Route path="/admin/atur-tiket" element={<AdminAturTiketPage />} />
         <Route path="/admin/scan-tiket" element={<AdminScanTiketPage />} />
+        <Route path="/admin/tiket-berhasil" element={<AdminTiketBerhasilPage />} />
         <Route path="/admin/jadwal-pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/jadwal_pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/manajemen-pengguna" element={<AdminManajemenPenggunaPage />} />

@@ -17,6 +17,7 @@ import RingkasanAdmin from './components/admin/ringkasanadmin.jsx'
 import ManajemenTiketAdmin from './components/admin/manajementiket.jsx'
 import AturTiketAdmin from './components/admin/aturtiket.jsx'
 import ScanTiketAdmin from './components/admin/scantiket.jsx'
+import TiketBerhasilAdmin from './components/admin/tiketberhasil.jsx'
 import mtGalunggungImg from './assets/images/Mt_galunggung_volcanic_crater.jpg'
 import mountainStaircaseImg from './assets/images/mountain-staircase.jpg'
 
@@ -339,6 +340,10 @@ function App() {
         return (
           <ScanTiketAdmin navigate={setCurrentPage} />
         )
+      case 'admin-tiket-berhasil':
+        return (
+          <TiketBerhasilAdmin navigate={setCurrentPage} />
+        )
       case 'kontak':
         return (
           <Kontak openModal={openModal} />
@@ -357,7 +362,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket'
+  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket' || currentPage === 'admin-tiket-berhasil'
 
   if (isStandalonePage) {
     return (
