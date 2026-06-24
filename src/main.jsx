@@ -6,6 +6,7 @@ import App from './App.jsx'
 import LoginAdmin from './components/admin/loginadmin.jsx'
 import RingkasanAdmin from './components/admin/ringkasanadmin.jsx'
 import ManajemenTiketAdmin from './components/admin/manajementiket.jsx'
+import AturTiketAdmin from './components/admin/aturtiket.jsx'
 import JadwalPendakianAdmin from './components/admin/jadwalpendakian.jsx'
 import ManajemenPenggunaAdmin from './components/admin/manajemenpengguna.jsx'
 import KotakMasukAdmin from './components/admin/kotakmasuk.jsx'
@@ -71,6 +72,8 @@ function AdminManajemenTiketPage() {
       nav('/admin/manajemen-pengguna')
     } else if (page === 'admin-laporan') {
       nav('/admin/laporan')
+    } else if (page === 'admin-atur-tiket') {
+      nav('/admin/atur-tiket')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
     } else {
@@ -78,6 +81,35 @@ function AdminManajemenTiketPage() {
     }
   }
   return <ManajemenTiketAdmin navigate={navigate} />
+}
+
+// Wrapper agar AturTiketAdmin bisa navigate via React Router
+function AdminAturTiketPage() {
+  const nav = useNavigate()
+  const navigate = (page) => {
+    if (page === 'admin-login') {
+      nav('/admin')
+    } else if (page === 'admin-ringkasan') {
+      nav('/admin/ringkasan')
+    } else if (page === 'admin-manajemen-tiket') {
+      nav('/admin/manajemen-tiket')
+    } else if (page === 'admin-manajemen-galeri') {
+      nav('/admin/manajemen-galeri')
+    } else if (page === 'admin-kotak-masuk') {
+      nav('/admin/kotak-masuk')
+    } else if (page === 'admin-jadwal-pendakian') {
+      nav('/admin/jadwal-pendakian')
+    } else if (page === 'admin-manajemen-pengguna') {
+      nav('/admin/manajemen-pengguna')
+    } else if (page === 'admin-laporan') {
+      nav('/admin/laporan')
+    } else if (page === 'admin-pengaturan') {
+      nav('/admin/pengaturan')
+    } else {
+      nav('/')
+    }
+  }
+  return <AturTiketAdmin navigate={navigate} />
 }
 
 // Wrapper agar JadwalPendakianAdmin bisa navigate via React Router
@@ -254,6 +286,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/ringkasan" element={<AdminRingkasanPage />} />
         <Route path="/admin/manajemen-tiket" element={<AdminManajemenTiketPage />} />
+        <Route path="/admin/atur-tiket" element={<AdminAturTiketPage />} />
         <Route path="/admin/jadwal-pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/jadwal_pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/manajemen-pengguna" element={<AdminManajemenPenggunaPage />} />

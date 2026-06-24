@@ -153,7 +153,10 @@ export default function ManajemenTiketAdmin({ navigate }) {
                 <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
                 Pindai Tiket
               </button>
-              <button className="px-6 py-2.5 rounded-full bg-[#163422] text-[#f9f9f7] font-bold text-sm hover:opacity-95 transition-opacity flex items-center gap-2">
+              <button 
+                onClick={() => navigate('admin-atur-tiket')}
+                className="px-6 py-2.5 rounded-full bg-[#163422] text-[#f9f9f7] font-bold text-sm hover:opacity-95 transition-opacity flex items-center gap-2"
+              >
                 <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
                 Atur Tiket
               </button>
