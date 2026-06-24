@@ -4,16 +4,27 @@ export default function ScanTiketAdmin({ navigate }) {
   const [isFlashOn, setIsFlashOn] = useState(false)
   const [showToast, setShowToast] = useState(false)
 
-  // Simulation of successful scan after 4 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const handleSimulateScan = (isSuccess) => {
+    if (isSuccess) {
       navigate('admin-tiket-berhasil', {
         id: 'GAL-2023-8841',
         name: 'Aditya Surya',
         type: 'Pendakian Puncak',
         time: '08:42 AM'
       })
-    }, 4000)
+    } else {
+      navigate('admin-tiket-gagal', {
+        time: '12 Okt 2023, 14:45 WIB',
+        message: 'INVALID_OR_EXPIRED_TOKEN'
+      })
+    }
+  }
+
+  // Simulation of successful scan after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSimulateScan(true)
+    }, 5000)
 
     return () => clearTimeout(timer)
   }, [navigate])
@@ -132,6 +143,24 @@ export default function ScanTiketAdmin({ navigate }) {
               <span className="material-symbols-outlined">settings</span>
             </button>
           </div>
+        </div>
+
+        {/* Simulation Banner */}
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full flex items-center gap-3 z-[60] border border-white/10 text-xs shadow-lg select-none">
+          <span className="text-white/60 font-medium">Uji Coba Pindai:</span>
+          <button 
+            onClick={() => handleSimulateScan(true)} 
+            className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors active:scale-95 px-2.5 py-0.5 bg-emerald-500/10 rounded"
+          >
+            Sukses
+          </button>
+          <div className="w-px bg-white/20 h-3"></div>
+          <button 
+            onClick={() => handleSimulateScan(false)} 
+            className="text-rose-400 font-bold hover:text-rose-300 transition-colors active:scale-95 px-2.5 py-0.5 bg-rose-500/10 rounded"
+          >
+            Gagal
+          </button>
         </div>
 
         {/* Scanning Interface Container */}

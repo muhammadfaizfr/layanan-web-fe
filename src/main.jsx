@@ -9,6 +9,7 @@ import ManajemenTiketAdmin from './components/admin/manajementiket.jsx'
 import AturTiketAdmin from './components/admin/aturtiket.jsx'
 import ScanTiketAdmin from './components/admin/scantiket.jsx'
 import TiketBerhasilAdmin from './components/admin/tiketberhasil.jsx'
+import TiketGagalAdmin from './components/admin/tiketgagal.jsx'
 import JadwalPendakianAdmin from './components/admin/jadwalpendakian.jsx'
 import ManajemenPenggunaAdmin from './components/admin/manajemenpengguna.jsx'
 import KotakMasukAdmin from './components/admin/kotakmasuk.jsx'
@@ -128,6 +129,8 @@ function AdminScanTiketPage() {
       nav('/admin/manajemen-tiket')
     } else if (page === 'admin-tiket-berhasil') {
       nav('/admin/tiket-berhasil', { state })
+    } else if (page === 'admin-tiket-gagal') {
+      nav('/admin/tiket-gagal', { state })
     } else if (page === 'admin-manajemen-galeri') {
       nav('/admin/manajemen-galeri')
     } else if (page === 'admin-kotak-masuk') {
@@ -159,6 +162,22 @@ function AdminTiketBerhasilPage() {
     }
   }
   return <TiketBerhasilAdmin navigate={navigate} ticketData={location.state} />
+}
+
+// Wrapper agar TiketGagalAdmin bisa navigate via React Router
+function AdminTiketGagalPage() {
+  const nav = useNavigate()
+  const location = useLocation()
+  const navigate = (page) => {
+    if (page === 'admin-manajemen-tiket') {
+      nav('/admin/manajemen-tiket')
+    } else if (page === 'admin-scan-tiket') {
+      nav('/admin/scan-tiket')
+    } else {
+      nav('/')
+    }
+  }
+  return <TiketGagalAdmin navigate={navigate} errorData={location.state} />
 }
 
 // Wrapper agar JadwalPendakianAdmin bisa navigate via React Router
@@ -338,6 +357,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/admin/atur-tiket" element={<AdminAturTiketPage />} />
         <Route path="/admin/scan-tiket" element={<AdminScanTiketPage />} />
         <Route path="/admin/tiket-berhasil" element={<AdminTiketBerhasilPage />} />
+        <Route path="/admin/tiket-gagal" element={<AdminTiketGagalPage />} />
         <Route path="/admin/jadwal-pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/jadwal_pendakian" element={<AdminJadwalPendakianPage />} />
         <Route path="/admin/manajemen-pengguna" element={<AdminManajemenPenggunaPage />} />
