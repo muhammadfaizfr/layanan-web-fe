@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import kontakService from '../../services/kontakService'
+import authService from '../../services/authService'
 
 export default function KotakMasukAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('kotak-masuk')
@@ -25,6 +27,7 @@ export default function KotakMasukAdmin({ navigate }) {
   }
 
   const handleLogout = () => {
+    authService.logout()
     navigate('admin-login')
   }
 
@@ -39,18 +42,37 @@ export default function KotakMasukAdmin({ navigate }) {
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 
-  const messages = [
-    {
-      id: 1,
-      initials: 'YA',
-      name: 'Yayat',
-      email: 'yayat@gmail.com',
-      role: 'Pengunjung',
-      text: 'Harga tiket terlalu mahal, mohon di sesuaikan kembali',
-      time: null,
-      unread: true,
-    },
-  ]
+  const [messages, setMessages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const fetchKontak = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await kontakService.getAll()
+      const list = Array.isArray(data) ? data : (data?.data ?? [])
+      setMessages(list)
+    } catch (err) {
+      setError(err.userMessage || 'Gagal memuat pesan masuk.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchKontak()
+  }, [])
+
+  const handleDeleteMessage = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus pesan ini?')) return
+    try {
+      await kontakService.delete(id)
+      setMessages(prev => prev.filter(m => m.id !== id))
+    } catch (err) {
+      setError(err.userMessage || 'Gagal menghapus pesan.')
+    }
+  }
 
   return (
     <div className="bg-surface text-on-surface font-body antialiased flex min-h-screen">
@@ -135,46 +157,88 @@ export default function KotakMasukAdmin({ navigate }) {
 
         {/* Content */}
         <div className="flex-1 bg-[#f4f4f2] p-10">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden max-w-2xl"
-            >
-              {/* Message Header */}
-              <div className="flex items-center gap-4 px-6 pt-6 pb-4">
-                {/* Avatar */}
-                <div className="w-11 h-11 rounded-full bg-[#d4c5a9] flex items-center justify-center flex-shrink-0">
-                  <span className="text-[#504531] font-['Plus_Jakarta_Sans'] font-extrabold text-sm">{msg.initials}</span>
+          <h2 className="text-3xl font-['Plus_Jakarta_Sans'] font-extrabold text-primary tracking-tight mb-6">Kotak Masuk</h2>
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4 max-w-2xl">
+              <span className="material-symbols-outlined text-error text-lg">error</span>
+              <p className="text-sm text-on-error-container font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Loading */}
+          {loading && (
+            <div className="text-center py-12 text-secondary text-sm font-medium flex items-center gap-2">
+              <span className="material-symbols-outlined animate-spin">progress_activity</span>
+              Memuat pesan masuk...
+            </div>
+          )}
+
+          {!loading && messages.map((msg) => {
+            const name = msg.name || msg.nama || msg.pengirim || 'Anonim'
+            const email = msg.email || '-'
+            const pesan = msg.text || msg.pesan || msg.message || msg.isi || ''
+            const subjek = msg.subjek || msg.subject || ''
+            const role = msg.role || 'Pengunjung'
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+            return (
+              <div
+                key={msg.id}
+                className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden max-w-2xl mb-4"
+              >
+                {/* Message Header */}
+                <div className="flex items-center gap-4 px-6 pt-6 pb-4">
+                  <div className="w-11 h-11 rounded-full bg-[#d4c5a9] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#504531] font-['Plus_Jakarta_Sans'] font-extrabold text-sm">{initials}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-[#163422] text-base leading-none">{name}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="material-symbols-outlined text-secondary" style={{ fontSize: '13px' }}>mail</span>
+                      <span className="text-xs text-secondary font-medium">{email}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    className="material-symbols-outlined text-red-400 hover:text-red-600 transition-colors text-xl"
+                    title="Hapus pesan"
+                  >
+                    delete
+                  </button>
                 </div>
-                {/* Sender info */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-['Plus_Jakarta_Sans'] font-extrabold text-[#163422] text-base leading-none">{msg.name}</p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="material-symbols-outlined text-secondary" style={{ fontSize: '13px' }}>mail</span>
-                    <span className="text-xs text-secondary font-medium">{msg.email}</span>
-                    <span className="text-secondary text-xs">•</span>
+
+                {/* Subject */}
+                {subjek && (
+                  <div className="px-6 pb-2">
+                    <p className="text-xs font-bold text-secondary uppercase tracking-widest">{subjek}</p>
+                  </div>
+                )}
+
+                {/* Message Bubble */}
+                <div className="px-6 pb-4">
+                  <div className="bg-[#f4f4f2] rounded-2xl rounded-tl-sm px-5 py-4 inline-block max-w-full">
+                    <p className="text-sm text-[#1a1c1b] font-['Inter'] leading-relaxed">{pesan}</p>
                   </div>
                 </div>
-              </div>
 
-              {/* Message Bubble */}
-              <div className="px-6 pb-4">
-                <div className="bg-[#f4f4f2] rounded-2xl rounded-tl-sm px-5 py-4 inline-block max-w-full">
-                  <p className="text-sm text-[#1a1c1b] font-['Inter'] leading-relaxed">{msg.text}</p>
+                {/* Role Label */}
+                <div className="px-6 pb-6">
+                  <span className="text-[10px] font-['Inter'] font-bold tracking-widest uppercase text-secondary">
+                    {role}
+                  </span>
                 </div>
               </div>
+            )
+          })}
 
-              {/* Role Label */}
-              <div className="px-6 pb-6">
-                <span className="text-[10px] font-['Inter'] font-bold tracking-widest uppercase text-secondary">
-                  {msg.role}
-                </span>
-              </div>
-
-              {/* Empty space to match screenshot height */}
-              <div className="h-48" />
+          {!loading && messages.length === 0 && (
+            <div className="text-center py-16 text-secondary text-sm font-medium bg-surface-container-lowest rounded-2xl max-w-2xl">
+              <span className="material-symbols-outlined text-4xl block mb-3 opacity-40">inbox</span>
+              Tidak ada pesan masuk
             </div>
-          ))}
+          )}
         </div>
       </main>
     </div>

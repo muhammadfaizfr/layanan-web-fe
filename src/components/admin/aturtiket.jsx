@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import pengaturanService from '../../services/pengaturanService'
 
 export default function AturTiketAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-tiket')
@@ -15,6 +16,21 @@ export default function AturTiketAdmin({ navigate }) {
     'Pengembalian dana (refund) dapat dilakukan maksimal 24 jam sebelum jadwal kunjungan. \n\nDana akan dikembalikan sebesar 80% dari total harga tiket setelah dipotong biaya administrasi platform sebesar Rp 2.500 per transaksi.\n\nKebijakan ini tidak berlaku untuk tiket promo atau event khusus tertentu.'
   )
   const [showToast, setShowToast] = useState(false)
+
+  useEffect(() => {
+    const fetchPengaturan = async () => {
+      try {
+        const res = await pengaturanService.get()
+        if (res.data) {
+          setPriceDomestik(res.data.harga_lokal.toLocaleString('id-ID'))
+          setPriceMancanegara(res.data.harga_mancanegara.toLocaleString('id-ID'))
+        }
+      } catch (error) {
+        console.error("Gagal mengambil pengaturan", error)
+      }
+    }
+    fetchPengaturan()
+  }, [])
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -41,12 +57,23 @@ export default function AturTiketAdmin({ navigate }) {
     navigate('admin-login')
   }
 
-  const handleSave = () => {
-    setShowToast(true)
-    setTimeout(() => {
-      setShowToast(false)
-      navigate('admin-manajemen-tiket')
-    }, 1500)
+  const handleSave = async () => {
+    try {
+      const pLokal = parseInt(String(priceDomestik).replace(/\D/g, '')) || 0;
+      const pManca = parseInt(String(priceMancanegara).replace(/\D/g, '')) || 0;
+      await pengaturanService.update({
+        harga_lokal: pLokal,
+        harga_mancanegara: pManca
+      })
+      setShowToast(true)
+      setTimeout(() => {
+        setShowToast(false)
+        navigate('admin-manajemen-tiket')
+      }, 1500)
+    } catch (err) {
+      console.error(err)
+      alert("Gagal menyimpan pengaturan")
+    }
   }
 
   const navItems = [
@@ -150,7 +177,7 @@ export default function AturTiketAdmin({ navigate }) {
             </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
-                <p className="font-bold text-primary leading-none">Admin Galunggung</p>
+                <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
                 <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
@@ -198,7 +225,7 @@ export default function AturTiketAdmin({ navigate }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Domestik */}
                   <div className="space-y-2">
-                    <label className="text-xs font-label font-bold uppercase tracking-widest text-[#695d47]">Reguler (Domestik)</label>
+                    <label className="text-xs font-label font-bold uppercase tracking-widest text-[#695d47]">Wisatawan Lokal</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">Rp</span>
                       <input 
@@ -211,7 +238,7 @@ export default function AturTiketAdmin({ navigate }) {
                   </div>
                   {/* Mancanegara */}
                   <div className="space-y-2">
-                    <label className="text-xs font-label font-bold uppercase tracking-widest text-[#695d47]">Mancanegara</label>
+                    <label className="text-xs font-label font-bold uppercase tracking-widest text-[#695d47]">Wisatawan Mancanegara</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">Rp</span>
                       <input 
@@ -219,19 +246,6 @@ export default function AturTiketAdmin({ navigate }) {
                         type="text" 
                         value={priceMancanegara}
                         onChange={(e) => setPriceMancanegara(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  {/* Camping */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-label font-bold uppercase tracking-widest text-[#695d47]">Camping</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-medium">Rp</span>
-                      <input 
-                        className="w-full bg-[#f4f4f2] border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary-container/20 transition-all font-bold text-on-surface" 
-                        type="text" 
-                        value={priceCamping}
-                        onChange={(e) => setPriceCamping(e.target.value)}
                       />
                     </div>
                   </div>

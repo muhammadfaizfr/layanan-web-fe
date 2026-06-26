@@ -1,4 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import laporanService from '../../services/laporanService'
+import authService from '../../services/authService'
+import pelangganService from '../../services/pelangganService'
+import bookingService from '../../services/bookingService'
+import pembayaranService from '../../services/pembayaranService'
 
 export default function RingkasanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('ringkasan')
@@ -24,7 +29,57 @@ export default function RingkasanAdmin({ navigate }) {
     }
   }
 
+  const [laporanData, setLaporanData] = useState(null)
+  const [loadingLaporan, setLoadingLaporan] = useState(true)
+  const [errorLaporan, setErrorLaporan] = useState('')
+  const [totalPelanggan, setTotalPelanggan] = useState(0)
+  const [totalBooking, setTotalBooking] = useState(0)
+  const [totalPembayaran, setTotalPembayaran] = useState(0)
+  const [recentBookings, setRecentBookings] = useState([])
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoadingLaporan(true)
+      setErrorLaporan('')
+      try {
+        const [laporan, pelanggan, booking, pembayaran] = await Promise.all([
+          laporanService.getAll().catch(() => null),
+          pelangganService.getAll().catch(() => []),
+          bookingService.getAll().catch(() => []),
+          pembayaranService.getAll().catch(() => [])
+        ])
+
+        if (laporan) {
+          setLaporanData(laporan?.data || laporan)
+        }
+
+        const pelangganList = Array.isArray(pelanggan) ? pelanggan : (pelanggan?.data ?? [])
+        const bookingList = Array.isArray(booking) ? booking : (booking?.data ?? [])
+        const pembayaranList = Array.isArray(pembayaran) ? pembayaran : (pembayaran?.data ?? [])
+
+        setTotalPelanggan(pelangganList.length)
+        setTotalBooking(bookingList.length)
+        setTotalPembayaran(pembayaranList.length)
+
+        // Sort bookings by id descending and take top 3
+        const sorted = [...bookingList].sort((a, b) => {
+          const idA = a.id_booking || a.id || 0
+          const idB = b.id_booking || b.id || 0
+          return idB - idA
+        })
+        setRecentBookings(sorted.slice(0, 3))
+
+      } catch (err) {
+        setErrorLaporan(err.userMessage || 'Gagal memuat data dashboard.')
+      } finally {
+        setLoadingLaporan(false)
+      }
+    }
+    fetchDashboardData()
+  }, [])
+
   const handleLogout = () => {
+    authService.logout()
     navigate('admin-login')
   }
 
@@ -112,7 +167,7 @@ export default function RingkasanAdmin({ navigate }) {
             </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
-                <p className="font-bold text-primary leading-none">Admin Galunggung</p>
+                <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
                 <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
@@ -139,63 +194,69 @@ export default function RingkasanAdmin({ navigate }) {
           </section>
 
           {/* KPI Cards Bento Grid */}
+          {errorLaporan && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4">
+              <span className="material-symbols-outlined text-error text-lg">error</span>
+              <p className="text-sm text-on-error-container font-medium">{errorLaporan}</p>
+            </div>
+          )}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Visitors */}
+            {/* Total Pelanggan */}
             <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_40px_40px_-20px_rgba(22,52,34,0.04)] border border-outline-variant/10 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <span className="material-symbols-outlined text-6xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>person_add</span>
               </div>
-              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Total Pengunjung</p>
+              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Total Pelanggan</p>
               <div className="flex items-end gap-3">
-                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">12.482</h3>
-                <span className="text-xs font-bold text-primary bg-primary-fixed px-2 py-1 rounded-full flex items-center gap-1 mb-1">
-                  <span className="material-symbols-outlined text-xs">trending_up</span> +14%
-                </span>
+                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">
+                  {loadingLaporan ? '...' : totalPelanggan}
+                </h3>
               </div>
-              <p className="text-xs text-outline mt-6">vs. 30 hari sebelumnya</p>
+              <p className="text-xs text-outline mt-6">Total terdaftar</p>
             </div>
 
-            {/* Tickets Sold */}
+            {/* Total Booking */}
             <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_40px_40px_-20px_rgba(22,52,34,0.04)] border border-outline-variant/10 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <span className="material-symbols-outlined text-6xl text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
               </div>
-              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Tiket Terjual</p>
+              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Total Booking</p>
               <div className="flex items-end gap-3">
-                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">8.920</h3>
-                <span className="text-xs font-bold text-primary bg-primary-fixed px-2 py-1 rounded-full flex items-center gap-1 mb-1">
-                  <span className="material-symbols-outlined text-xs">trending_up</span> +8,2%
-                </span>
+                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">
+                  {loadingLaporan ? '...' : totalBooking}
+                </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Pemesanan aktif hari ini</p>
+              <p className="text-xs text-outline mt-6">Semua pemesanan</p>
             </div>
 
-            {/* Active Hikers */}
+            {/* Total Pembayaran */}
             <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_40px_40px_-20px_rgba(22,52,34,0.04)] border border-outline-variant/10 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="material-symbols-outlined text-6xl text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>hiking</span>
+                <span className="material-symbols-outlined text-6xl text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
               </div>
-              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Pendaki Aktif</p>
+              <p className="text-label-md uppercase tracking-widest text-secondary font-bold mb-4">Total Pembayaran</p>
               <div className="flex items-end gap-3">
-                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">154</h3>
-                <span className="text-xs font-bold text-on-error-container bg-error-container px-2 py-1 rounded-full flex items-center gap-1 mb-1">
-                  <span className="material-symbols-outlined text-xs">warning</span> Puncak
-                </span>
+                <h3 className="text-4xl font-display font-extrabold text-primary leading-none">
+                  {loadingLaporan ? '...' : totalPembayaran}
+                </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Saat ini di jalur</p>
+              <p className="text-xs text-outline mt-6">Semua transaksi</p>
             </div>
 
-            {/* Revenue */}
+            {/* Total Pendapatan */}
             <div className="bg-primary text-on-primary p-8 rounded-2xl shadow-xl shadow-primary/20 relative overflow-hidden group">
               <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-primary-container/30 rounded-full blur-3xl"></div>
-              <p className="text-label-md uppercase tracking-widest text-primary-fixed/60 font-bold mb-4">Pendapatan (USD)</p>
+              <p className="text-label-md uppercase tracking-widest text-primary-fixed/60 font-bold mb-4">Total Pendapatan</p>
               <div className="flex items-end gap-3">
-                <h3 className="text-4xl font-display font-extrabold text-white leading-none">$42.1rb</h3>
-                <span className="text-xs font-bold text-on-primary bg-primary-container px-2 py-1 rounded-full flex items-center gap-1 mb-1">
-                  <span className="material-symbols-outlined text-xs">bolt</span> Tinggi
-                </span>
+                <h3 className="text-4xl font-display font-extrabold text-white leading-none">
+                  {loadingLaporan ? '...' : (
+                    laporanData?.total_pendapatan
+                      ? `Rp ${Number(laporanData.total_pendapatan).toLocaleString('id-ID')}`
+                      : '-'
+                  )}
+                </h3>
               </div>
-              <p className="text-xs text-primary-fixed/40 mt-6">Pertumbuhan bulanan +22%</p>
+              <p className="text-xs text-primary-fixed/40 mt-6">Akumulasi pembayaran lunas</p>
             </div>
           </section>
 
@@ -218,80 +279,66 @@ export default function RingkasanAdmin({ navigate }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Row 1 */}
-                    <tr className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
-                      <td className="py-4 pl-4 rounded-l-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-secondary text-xs">AS</div>
-                          <span className="font-semibold text-primary">Andi Saputra</span>
-                        </div>
-                      </td>
-                      <td className="py-4 font-medium text-secondary">#GNG-2024-001</td>
-                      <td className="py-4">
-                        <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-tight">Di Jalur</span>
-                      </td>
-                      <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">06:45 AM</td>
-                    </tr>
-                    {/* Row 2 */}
-                    <tr className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
-                      <td className="py-4 pl-4 rounded-l-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-tertiary text-xs">ML</div>
-                          <span className="font-semibold text-primary">Maria L.</span>
-                        </div>
-                      </td>
-                      <td className="py-4 font-medium text-secondary">#GNG-2024-002</td>
-                      <td className="py-4">
-                        <span className="px-3 py-1 rounded-full bg-secondary-container text-secondary text-[10px] font-extrabold uppercase tracking-tight">Selesai</span>
-                      </td>
-                      <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">07:12 AM</td>
-                    </tr>
-                    {/* Row 3 */}
-                    <tr className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
-                      <td className="py-4 pl-4 rounded-l-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-primary text-xs">RK</div>
-                          <span className="font-semibold text-primary">Rizky Kurniawan</span>
-                        </div>
-                      </td>
-                      <td className="py-4 font-medium text-secondary">#GNG-2024-003</td>
-                      <td className="py-4">
-                        <span className="px-3 py-1 rounded-full bg-error-container text-on-error-container text-[10px] font-extrabold uppercase tracking-tight">Terdaftar</span>
-                      </td>
-                      <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">08:00 AM</td>
-                    </tr>
+                    {recentBookings.map((booking, idx) => {
+                      const name = booking.pelanggan?.nama_lengkap || booking.pelanggan?.nama || booking.name || booking.nama || 'Pengunjung'
+                      const idVal = booking.id_booking || booking.id || '-'
+                      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      
+                      const statusRaw = booking.status_booking || booking.status || 'Menunggu Pembayaran'
+                      let badgeBg = 'bg-error-container text-on-error-container'
+                      let statusText = 'Terdaftar'
+
+                      if (statusRaw === 'Selesai' || statusRaw === 'Lunas') {
+                        badgeBg = 'bg-secondary-container text-secondary'
+                        statusText = 'Selesai'
+                      } else if (statusRaw === 'Dikonfirmasi' || statusRaw === 'Diproses') {
+                        badgeBg = 'bg-primary/10 text-primary'
+                        statusText = 'Di Jalur'
+                      } else if (statusRaw === 'Menunggu Pembayaran') {
+                        badgeBg = 'bg-amber-100 text-amber-800'
+                        statusText = 'Menunggu'
+                      }
+
+                      const dateRaw = booking.created_at || booking.tanggal || ''
+                      let timeString = '08:00 AM'
+                      if (dateRaw) {
+                        try {
+                          const d = new Date(dateRaw)
+                          if (!isNaN(d.getTime())) {
+                            timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+                          }
+                        } catch (e) {}
+                      }
+
+                      return (
+                        <tr key={idVal || idx} className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
+                          <td className="py-4 pl-4 rounded-l-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-secondary text-xs">{initials}</div>
+                              <span className="font-semibold text-primary">{name}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 font-medium text-secondary">#GG-REG-{idVal}</td>
+                          <td className="py-4">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-tight ${badgeBg}`}>{statusText}</span>
+                          </td>
+                          <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">{timeString}</td>
+                        </tr>
+                      )
+                    })}
+
+                    {recentBookings.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="py-8 text-center text-secondary text-sm">
+                          Belum ada data pengunjung terbaru.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* Right Column: Atmo-Gallery Featured Content */}
-            <div className="flex-1 space-y-6">
-              <div className="bg-surface-container-high rounded-2xl overflow-hidden relative min-h-[400px] flex items-end p-8 group">
-                <img alt="Lanskap vulkanik" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD65VD0702nrAEhkieeaPJe7S5p5wYuW27KfrWkDG8MDWifuJjhyOOiBHQ0PIxdYSWResh5eUPlnh7KwECua2-GmDSAch7b7_ypulMh0-RS5ZQXB45OkuriAg_mJ5Bof-7y3O7uAZQJq2WdTQpKDAZTf6_KSjFZDOcIhRiWrV4-CUOMRMAvv2X0RUGFow1OxbPDR_lkXIujlkCayo0zdK969C-Z9BzUfuH3yQ9k6KEnu3jWtkU4yryt8qoUxlgdaboZOauz3yxYKg"/>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent"></div>
-                <div className="relative z-10 text-on-primary">
-                  <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">Tampilan Langsung Kawah</span>
-                  <h4 className="text-2xl font-display font-extrabold mt-2 leading-tight">Kondisi Atmosfer: Optimal</h4>
-                  <p className="text-sm mt-4 text-primary-fixed/80 line-height-relaxed">Puncak saat ini mengalami jarak pandang yang jelas dengan kabut pagi yang lembut. Kondisi ideal untuk grup pendakian terpandu jam 10:00 pagi.</p>
-                  <button className="mt-6 flex items-center gap-2 font-bold text-sm bg-surface text-primary px-6 py-2.5 rounded-full hover:bg-primary-fixed transition-colors">
-                    <span className="material-symbols-outlined text-sm">videocam</span> Lihat Siaran Langsung
-                  </button>
-                </div>
-              </div>
-
-              {/* Small Technical Field Note Card */}
-              <div className="bg-surface-container-low p-6 rounded-2xl flex items-center gap-6">
-                <div className="w-16 h-16 rounded-xl bg-surface flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-3xl text-secondary">thermostat</span>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-secondary font-bold">Cuaca Puncak</p>
-                  <p className="text-xl font-bold text-primary">18°C · Kelembapan 82%</p>
-                  <p className="text-xs text-outline mt-1">Diperbarui 5 menit yang lalu</p>
-                </div>
-              </div>
-            </div>
           </section>
         </div>
 

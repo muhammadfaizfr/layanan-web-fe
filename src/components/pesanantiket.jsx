@@ -1,5 +1,5 @@
-// src/components/PesanTiket.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import pengaturanService from "../services/pengaturanService";
 
 function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTicket, totalPrice, formatRupiah, onProceed, order }) {
   if (isOpen === false) return null;
@@ -9,13 +9,35 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
   const [name, setName] = useState(isRegularTicket ? (order.name || "") : "");
   const [date, setDate] = useState(isRegularTicket ? (order.date || new Date().toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10));
   const [keterangan, setKeterangan] = useState(isRegularTicket ? (order.keterangan || "") : "");
+  const [noIdentitas, setNoIdentitas] = useState(isRegularTicket ? (order.noIdentitas || "") : "");
+  const [email, setEmail] = useState(isRegularTicket ? (order.email || "") : "");
+  const [jenisTiket, setJenisTiket] = useState(isRegularTicket ? (order.jenisTiket || "Wisatawan Lokal") : "Wisatawan Lokal");
+  const [noHp, setNoHp] = useState(isRegularTicket ? (order.noHp || "") : "");
 
   const [localCount, setLocalCount] = useState(ticketCount ?? 1);
   const tc = ticketCount ?? localCount;
   const inc = incrementTicket ?? (() => setLocalCount((c) => c + 1));
   const dec = decrementTicket ?? (() => setLocalCount((c) => Math.max(1, c - 1)));
 
-  const unitPrice = 25000;
+  const [hargaLokal, setHargaLokal] = useState(15000);
+  const [hargaMancanegara, setHargaMancanegara] = useState(35000);
+
+  useEffect(() => {
+    const fetchHarga = async () => {
+      try {
+        const res = await pengaturanService.get();
+        if (res.data) {
+          setHargaLokal(res.data.harga_lokal || 15000);
+          setHargaMancanegara(res.data.harga_mancanegara || 35000);
+        }
+      } catch (err) {
+        console.error("Gagal memuat harga tiket", err);
+      }
+    };
+    fetchHarga();
+  }, []);
+
+  const unitPrice = jenisTiket === "Wisatawan Mancanegara" ? hargaMancanegara : hargaLokal;
   const computedTotal = totalPrice ?? tc * unitPrice;
   const fmt = formatRupiah ?? ((n) => `Rp ${n.toLocaleString("id-ID")}`);
 
@@ -79,7 +101,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
             className="p-6 space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
-              const orderData = { name, date, keterangan, qty: tc, unitPrice, total: computedTotal };
+              const orderData = { name, date, keterangan, qty: tc, unitPrice, total: computedTotal, noIdentitas, email, jenisTiket, noHp };
               if (typeof onProceed === "function") {
                 onProceed(orderData);
               } else {
@@ -96,7 +118,77 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                required
               />
+            </div>
+
+            {/* No. Identitas */}
+            <div>
+              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">No. Identitas (KTP/Paspor)</label>
+              <input
+                className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
+                placeholder="Masukkan nomor KTP atau Paspor"
+                type="text"
+                value={noIdentitas}
+                onChange={(e) => setNoIdentitas(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Email</label>
+                <input
+                  className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  placeholder="email@contoh.com"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              {/* No. HP */}
+              <div>
+                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">No. HP</label>
+                <input
+                  className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  placeholder="08xxxxxxxxx"
+                  type="tel"
+                  value={noHp}
+                  onChange={(e) => setNoHp(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Jenis Tiket */}
+            <div>
+              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Jenis Tiket</label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setJenisTiket("Wisatawan Lokal")}
+                  className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
+                    jenisTiket === "Wisatawan Lokal"
+                      ? "bg-primary text-white shadow-md"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  🇮🇩 Wisatawan Lokal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJenisTiket("Wisatawan Mancanegara")}
+                  className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
+                    jenisTiket === "Wisatawan Mancanegara"
+                      ? "bg-primary text-white shadow-md"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  🌍 Mancanegara
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -108,6 +200,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  required
                 />
               </div>
 
@@ -137,7 +230,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 placeholder="Catatan tambahan (opsional)"
-                rows={3}
+                rows={2}
                 className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 resize-none transition"
               />
             </div>
@@ -146,16 +239,16 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200">
                 <div>
+                  <span className="text-xs text-gray-500 block">Jenis Tiket</span>
+                  <span className="text-sm font-semibold text-on-surface">{jenisTiket}</span>
+                </div>
+                <div className="text-right">
                   <span className="text-xs text-gray-500 block">Harga Satuan</span>
                   <span className="text-sm font-semibold text-on-surface">IDR {unitPrice.toLocaleString("id-ID")}</span>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-gray-500 block">Subtotal</span>
-                  <span className="text-sm font-semibold text-on-surface">{tc} × IDR {unitPrice.toLocaleString("id-ID")}</span>
-                </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-primary">Total Pembayaran</span>
+                <span className="font-bold text-primary">Total Pembayaran ({tc}x)</span>
                 <span className="text-xl font-extrabold text-primary">{fmt(computedTotal)}</span>
               </div>
             </div>

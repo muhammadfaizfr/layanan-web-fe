@@ -1,16 +1,98 @@
 // src/components/Galeri.jsx
-import galImg1 from '../assets/images/dinding-gunung-galunggung-longsor-timbun-danau-kawah-begini-penampakannya-vgt.webp'
-import galImg2 from '../assets/images/2484196804.webp'
-import galImg3 from '../assets/images/44302-gunung-galunggung.jpg'
-import galImg4 from '../assets/images/Galunggung.jpg'
-import galImg5 from '../assets/images/Tugu Galunggung 2.jpg'
-import galImg6 from '../assets/images/20230802_080122-4196504109.webp'
-import galImg7 from '../assets/images/gunung-galunggung.jpg'
-import galImg8 from '../assets/images/images.jpg'
-import galImg9 from '../assets/images/para-pesepeda-downhill-menjajal-trek-galunggung-bike-park-di-j9zx.webp'
-import galImg10 from '../assets/images/tenda.jpg'
+import React, { useState, useEffect } from 'react'
+import kontenGaleriService from '../services/kontenGaleriService'
 
 function Galeri() {
+  const [images, setImages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await kontenGaleriService.getAll()
+        const list = Array.isArray(data) ? data : (data?.data ?? [])
+        setImages(list)
+      } catch (err) {
+        setError(err.userMessage || 'Gagal memuat galeri.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchImages()
+  }, [])
+
+  const firstConfigs = [
+    {
+      container: "md:col-span-8 group relative overflow-hidden rounded-tl-[3rem] rounded-br-[3rem] aspect-[16/10]",
+      img: "w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out",
+      overlay: (title) => (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+          <span className="text-surface/80 text-[10px] tracking-widest uppercase mb-1">07° 15' 0" S, 108° 4' 0" E</span>
+          <h3 className="text-surface text-2xl font-headline font-bold">{title}</h3>
+        </div>
+      )
+    },
+    {
+      container: "md:col-span-4 group relative overflow-hidden rounded-tr-[3rem] rounded-bl-[1.5rem] aspect-[3/4] md:mt-12",
+      img: "w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out",
+      overlay: (title) => (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+          <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
+        </div>
+      )
+    },
+    {
+      container: "md:col-span-4 group relative overflow-hidden rounded-xl aspect-square",
+      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
+      overlay: (title) => (
+        <>
+          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="absolute bottom-6 left-6">
+            <p className="text-surface font-headline font-medium tracking-tight">{title}</p>
+          </div>
+        </>
+      )
+    },
+    {
+      container: "md:col-span-8 group relative overflow-hidden rounded-[2.5rem] aspect-[21/9]",
+      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
+      overlay: (title) => (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+          <h3 className="text-surface text-2xl font-headline font-bold">{title}</h3>
+        </div>
+      )
+    },
+    {
+      container: "md:col-span-5 group relative overflow-hidden rounded-3xl aspect-[4/3]",
+      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
+      overlay: (title) => (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+          <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
+        </div>
+      )
+    },
+    {
+      container: "md:col-span-7 group relative overflow-hidden rounded-tl-[1.5rem] rounded-br-[4rem] aspect-[16/9]",
+      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
+      overlay: (title) => (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+            <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
+          </div>
+          <div className="absolute top-8 right-8 z-10">
+            <span className="bg-surface/90 backdrop-blur px-4 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Editorial Pick</span>
+          </div>
+        </>
+      )
+    }
+  ]
+
+  const firstSectionImages = images.slice(0, 6)
+  const secondSectionImages = images.slice(6)
+
   return (
     <>
       {/* Hero Section */}
@@ -36,141 +118,90 @@ function Galeri() {
         </div>
       </header>
 
-      {/* Atmo-Gallery: Asymmetrical Masonry */}
-      <section className="max-w-7xl mx-auto px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-          {/* Large Vertical Bleed */}
-          <div className="md:col-span-8 group relative overflow-hidden rounded-tl-[3rem] rounded-br-[3rem] aspect-[16/10]">
-            <img 
-              alt="Dinding Kawah Galunggung" 
-              className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" 
-              src={galImg1} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-              <span className="text-surface/80 text-[10px] tracking-widest uppercase mb-1">07° 15' 0" S, 108° 4' 0" E</span>
-              <h3 className="text-surface text-2xl font-headline font-bold">Dinding Kawah Galunggung</h3>
-            </div>
-          </div>
-
-          {/* Vertical Offset */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-tr-[3rem] rounded-bl-[1.5rem] aspect-[3/4] md:mt-12">
-            <img 
-              alt="Tangga Kuning Galunggung" 
-              className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" 
-              src={galImg2} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-              <h3 className="text-surface text-xl font-headline font-bold">Tangga Kuning</h3>
-            </div>
-          </div>
-
-          {/* Horizontal Secondary */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-xl aspect-square">
-            <img 
-              alt="Trek Masuk Kawah" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-              src={galImg3} 
-            />
-            <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute bottom-6 left-6">
-              <p className="text-surface font-headline font-medium tracking-tight">Trek Kawah Galunggung</p>
-            </div>
-          </div>
-
-          {/* Large Landscape */}
-          <div className="md:col-span-8 group relative overflow-hidden rounded-[2.5rem] aspect-[21/9]">
-            <img 
-              alt="Kawah Hijau Zamrud" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-              src={galImg4} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-              <h3 className="text-surface text-2xl font-headline font-bold">Kawah Hijau Zamrud</h3>
-            </div>
-          </div>
-
-          {/* Third Row Layout */}
-          <div className="md:col-span-5 group relative overflow-hidden rounded-3xl aspect-[4/3]">
-            <img 
-              alt="Tugu Galunggung" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-              src={galImg5} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-              <h3 className="text-surface text-xl font-headline font-bold">Tugu Galunggung</h3>
-            </div>
-          </div>
-          <div className="md:col-span-7 group relative overflow-hidden rounded-tl-[1.5rem] rounded-br-[4rem] aspect-[16/9]">
-            <img 
-              alt="Keindahan Kaldera" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-              src={galImg6} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-              <h3 className="text-surface text-xl font-headline font-bold">Keindahan Kaldera</h3>
-            </div>
-            <div className="absolute top-8 right-8 z-10">
-              <span className="bg-surface/90 backdrop-blur px-4 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Editorial Pick</span>
-            </div>
-          </div>
+      {/* Loading & Error States */}
+      {loading && (
+        <div className="text-center py-16 text-secondary font-medium flex flex-col items-center justify-center gap-2">
+          <span className="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
+          <span>Memuat galeri foto...</span>
         </div>
-      </section>
+      )}
+
+      {error && (
+        <div className="bg-red-50 text-red-800 p-4 rounded-xl mb-6 text-sm font-medium flex items-center gap-2 max-w-xl mx-auto">
+          <span className="material-symbols-outlined text-lg">error</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Atmo-Gallery: Asymmetrical Masonry */}
+      {!loading && images.length > 0 && (
+        <section className="max-w-7xl mx-auto px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+            {firstSectionImages.map((item, idx) => {
+              const config = firstConfigs[idx % firstConfigs.length]
+              const fileUrl = item.file || item.gambar || item.url
+              const fullUrl = fileUrl.startsWith('http') ? fileUrl : `http://127.0.0.1:8000/storage/${fileUrl}`
+              const caption = item.judul_konten || item.judul || item.caption || `Foto ${item.id}`
+              
+              return (
+                <div key={item.id || idx} className={config.container}>
+                  <img 
+                    alt={caption} 
+                    className={config.img} 
+                    src={fullUrl} 
+                  />
+                  {config.overlay(caption)}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Gallery Quote/Intermission */}
-      <section className="max-w-4xl mx-auto px-8 py-32 text-center">
-        <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-8 tracking-tight">
-          "Setiap sudut Galunggung menyimpan rahasia purba yang hanya bisa dipahami oleh mereka yang mau berhenti sejenak dan melihat."
-        </h2>
-        <div className="w-12 h-px bg-primary/20 mx-auto"></div>
-      </section>
+      {!loading && images.length > 0 && (
+        <section className="max-w-4xl mx-auto px-8 py-32 text-center">
+          <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-8 tracking-tight">
+            "Setiap sudut Galunggung menyimpan rahasia purba yang hanya bisa dipahami oleh mereka yang mau berhenti sejenak dan melihat."
+          </h2>
+          <div className="w-12 h-px bg-primary/20 mx-auto"></div>
+        </section>
+      )}
 
       {/* Additional Grid */}
-      <section className="max-w-7xl mx-auto px-8 mb-32">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="aspect-square overflow-hidden rounded-2xl group relative">
-            <img 
-              alt="Sunrise Galunggung" 
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-              src={galImg7} 
-            />
-            <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-              <span className="text-surface font-headline font-bold text-sm">Sunrise Galunggung</span>
-            </div>
+      {!loading && secondSectionImages.length > 0 && (
+        <section className="max-w-7xl mx-auto px-8 mb-32">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {secondSectionImages.map((item, idx) => {
+              const fileUrl = item.file || item.gambar || item.url
+              const fullUrl = fileUrl.startsWith('http') ? fileUrl : `http://127.0.0.1:8000/storage/${fileUrl}`
+              const caption = item.judul_konten || item.judul || item.caption || `Foto ${item.id}`
+
+              return (
+                <div key={item.id || idx} className="aspect-square overflow-hidden rounded-2xl group relative">
+                  <img 
+                    alt={caption} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    src={fullUrl} 
+                  />
+                  <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
+                    <span className="text-surface font-headline font-bold text-sm">{caption}</span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-          <div className="aspect-square overflow-hidden rounded-2xl group relative">
-            <img 
-              alt="Danau Kawah" 
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-              src={galImg8} 
-            />
-            <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-              <span className="text-surface font-headline font-bold text-sm">Danau Kawah</span>
-            </div>
-          </div>
-          <div className="aspect-square overflow-hidden rounded-2xl group relative">
-            <img 
-              alt="Galunggung Bike Park" 
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-              src={galImg9} 
-            />
-            <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-              <span className="text-surface font-headline font-bold text-sm">Galunggung Bike Park</span>
-            </div>
-          </div>
-          <div className="aspect-square overflow-hidden rounded-2xl group relative">
-            <img 
-              alt="Camping Ground" 
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-              src={galImg10} 
-            />
-            <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-              <span className="text-surface font-headline font-bold text-sm">Camping Ground</span>
-            </div>
-          </div>
+        </section>
+      )}
+
+      {!loading && images.length === 0 && (
+        <div className="text-center py-20 max-w-xl mx-auto bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+          <span className="material-symbols-outlined text-5xl text-stone-300 mb-4">photo_library</span>
+          <p className="text-stone-500 font-medium text-lg">Belum ada konten galeri</p>
         </div>
-      </section>
+      )}
     </>
   )
 }
 
-export default Galeri
+export default Galeri

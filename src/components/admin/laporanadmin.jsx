@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import laporanService from '../../services/laporanService'
+import bookingService from '../../services/bookingService'
+import authService from '../../services/authService'
 
 export default function LaporanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('laporan')
@@ -18,7 +21,34 @@ export default function LaporanAdmin({ navigate }) {
     } else if (page === 'pengaturan') navigate('admin-pengaturan')
   }
 
-  const handleLogout = () => navigate('admin-login')
+  const handleLogout = () => {
+    authService.logout()
+    navigate('admin-login')
+  }
+
+  const [laporanData, setLaporanData] = useState(null)
+  const [loadingLaporan, setLoadingLaporan] = useState(true)
+  const [errorLaporan, setErrorLaporan] = useState('')
+  const [bookingList, setBookingList] = useState([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [laporan, bookings] = await Promise.all([
+          laporanService.getAll().catch(() => null),
+          bookingService.getAll().catch(() => []),
+        ])
+        if (laporan) setLaporanData(laporan?.data || laporan)
+        const list = Array.isArray(bookings) ? bookings : (bookings?.data ?? [])
+        setBookingList(list)
+      } catch (err) {
+        setErrorLaporan(err.userMessage || 'Gagal memuat data laporan.')
+      } finally {
+        setLoadingLaporan(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   const navItems = [
     { id: 'ringkasan', label: 'Ringkasan', icon: 'dashboard' },
@@ -31,16 +61,41 @@ export default function LaporanAdmin({ navigate }) {
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 
-  // Daily visitors data matching the heights & colors in the screenshot
-  const dailyData = [
-    { label: 'SEN', heightClass: 'h-[30%]', bgClass: 'bg-[#eeeeec]' },
-    { label: 'SEL', heightClass: 'h-[44%]', bgClass: 'bg-[#eeeeec]' },
-    { label: 'RAB', heightClass: 'h-[24%]', bgClass: 'bg-[#eeeeec]' },
-    { label: 'KAM', heightClass: 'h-[76%]', bgClass: 'bg-[#c0c8c2]' },
-    { label: 'JUM', heightClass: 'h-[90%]', bgClass: 'bg-[#163422]' },
-    { label: 'SAB', heightClass: 'h-[62%]', bgClass: 'bg-[#c0c8c2]' },
-    { label: 'MIN', heightClass: 'h-[36%]', bgClass: 'bg-[#eeeeec]' },
-  ]
+  // Build daily chart dynamically from booking data
+  const buildDailyData = () => {
+    // If API provides grafik_harian, use it directly
+    if (laporanData?.grafik_harian) return laporanData.grafik_harian
+
+    const dayLabels = ['MIN', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB']
+    const counts = [0, 0, 0, 0, 0, 0, 0] // Sun=0..Sat=6
+
+    bookingList.forEach(b => {
+      const dateStr = b.tanggal || b.created_at || ''
+      if (dateStr) {
+        const d = new Date(dateStr)
+        if (!isNaN(d.getTime())) {
+          counts[d.getDay()]++
+        }
+      }
+    })
+
+    const maxCount = Math.max(...counts, 1) // avoid division by zero
+
+    return dayLabels.map((label, idx) => {
+      // Reorder: SEN(1) SEL(2) RAB(3) KAM(4) JUM(5) SAB(6) MIN(0)
+      const dayIdx = idx === 6 ? 0 : idx + 1
+      const count = counts[dayIdx]
+      const pct = Math.max(Math.round((count / maxCount) * 100), 4) // min 4% so bar is visible
+
+      let bgClass = 'bg-[#eeeeec]'
+      if (pct >= 75) bgClass = 'bg-[#163422]'
+      else if (pct >= 45) bgClass = 'bg-[#c0c8c2]'
+
+      return { label, pct, bgClass, count }
+    })
+  }
+
+  const dailyData = buildDailyData()
 
   return (
     <div className="bg-surface text-on-surface font-body antialiased flex min-h-screen">
@@ -127,7 +182,7 @@ export default function LaporanAdmin({ navigate }) {
           </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
-              <p className="font-bold text-primary leading-none">Admin Galunggung</p>
+              <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
               <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
@@ -143,6 +198,12 @@ export default function LaporanAdmin({ navigate }) {
         {/* Content canvas container */}
         <div className="flex-1 bg-[#f4f4f2] p-10 overflow-y-auto space-y-8">
           {/* Header Section */}
+          {errorLaporan && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4 max-w-7xl">
+              <span className="material-symbols-outlined text-error text-lg">error</span>
+              <p className="text-sm text-on-error-container font-medium">{errorLaporan}</p>
+            </div>
+          )}
           <div className="flex justify-between items-start gap-6 max-w-7xl">
             <div>
               <h2 className="text-4xl font-display font-extrabold text-[#163422] tracking-tight">Laporan Analitik</h2>
@@ -172,49 +233,53 @@ export default function LaporanAdmin({ navigate }) {
                 <span className="text-[#c8ebd0] bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
                   TOTAL PENDAPATAN
                 </span>
-                <h3 className="text-5xl font-extrabold text-white mt-6">Rp 144.000.000</h3>
-                <div className="flex items-center gap-1.5 mt-3 text-[#c8ebd0]">
-                  <span className="material-symbols-outlined text-sm font-bold">trending_up</span>
-                  <span className="text-xs font-semibold">+12.5% dari bulan lalu</span>
-                </div>
+                <h3 className="text-5xl font-extrabold text-white mt-6">
+                  {loadingLaporan ? 'Memuat...' : (
+                    laporanData?.total_pendapatan
+                      ? `Rp ${Number(laporanData.total_pendapatan).toLocaleString('id-ID')}`
+                      : 'Rp 0'
+                  )}
+                </h3>
               </div>
-
               {/* Stats subdivisions */}
               <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10 mt-8">
                 <div>
-                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Tiket Masuk</p>
-                  <p className="text-xl font-bold text-white">Rp 84jt</p>
+                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Booking</p>
+                  <p className="text-xl font-bold text-white">
+                    {loadingLaporan ? '...' : (laporanData?.total_booking ?? '-')}
+                  </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
-                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Parkir &amp; Fasilitas</p>
-                  <p className="text-xl font-bold text-white">Rp 41jt</p>
+                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pembayaran</p>
+                  <p className="text-xl font-bold text-white">
+                    {loadingLaporan ? '...' : (laporanData?.total_pembayaran ?? '-')}
+                  </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
-                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Izin Pendakian</p>
-                  <p className="text-xl font-bold text-white">Rp 19jt</p>
+                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pelanggan</p>
+                  <p className="text-xl font-bold text-white">
+                    {loadingLaporan ? '...' : (laporanData?.total_pelanggan ?? '-')}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Card 2: Total Kunjungan Wisatawan */}
+            {/* Card 2: Total Pelanggan */}
             <div className="col-span-12 lg:col-span-4 bg-white rounded-3xl p-8 border border-outline-variant/10 shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-start">
                   <div className="p-3.5 bg-secondary-container rounded-2xl">
                     <span className="material-symbols-outlined text-[#695d47]" style={{ fontVariationSettings: "'FILL' 1" }}>groups</span>
                   </div>
-                  <span className="text-[#ba1a1a] text-[10px] font-extrabold bg-[#ffdad6] px-3 py-1 rounded-lg tracking-wider">
-                    Target: 85%
-                  </span>
                 </div>
-                <h4 className="text-4xl font-extrabold text-[#163422] mt-6 tracking-tight">42,850</h4>
-                <p className="text-secondary font-medium text-xs mt-1">Total Kunjungan Wisatawan</p>
+                <h4 className="text-4xl font-extrabold text-[#163422] mt-6 tracking-tight">
+                  {loadingLaporan ? '...' : (laporanData?.total_pelanggan ?? '-')}
+                </h4>
+                <p className="text-secondary font-medium text-xs mt-1">Total Pelanggan Terdaftar</p>
               </div>
-
-              {/* Progress bar */}
               <div className="mt-8">
                 <div className="w-full bg-[#eeeeec] h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-[#163422] h-full w-[85%] rounded-full"></div>
+                  <div className="bg-[#163422] h-full w-full rounded-full"></div>
                 </div>
               </div>
             </div>
@@ -238,10 +303,13 @@ export default function LaporanAdmin({ navigate }) {
               <div className="h-64 flex items-end justify-between gap-4 px-2">
                 {dailyData.map((data, index) => (
                   <div key={index} className="flex-1 flex flex-col items-center h-full justify-end group">
-                    <div className={`w-full ${data.bgClass} ${data.heightClass} rounded-t-lg transition-all duration-300 relative group-hover:brightness-95`}>
+                    <div
+                      className={`w-full ${data.bgClass} rounded-t-lg transition-all duration-300 relative group-hover:brightness-95`}
+                      style={{ height: `${data.pct || 4}%` }}
+                    >
                       {/* Hover Tooltip/Value */}
                       <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#163422] text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        {data.label}
+                        {data.count != null ? `${data.count} booking` : data.label}
                       </span>
                     </div>
                   </div>

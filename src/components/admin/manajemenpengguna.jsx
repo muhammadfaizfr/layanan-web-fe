@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import pelangganService from '../../services/pelangganService'
+import authService from '../../services/authService'
 
 export default function ManajemenPenggunaAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-pengguna')
@@ -27,6 +29,7 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
   }
 
   const handleLogout = () => {
+    authService.logout()
     navigate('admin-login')
   }
 
@@ -41,69 +44,63 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 
-  const [users, setUsers] = useState([
-    {
-      id: 'GAL-2024-8832',
-      name: 'Arjuna Wiranata',
-      email: 'arjuna.w@email.com',
-      phone: '+62 812-4456-9901',
-      date: '12 Okt 2023',
-      location: 'Tasikmalaya, ID',
-      status: 'Terverifikasi',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAvLyE79uOr4lf0AzJO64DgxZ_o9FbbnM2ceHhJoo-fIKj_Sp79PrW72hvDSV7RKoDaJ6deb5Xc5cc3sPHN5JypyF6U09JkKilBNCv2ylCJAC7Id3KBt_SwplfZOYB1HDyjmrqaKAdyNWPJ5lXyfKpTGZatjJYBitt9r0mU96jOYulYeAV8_07jH2l2331p69QVfopyMqIl5wnYk5z_V6ph5eSiZ53tjW7LrR2pIub_lIWNA32UsQQQhktTI1gy_2NJ2aVTy3pNwg',
-    },
-    {
-      id: 'GAL-2024-9104',
-      name: 'Sarah Adiwangsa',
-      email: 's.adiwangsa@mail.id',
-      phone: '+62 811-9008-2231',
-      date: 'Hari Ini, 08:45 AM',
-      location: 'Bandung, ID',
-      status: 'Menunggu',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAM30ePGgmiv8CS9cQATuZGRuye4FEa23X1rRu06EE0vtzH0i3IK7ru6F8JBDGwSSGWZg4-tKjHJo3HKTIgiUH7d1rOTxBB2_ouO-nBot_IqL30Je_4w_R7tHQXeWD6TjCCdvSD_uDMRmb92XdVmsszbcjHMMhKkhKhbFwkJ6U8M2CvvlKzGQgmI2HZaKf98wW-XTs6S2HSjlUL46LVZ3xrBf-b70teKR2MK_HuprZbZrLNx2znBNmYKEt0mVKD0UMxn1qg0-5w0g',
-    },
-    {
-      id: 'GAL-2023-7721',
-      name: 'Baskara Putra',
-      email: 'baskara.p@gmail.com',
-      phone: '+62 856-7788-1122',
-      date: '30 Sep 2023',
-      location: 'Jakarta, ID',
-      status: 'Terverifikasi',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAwQniaULwxuhlKAT14T8oicHZBLccdTWEchOspu9HBwGvaBiVho7WapGGUqTBNFbHtQn4GlonoRaH-MXj_xMwCvb3o_wb0WV6Z-z4unrsfj_4AN1TzyksAn7cXpNWxYxSLgNBdGR-onghHpeipsYuswLQPymgKIK52GDTPRNR4knQ-RKjt4TFU356ljClCJCT-Tj8LO9vU5VSz7HVJtEXXluMnOLPreKTXtQMOm4EhUMrG8SLmQDO06tcRyY5Vinl8irFR4XOdXA',
-    },
-    {
-      id: 'GAL-2024-0012',
-      name: 'Dewi Kusuma',
-      email: 'dewi.kusuma@outlook.com',
-      phone: '+62 813-2211-5544',
-      date: 'Kemarin',
-      location: 'Garut, ID',
-      status: 'Terverifikasi',
-      initials: 'DK',
-    },
-  ])
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const handleVerify = (id) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'Terverifikasi' } : u))
+  const fetchPelanggan = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await pelangganService.getAll()
+      const list = Array.isArray(data) ? data : (data?.data ?? [])
+      setUsers(list)
+    } catch (err) {
+      setError(err.userMessage || 'Gagal memuat data pelanggan.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDelete = (id) => {
-    setUsers(prev => prev.filter(u => u.id !== id))
+  useEffect(() => {
+    fetchPelanggan()
+  }, [])
+
+  const handleVerify = async (id) => {
+    try {
+      await pelangganService.update(id, { status: 'Terverifikasi' })
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'Terverifikasi' } : u))
+    } catch (err) {
+      setError(err.userMessage || 'Gagal memverifikasi pelanggan.')
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus pelanggan ini?')) return
+    try {
+      await pelangganService.delete(id)
+      setUsers(prev => prev.filter(u => u.id !== id))
+    } catch (err) {
+      setError(err.userMessage || 'Gagal menghapus pelanggan.')
+    }
   }
 
   // Filter users based on tab search term
   const filteredUsers = users.filter(user => {
     if (activeFilter === 'pending' && user.status !== 'Menunggu') return false
-    
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
+      const name = user.name || user.nama || ''
+      const email = user.email || ''
+      const phone = user.phone || user.no_hp || user.telepon || ''
+      const location = user.location || user.alamat || ''
+      const userId = String(user.id || '')
       return (
-        user.name.toLowerCase().includes(term) ||
-        user.id.toLowerCase().includes(term) ||
-        user.email.toLowerCase().includes(term) ||
-        user.phone.toLowerCase().includes(term) ||
-        user.location.toLowerCase().includes(term)
+        name.toLowerCase().includes(term) ||
+        userId.toLowerCase().includes(term) ||
+        email.toLowerCase().includes(term) ||
+        phone.toLowerCase().includes(term) ||
+        location.toLowerCase().includes(term)
       )
     }
     return true
@@ -191,7 +188,7 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
             </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
-                <p className="font-bold text-primary leading-none">Admin Galunggung</p>
+                <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
                 <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
@@ -249,6 +246,14 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
             </button>
           </div>
 
+          {/* Error display */}
+          {error && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl">
+              <span className="material-symbols-outlined text-error text-lg">error</span>
+              <p className="text-sm text-on-error-container font-medium">{error}</p>
+            </div>
+          )}
+
           {/* Data Table */}
           <div className="space-y-4">
             {/* Header Columns */}
@@ -260,11 +265,26 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
               <div className="text-right">Aksi</div>
             </div>
 
+            {/* Loading state */}
+            {loading && (
+              <div className="text-center py-12 text-secondary text-sm font-medium flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                Memuat data pelanggan...
+              </div>
+            )}
+
             {/* List Hiker Cards */}
-            {filteredUsers.map((user) => {
-              const isPending = user.status === 'Menunggu'
+            {!loading && filteredUsers.map((user) => {
+              const name = user.name || user.nama || '-'
+              const email = user.email || '-'
+              const phone = user.phone || user.no_hp || user.telepon || '-'
+              const date = user.date || user.created_at?.split('T')[0] || '-'
+              const location = user.location || user.alamat || user.asal || '-'
+              const status = user.status || 'Aktif'
+              const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+              const isPending = status === 'Menunggu'
               const borderLeftClass = isPending ? 'border-l-4 border-amber-500/80' : ''
-              
+
               return (
                 <div
                   key={user.id}
@@ -272,43 +292,36 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
                 >
                   {/* Profil Column */}
                   <div className="flex items-center gap-3">
-                    {user.image ? (
-                      <img
-                        alt="Profil Pengguna"
-                        className="w-12 h-12 rounded-xl object-cover shadow-sm"
-                        src={user.image}
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary font-headline font-extrabold text-sm">
-                        {user.initials}
-                      </div>
-                    )}
+                    <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary font-headline font-extrabold text-sm">
+                      {initials}
+                    </div>
                     <div>
-                      <p className="font-headline font-bold text-on-surface leading-tight">{user.name}</p>
+                      <p className="font-headline font-bold text-on-surface leading-tight">{name}</p>
                       <p className="text-[11px] text-secondary font-medium mt-0.5">ID: {user.id}</p>
                     </div>
                   </div>
 
                   {/* Contact Column */}
                   <div>
-                    <p className="text-xs text-on-surface font-medium">{user.email}</p>
-                    <p className="text-[11px] text-secondary mt-0.5">{user.phone}</p>
+                    <p className="text-xs text-on-surface font-medium">{email}</p>
+                    <p className="text-[11px] text-secondary mt-0.5">{phone}</p>
+                    <p className="text-[10px] text-secondary mt-0.5" title="No. Identitas">{user.no_identitas || '-'}</p>
                   </div>
 
                   {/* Registration Column */}
                   <div>
-                    <p className="text-xs text-on-surface font-medium">{user.date}</p>
-                    <p className="text-[11px] text-secondary mt-0.5">{user.location}</p>
+                    <p className="text-xs text-on-surface font-medium">{date}</p>
+                    <p className="text-[11px] text-secondary mt-0.5">{location}</p>
                   </div>
 
                   {/* Status Badge Column */}
                   <div className="flex justify-center">
                     <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                      user.status === 'Terverifikasi' 
-                        ? 'bg-primary-fixed text-on-primary-fixed-variant' 
+                      status === 'Terverifikasi' || status === 'aktif'
+                        ? 'bg-primary-fixed text-on-primary-fixed-variant'
                         : 'bg-[#f1e1c4] text-[#6f634c]'
                     }`}>
-                      {user.status}
+                      {status}
                     </span>
                   </div>
 

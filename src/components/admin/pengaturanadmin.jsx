@@ -1,12 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import authService from '../../services/authService'
 
 export default function PengaturanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('pengaturan')
-  const [namaLengkap, setNamaLengkap] = useState('Asep')
-  const [alamatEmail, setAlamatEmail] = useState('ahmad.s@galunggung.go.id')
+  const [namaLengkap, setNamaLengkap] = useState('')
+  const [alamatEmail, setAlamatEmail] = useState('')
   const [nomorTelepon, setNomorTelepon] = useState('+62 812 3456 7890')
   const [jabatan, setJabatan] = useState('Super Administrator')
+  const [kataSandi, setKataSandi] = useState('')
   const [showToast, setShowToast] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await authService.getProfile()
+        setNamaLengkap(data.nama_admin || '')
+        setAlamatEmail(data.email || '')
+        localStorage.setItem('admin_nama', data.nama_admin)
+        localStorage.setItem('admin_email', data.email)
+      } catch (err) {
+        console.error('Gagal memuat profil', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [])
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -23,15 +43,24 @@ export default function PengaturanAdmin({ navigate }) {
   }
 
   const handleLogout = () => {
+    authService.logout()
     navigate('admin-login')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setShowToast(true)
-    setTimeout(() => {
-      setShowToast(false)
-    }, 3000)
+    try {
+      const payload = { nama_admin: namaLengkap, email: alamatEmail }
+      if (kataSandi) payload.kata_sandi = kataSandi
+      const res = await authService.updateProfile(payload)
+      localStorage.setItem('admin_nama', res.admin.nama_admin)
+      localStorage.setItem('admin_email', res.admin.email)
+      setKataSandi('')
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } catch (err) {
+      alert('Gagal menyimpan profil: ' + (err.userMessage || err.message))
+    }
   }
 
   const navItems = [
@@ -130,7 +159,7 @@ export default function PengaturanAdmin({ navigate }) {
           </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
-              <p className="font-bold text-[#163422] leading-none">Admin Galunggung</p>
+              <p className="font-bold text-[#163422] leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
               <p className="text-[10px] text-[#695d47] mt-1">Administrator Super</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-[#163422]/20 overflow-hidden">
@@ -219,6 +248,20 @@ export default function PengaturanAdmin({ navigate }) {
                     type="text"
                     value={jabatan}
                     onChange={(e) => setJabatan(e.target.value)}
+                    className="w-full bg-white text-[#1a1c1b] rounded-xl py-3.5 px-5 font-['Inter'] text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[#163422] shadow-sm transition-all"
+                  />
+                </div>
+
+                {/* Kata Sandi Baru */}
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-[10px] tracking-wider uppercase font-bold text-[#695d47]">
+                    KATA SANDI BARU (OPSIONAL)
+                  </label>
+                  <input
+                    type="password"
+                    value={kataSandi}
+                    onChange={(e) => setKataSandi(e.target.value)}
+                    placeholder="Kosongkan jika tidak ingin mengubah kata sandi"
                     className="w-full bg-white text-[#1a1c1b] rounded-xl py-3.5 px-5 font-['Inter'] text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[#163422] shadow-sm transition-all"
                   />
                 </div>

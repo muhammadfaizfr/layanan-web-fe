@@ -1,11 +1,31 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import kontenGaleriService from '../../services/kontenGaleriService'
+import authService from '../../services/authService'
 
 export default function ManajemenGaleriAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-galeri')
+  const [galeriData, setGaleriData] = useState([])
+  const [loadingGaleri, setLoadingGaleri] = useState(true)
+  const [errorGaleri, setErrorGaleri] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    const fetchGaleri = async () => {
+      try {
+        const data = await kontenGaleriService.getAll()
+        const list = Array.isArray(data) ? data : (data?.data ?? [])
+        setGaleriData(list)
+      } catch (err) {
+        setErrorGaleri(err.userMessage || 'Gagal memuat data galeri.')
+      } finally {
+        setLoadingGaleri(false)
+      }
+    }
+    fetchGaleri()
+  }, [])
 
   const triggerSuccessPopup = () => {
     setShowSuccessPopup(true)
@@ -25,7 +45,10 @@ export default function ManajemenGaleriAdmin({ navigate }) {
     else if (page === 'pengaturan') navigate('admin-pengaturan')
   }
 
-  const handleLogout = () => navigate('admin-login')
+  const handleLogout = () => {
+    authService.logout()
+    navigate('admin-login')
+  }
 
   const navItems = [
     { id: 'ringkasan', label: 'Ringkasan', icon: 'dashboard' },
@@ -247,7 +270,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
               onChange={handleFileSelect}
             />
 
-            {/* Uploaded Previews */}
+            {/* Uploaded Previews (local) */}
             {uploadedFiles.length > 0 && (
               <div className="mt-8 pt-8 border-t border-outline-variant/20">
                 <h4 className="font-display font-bold text-primary text-base mb-4">File yang Diunggah</h4>
@@ -278,6 +301,53 @@ export default function ManajemenGaleriAdmin({ navigate }) {
                 </div>
               </div>
             )}
+
+            {/* Galeri dari Database */}
+            <div className="mt-8 pt-8 border-t border-outline-variant/20">
+              <h4 className="font-display font-bold text-primary text-base mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg">cloud_done</span>
+                Galeri dari Database
+              </h4>
+              {errorGaleri && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-error-container rounded-xl mb-4">
+                  <span className="material-symbols-outlined text-error text-sm">error</span>
+                  <p className="text-xs text-on-error-container">{errorGaleri}</p>
+                </div>
+              )}
+              {loadingGaleri ? (
+                <div className="text-center py-8 text-secondary text-sm flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  Memuat galeri...
+                </div>
+              ) : galeriData.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {galeriData.map((item) => {
+                    const imageUrl = item.url || item.gambar || item.file_path || item.foto
+                    const caption = item.judul || item.caption || item.nama || `Foto ${item.id}`
+                    return (
+                      <div key={item.id} className="relative rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm bg-white group">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl.startsWith('http') ? imageUrl : `http://127.0.0.1:8000/storage/${imageUrl}`}
+                            alt={caption}
+                            className="w-full h-32 object-cover block"
+                          />
+                        ) : (
+                          <div className="w-full h-32 bg-surface-container-low flex items-center justify-center">
+                            <span className="material-symbols-outlined text-secondary opacity-40 text-3xl">image</span>
+                          </div>
+                        )}
+                        <div className="p-3">
+                          <p className="text-xs font-bold text-primary truncate leading-tight">{caption}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-secondary text-center py-6">Belum ada gambar di database.</p>
+              )}
+            </div>
           </div>
         </div>
       </main>

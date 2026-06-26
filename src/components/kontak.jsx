@@ -1,5 +1,34 @@
 // src/components/Kontak.jsx
+import { useState } from 'react'
+import kontakService from '../services/kontakService'
+
 function Kontak({ openModal }) {
+  const [nama, setNama] = useState('')
+  const [email, setEmail] = useState('')
+  const [subjek, setSubjek] = useState('Informasi Tiket')
+  const [pesan, setPesan] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setSuccessMsg('')
+    setErrorMsg('')
+    try {
+      await kontakService.create({ nama, email, subjek, pesan })
+      setSuccessMsg('Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.')
+      setNama('')
+      setEmail('')
+      setSubjek('Informasi Tiket')
+      setPesan('')
+    } catch (err) {
+      setErrorMsg(err.userMessage || 'Gagal mengirim pesan. Silakan coba lagi.')
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <>
       {/* Hero Section with Asymmetric Bleed */}
@@ -35,28 +64,55 @@ function Kontak({ openModal }) {
             {/* Left Column: Form */}
             <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-[0_40px_80px_-20px_rgba(22,52,34,0.08)]">
               <h2 className="headline-font text-3xl font-bold text-primary mb-8 tracking-tight">Kirim Pesan</h2>
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+
+              {/* Success Message */}
+              {successMsg && (
+                <div className="flex items-start gap-3 px-4 py-4 bg-primary-fixed rounded-xl mb-6">
+                  <span className="material-symbols-outlined text-primary text-lg mt-0.5">check_circle</span>
+                  <p className="text-sm text-on-primary-fixed-variant font-medium">{successMsg}</p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {errorMsg && (
+                <div className="flex items-start gap-3 px-4 py-4 bg-error-container rounded-xl mb-6">
+                  <span className="material-symbols-outlined text-error text-lg mt-0.5">error</span>
+                  <p className="text-sm text-on-error-container font-medium">{errorMsg}</p>
+                </div>
+              )}
+
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="font-label text-[10px] tracking-widest uppercase text-secondary font-bold">Nama Lengkap</label>
-                    <input 
-                      className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface" 
-                      placeholder="Andi Wijaya" 
-                      type="text" 
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface"
+                      placeholder="Andi Wijaya"
+                      type="text"
+                      value={nama}
+                      onChange={(e) => setNama(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="font-label text-[10px] tracking-widest uppercase text-secondary font-bold">Alamat Email</label>
-                    <input 
-                      className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface" 
-                      placeholder="andi@example.com" 
-                      type="email" 
+                    <input
+                      className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface"
+                      placeholder="andi@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="font-label text-[10px] tracking-widest uppercase text-secondary font-bold">Subjek</label>
-                  <select className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface">
+                  <select
+                    className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface"
+                    value={subjek}
+                    onChange={(e) => setSubjek(e.target.value)}
+                  >
                     <option>Informasi Tiket</option>
                     <option>Reservasi Hotel</option>
                     <option>Kerja Sama</option>
@@ -65,21 +121,28 @@ function Kontak({ openModal }) {
                 </div>
                 <div className="space-y-2">
                   <label className="font-label text-[10px] tracking-widest uppercase text-secondary font-bold">Pesan Anda</label>
-                  <textarea 
-                    className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface resize-none" 
-                    placeholder="Tuliskan detail pertanyaan Anda di sini..." 
+                  <textarea
+                    className="w-full bg-surface-container-low border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all text-on-surface resize-none"
+                    placeholder="Tuliskan detail pertanyaan Anda di sini..."
                     rows="5"
+                    value={pesan}
+                    onChange={(e) => setPesan(e.target.value)}
+                    required
                   ></textarea>
                 </div>
-                <button 
-                  className="group relative w-full bg-primary text-on-primary py-5 rounded-full font-bold overflow-hidden transition-all hover:shadow-lg" 
+                <button
+                  className="group relative w-full bg-primary text-on-primary py-5 rounded-full font-bold overflow-hidden transition-all hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   type="submit"
+                  disabled={loading}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
-                    Kirim Pesan Sekarang
-                    <span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+                    {loading ? (
+                      <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Mengirim...</>
+                    ) : (
+                      <>Kirim Pesan Sekarang<span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span></>
+                    )}
                   </span>
-                  <div className="absolute inset-0 bg-primary-container transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                  {!loading && <div className="absolute inset-0 bg-primary-container transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>}
                 </button>
               </form>
             </div>

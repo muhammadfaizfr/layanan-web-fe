@@ -1,19 +1,29 @@
 import React, { useState } from 'react'
+import authService from '../../services/authService'
 
 export default function LoginAdmin({ navigate }) {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    // Validasi login sederhana (nanti diganti dengan autentikasi backend)
-    if (email === 'admin@galunggung.id' && password === 'admin') {
+    setLoading(true)
+    try {
+      const data = await authService.login(email, password)
+      // Simpan token ke localStorage
+      const token = data.token || data.access_token || data.data?.token
+      if (token) {
+        localStorage.setItem('token', token)
+      }
       navigate('admin-ringkasan')
-    } else {
-      setError('Email atau kata sandi salah!')
+    } catch (err) {
+      setError(err.userMessage || 'Email atau kata sandi salah!')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -149,11 +159,21 @@ export default function LoginAdmin({ navigate }) {
 
               {/* CTA */}
               <button
-                className="w-full bg-primary text-on-primary font-headline font-semibold py-4 rounded-full inner-glow flex items-center justify-center space-x-2 active:scale-[0.98] transition-all hover:bg-primary/95 shadow-lg shadow-primary/10"
+                className="w-full bg-primary text-on-primary font-headline font-semibold py-4 rounded-full inner-glow flex items-center justify-center space-x-2 active:scale-[0.98] transition-all hover:bg-primary/95 shadow-lg shadow-primary/10 disabled:opacity-60 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={loading}
               >
-                <span>Masuk ke Panel Kontrol</span>
-                <span className="material-symbols-outlined text-xl">arrow_right_alt</span>
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+                    <span>Memverifikasi...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Masuk ke Panel Kontrol</span>
+                    <span className="material-symbols-outlined text-xl">arrow_right_alt</span>
+                  </>
+                )}
               </button>
             </form>
 

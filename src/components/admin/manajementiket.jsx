@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import bookingService from '../../services/bookingService'
+import pembayaranService from '../../services/pembayaranService'
+import authService from '../../services/authService'
 
 export default function ManajemenTiketAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-tiket')
@@ -25,6 +28,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
   }
 
   const handleLogout = () => {
+    authService.logout()
     navigate('admin-login')
   }
 
@@ -39,20 +43,60 @@ export default function ManajemenTiketAdmin({ navigate }) {
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 
-  const [ticketList, setTicketList] = useState([
-    { id: 'GAL-2023-8841', name: 'Aditya Surya', initials: 'AS', type: 'Pendakian Puncak', date: '28 Okt 2023', status: 'Lunas', statusColor: 'blue' },
-    { id: 'GAL-2023-8842', name: 'Elena Novak', initials: 'EN', type: 'Penjelajah Kawah', date: '28 Okt 2023', status: 'Lunas', statusColor: 'blue' },
-    { id: 'GAL-2023-8843', name: 'Rizky Mahendra', initials: 'RM', type: 'Tiket Standar', date: '29 Okt 2023', status: 'Menunggu', statusColor: 'amber' },
-    { id: 'GAL-2023-8844', name: 'James Dalton', initials: 'JD', type: 'Pendakian Puncak', date: '30 Okt 2023', status: 'Lunas', statusColor: 'blue', hasImage: true },
-    { id: 'GAL-2023-8845', name: 'Linh Hoang', initials: 'LH', type: 'Penjelajah Kawah', date: '31 Okt 2023', status: 'Lunas', statusColor: 'blue' },
-  ])
+  const [ticketList, setTicketList] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [pembayaranList, setPembayaranList] = useState([])
 
-  const handleApprove = (id) => {
-    setTicketList(prev => prev.map(t => t.id === id ? { ...t, status: 'Lunas', statusColor: 'blue' } : t))
+  const fetchBooking = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const [bookingData, pembayaranData] = await Promise.all([
+        bookingService.getAll(),
+        pembayaranService.getAll(),
+      ])
+      const bookingList = Array.isArray(bookingData) ? bookingData : (bookingData?.data ?? [])
+      const payList = Array.isArray(pembayaranData) ? pembayaranData : (pembayaranData?.data ?? [])
+      setTicketList(bookingList)
+      setPembayaranList(payList)
+    } catch (err) {
+      setError(err.userMessage || 'Gagal memuat data booking.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDelete = (id) => {
-    setTicketList(prev => prev.filter(t => t.id !== id))
+  // Hitung pendapatan & tiket dari data real
+  const today = new Date().toISOString().split('T')[0]
+  const todayPayments = pembayaranList.filter(p => {
+    const tgl = p.tanggal_bayar || p.created_at || ''
+    return tgl.startsWith(today)
+  })
+  const pendapatanHarian = todayPayments.reduce((sum, p) => sum + Number(p.total_payar || p.jumlah_bayar || p.total_bayar || 0), 0)
+  const tiketCheckin = ticketList.filter(t => t.status_booking === 'Dikonfirmasi' || t.status_booking === 'Lunas' || t.status === 'Lunas').length
+
+  useEffect(() => {
+    fetchBooking()
+  }, [])
+
+  const handleApprove = async (id) => {
+    try {
+      await bookingService.update(id, { status: 'Lunas' })
+      setTicketList(prev => prev.map(t => t.id === id ? { ...t, status: 'Lunas', statusColor: 'blue' } : t))
+    } catch (err) {
+      setError(err.userMessage || 'Gagal menyetujui booking.')
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus tiket ini?')) return
+    try {
+      await bookingService.delete(id)
+      setTicketList(prev => prev.filter(t => t.id !== id))
+    } catch (err) {
+      setError(err.userMessage || 'Gagal menghapus tiket.')
+    }
   }
 
   return (
@@ -131,7 +175,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
             </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
-                <p className="font-bold text-primary leading-none">Admin Galunggung</p>
+                <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
                 <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
@@ -177,6 +221,14 @@ export default function ManajemenTiketAdmin({ navigate }) {
             </div>
           </div>
 
+          {/* Error display */}
+          {error && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4">
+              <span className="material-symbols-outlined text-error text-lg">error</span>
+              <p className="text-sm text-on-error-container font-medium">{error}</p>
+            </div>
+          )}
+
           {/* Enhanced Data Table */}
           <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse">
@@ -191,57 +243,77 @@ export default function ManajemenTiketAdmin({ navigate }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/10">
-                {ticketList.map((ticket, index) => (
-                  <tr key={index} className="hover:bg-surface-container-low/30 transition-colors group">
-                    <td className="px-6 py-4 font-label text-sm text-primary font-semibold">{ticket.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {ticket.hasImage ? (
-                          <img className="w-8 h-8 rounded-full" alt={ticket.name} src="https://lh3.googleusercontent.com/aida-public/AB6AXuASjdeb7JMA_bOHM8uA7723aRyeGa4NLWdED53V7XF5wYZc-Rt1KUy_9YniMmRxUgweFgBZPxrgYKqEGNNFnYCBrrGVWHBfL6NDxYlx0tgKphRIlAiL3mHyMz1bEYcqlRK4XcagY99Ky5E0_WVa_n7GZaJlTEMX8nZS5REaYqaQzoN1DopKe8Nyr62YaBFhkUl8m6Ibzu8kqkcuMVWpr00nh3amEJCirMal7JKTQvqQj-UGKHvkJjzsQPsfbkxgnM7RWILDzcxC7w"/>
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-xs">{ticket.initials}</div>
-                        )}
-                        <span className="text-sm font-medium text-on-surface">{ticket.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-secondary">{ticket.type}</td>
-                    <td className="px-6 py-4 text-sm text-on-surface-variant">{ticket.date}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        ticket.statusColor === 'emerald' ? 'bg-emerald-100 text-emerald-800' :
-                        ticket.statusColor === 'blue' ? 'bg-blue-100 text-blue-800' :
-                        'bg-amber-100 text-amber-800'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                          ticket.statusColor === 'emerald' ? 'bg-emerald-500' :
-                          ticket.statusColor === 'blue' ? 'bg-blue-500' :
-                          'bg-amber-500'
-                        }`}></span>
-                        {ticket.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        {ticket.status === 'Menunggu' && (
-                          <button
-                            onClick={() => handleApprove(ticket.id)}
-                            className="material-symbols-outlined text-emerald-600 hover:text-emerald-800 transition-colors"
-                            title="Setujui Pembayaran"
-                          >
-                            check_circle
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(ticket.id)}
-                          className="material-symbols-outlined text-red-600 hover:text-red-800 transition-colors"
-                          title="Hapus Tiket"
-                        >
-                          delete
-                        </button>
-                      </div>
+                {/* Loading state */}
+                {loading && (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-secondary text-sm">
+                      <span className="material-symbols-outlined animate-spin block mx-auto mb-2">progress_activity</span>
+                      Memuat data tiket...
                     </td>
                   </tr>
-                ))}
+                )}
+
+                {!loading && ticketList.map((ticket) => {
+                  const name = ticket.name || ticket.nama || ticket.pelanggan?.nama || '-'
+                  const type = ticket.type || ticket.jenis_tiket || ticket.jenis || 'Tiket Standar'
+                  const date = ticket.date || ticket.tanggal || ticket.tanggal_kunjungan || ticket.created_at?.split('T')[0] || '-'
+                  const status = ticket.status || 'Menunggu'
+                  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                  const isLunas = status === 'Lunas' || status === 'lunas'
+                  const statusColor = isLunas ? 'blue' : 'amber'
+
+                  return (
+                    <tr key={ticket.id} className="hover:bg-surface-container-low/30 transition-colors group">
+                      <td className="px-6 py-4 font-label text-sm text-primary font-semibold">BOOK-{String(ticket.id_booking || ticket.id).padStart(4, '0')}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-xs">{initials}</div>
+                          <span className="text-sm font-medium text-on-surface">{name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-secondary">{type}</td>
+                      <td className="px-6 py-4 text-sm text-on-surface-variant">{date}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          statusColor === 'blue' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                            statusColor === 'blue' ? 'bg-blue-500' : 'bg-amber-500'
+                          }`}></span>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          {!isLunas && (
+                            <button
+                              onClick={() => handleApprove(ticket.id)}
+                              className="material-symbols-outlined text-emerald-600 hover:text-emerald-800 transition-colors"
+                              title="Setujui Pembayaran"
+                            >
+                              check_circle
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(ticket.id)}
+                            className="material-symbols-outlined text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all"
+                            title="Hapus Tiket"
+                          >
+                            delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+
+                {!loading && ticketList.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-secondary text-sm">
+                      Tidak ada data tiket
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
 
@@ -267,29 +339,35 @@ export default function ManajemenTiketAdmin({ navigate }) {
             <div className="flex-1 bg-primary p-8 rounded-xl relative overflow-hidden group">
               <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/5 rounded-full blur-3xl transition-transform group-hover:scale-150 duration-700"></div>
               <div className="relative z-10">
-                <h3 className="text-on-primary/60 font-label font-bold tracking-widest uppercase text-xs mb-4">Pendapatan Harian</h3>
-                <p className="text-on-primary text-3xl font-display font-extrabold mb-2">Rp4,280.00</p>
+                <h3 className="text-on-primary/60 font-label font-bold tracking-widest uppercase text-xs mb-4">Pendapatan Hari Ini</h3>
+                <p className="text-on-primary text-3xl font-display font-extrabold mb-2">
+                  {loading ? '...' : `Rp ${pendapatanHarian.toLocaleString('id-ID')}`}
+                </p>
                 <div className="flex items-center gap-2 text-on-primary/80 text-sm">
-                  <span className="material-symbols-outlined text-sm">trending_up</span>
-                  <span>12% dari kemarin</span>
+                  <span className="material-symbols-outlined text-sm">receipt_long</span>
+                  <span>{todayPayments.length} transaksi hari ini</span>
                 </div>
               </div>
             </div>
             <div className="flex-1 bg-secondary p-8 rounded-xl relative overflow-hidden group">
               <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/5 rounded-full blur-3xl transition-transform group-hover:scale-150 duration-700"></div>
               <div className="relative z-10">
-                <h3 className="text-on-secondary/60 font-label font-bold tracking-widest uppercase text-xs mb-4">Tiket Check-In</h3>
-                <p className="text-on-secondary text-3xl font-display font-extrabold mb-2">342</p>
+                <h3 className="text-on-secondary/60 font-label font-bold tracking-widest uppercase text-xs mb-4">Tiket Dikonfirmasi</h3>
+                <p className="text-on-secondary text-3xl font-display font-extrabold mb-2">
+                  {loading ? '...' : tiketCheckin}
+                </p>
                 <div className="flex items-center gap-2 text-on-secondary/80 text-sm">
                   <span className="material-symbols-outlined text-sm">group</span>
-                  <span>85% kapasitas tercapai</span>
+                  <span>Dari total {ticketList.length} booking</span>
                 </div>
               </div>
             </div>
             <div className="flex-1 bg-surface-container-high p-8 rounded-xl relative overflow-hidden group">
               <div className="relative z-10">
                 <h3 className="text-on-surface-variant font-label font-bold tracking-widest uppercase text-xs mb-4">Permintaan Menunggu</h3>
-                <p className="text-primary text-3xl font-display font-extrabold mb-2">{ticketList.filter(t => t.status === 'Menunggu').length}</p>
+                <p className="text-primary text-3xl font-display font-extrabold mb-2">
+                  {loading ? '...' : ticketList.filter(t => t.status_booking === 'Menunggu' || t.status === 'Menunggu').length}
+                </p>
                 <div className="flex items-center gap-2 text-on-surface-variant text-sm">
                   <span className="material-symbols-outlined text-sm">assignment</span>
                   <span>Membutuhkan perhatian</span>

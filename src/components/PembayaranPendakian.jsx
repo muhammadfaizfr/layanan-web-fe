@@ -1,6 +1,12 @@
 import React, { useState } from 'react'
+import pelangganService from '../services/pelangganService'
+import slotPendakianService from '../services/slotPendakianService'
+import bookingService from '../services/bookingService'
+import pembayaranService from '../services/pembayaranService'
 
 export default function PembayaranPendakian({ order, formatRupiah, navigate, onComplete, onBack }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [selectedMethod, setSelectedMethod] = useState(null)
 
   const bankLogos = {
@@ -32,13 +38,144 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
     { key: 'dana', label: 'DANA' },
   ]
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!selectedMethod) {
       alert('Pilih metode pembayaran terlebih dahulu.')
       return
     }
-    if (typeof onComplete === 'function') {
-      onComplete(selectedMethod)
+    
+    setLoading(true)
+    setError('')
+    try {
+      // 1. Format tanggal pendakian ke YYYY-MM-DD
+      let dateString = ''
+      if (order?.dateObj instanceof Date) {
+        const d = order.dateObj
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        dateString = `${year}-${month}-${day}`
+      } else if (typeof order?.date === 'string' && order.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        dateString = order.date
+      } else {
+        // Parse date from formats like "Sabtu, 5 Okt 2024" or "25 Mei 2026"
+        const cleanDate = order?.date?.replace(/[^a-zA-Z0-9 ]/g, '') || ''
+        const dateParts = cleanDate.split(' ')
+        const segments = dateParts.filter(p => p.trim() !== '')
+        let dayStr = ''
+        let monthName = ''
+        let yearStr = String(new Date().getFullYear())
+
+        segments.forEach(seg => {
+          if (seg.match(/^\d{4}$/)) {
+            yearStr = seg
+          } else if (seg.match(/^\d{1,2}$/)) {
+            dayStr = seg.padStart(2, '0')
+          } else if (seg.match(/^[a-zA-Z]+$/)) {
+            monthName = seg.toLowerCase()
+          }
+        })
+
+        if (dayStr && monthName) {
+          const monthMap = {
+            'januari': '01', 'februari': '02', 'maret': '03', 'april': '04',
+            'mei': '05', 'juni': '06', 'juli': '07', 'agustus': '08',
+            'september': '09', 'oktober': '10', 'november': '11', 'desember': '12',
+            'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+            'jul': '07', 'aug': '08', 'agu': '08', 'sep': '09', 'okt': '10', 'oct': '10',
+            'nov': '11', 'des': '12', 'dec': '12'
+          }
+          const monthStr = monthMap[monthName] || '05'
+          dateString = `${yearStr}-${monthStr}-${dayStr}`
+        } else {
+          dateString = new Date().toISOString().split('T')[0]
+        }
+      }
+
+      // 2. Create Pelanggan
+      const pelangganData = {
+        nama_lengkap: order?.name || order?.teamName || 'Pengunjung Galunggung',
+        no_hp: order?.noHp || order?.contact || '08123456789',
+        no_identitas: order?.noIdentitas || '',
+        email: order?.email || ''
+      }
+      const pelangganRes = await pelangganService.create(pelangganData)
+      const pelanggan = pelangganRes?.data || pelangganRes
+      const idPelanggan = pelanggan?.id_pelanggan || pelanggan?.id
+
+      if (!idPelanggan) {
+        throw new Error('Gagal menyimpan data pelanggan.')
+      }
+
+      // 3. Find or Create Slot Pendakian
+      const slotsData = await slotPendakianService.getAll()
+      const slotsList = Array.isArray(slotsData) ? slotsData : (slotsData?.data ?? [])
+      let slot = slotsList.find(s => (s.tanggal_pendakian === dateString || s.tanggal === dateString))
+      let idSlot = slot?.id_slot || slot?.id
+
+      if (!idSlot) {
+        const newSlotData = {
+          tanggal_pendakian: dateString,
+          kuota_maksimal: 200,
+          kuota_tersedia: 200,
+          id_admin: 1
+        }
+        const slotRes = await slotPendakianService.create(newSlotData)
+        const newSlot = slotRes?.data || slotRes
+        idSlot = newSlot?.id_slot || newSlot?.id
+      }
+
+      if (!idSlot) {
+        throw new Error('Gagal menentukan slot pendakian.')
+      }
+
+      // 4. Create Booking
+      const bookingData = {
+        id_pelanggan: Number(idPelanggan),
+        id_slot: Number(idSlot),
+        jenis_tiket: order?.jenisTiket || order?.route || 'Wisatawan Lokal',
+        jml_tiket: Number(order?.qty || 1),
+        total_payar: Number(order?.total || 25000),
+        status_booking: 'Menunggu Pembayaran'
+      }
+      const bookingRes = await bookingService.create(bookingData)
+      const booking = bookingRes?.data || bookingRes
+      const idBooking = booking?.id_booking || booking?.id
+
+      if (!idBooking) {
+        throw new Error('Gagal menyimpan pesanan tiket.')
+      }
+
+      // 5. Create Pembayaran
+      const now = new Date()
+      const localTimeString = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0') + ' ' +
+        String(now.getHours()).padStart(2, '0') + ':' +
+        String(now.getMinutes()).padStart(2, '0') + ':' +
+        String(now.getSeconds()).padStart(2, '0')
+
+      const pembayaranData = {
+        id_booking: Number(idBooking),
+        metode_pembayaran: selectedMethod,
+        waktu_pembayaran: localTimeString,
+        status_pembayaran: 'Menunggu Verifikasi'
+      }
+      await pembayaranService.create(pembayaranData)
+
+      // 6. Selesaikan transaksi
+      if (order) {
+        order.reference = `GG-REG-${idBooking}`
+      }
+
+      if (typeof onComplete === 'function') {
+        onComplete(selectedMethod)
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err.response?.data?.message || err.userMessage || err.message || 'Terjadi kesalahan saat memproses pendaftaran.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -277,13 +414,30 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
                 </div>
               </div>
 
+              {error && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-red-50 text-red-800 rounded-xl mb-4 text-xs font-semibold">
+                  <span className="material-symbols-outlined text-sm">error</span>
+                  <p>{error}</p>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={handlePayment}
-                className="w-full bg-primary text-on-primary py-5 rounded-full font-jakarta font-bold text-base shadow-[0_15px_30px_rgba(22,52,34,0.2)] hover:shadow-none active:scale-95 transition-all flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full bg-primary text-on-primary py-5 rounded-full font-jakarta font-bold text-base shadow-[0_15px_30px_rgba(22,52,34,0.2)] hover:shadow-none active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Bayar & Daftar Sekarang
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                    <span>Memproses Pendaftaran...</span>
+                  </>
+                ) : (
+                  <>
+                    Bayar & Daftar Sekarang
+                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  </>
+                )}
               </button>
               <p className="mt-6 text-center text-xs text-on-surface-variant">Dengan melanjutkan, Anda menyetujui <a className="underline font-bold" href="#">Syarat & Ketentuan</a> pendakian Galunggung.</p>
             </div>
