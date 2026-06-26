@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import pengaturanService from "../services/pengaturanService";
 
-function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTicket, totalPrice, formatRupiah, onProceed, order }) {
+function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTicket, formatRupiah, onProceed, order }) {
   if (isOpen === false) return null;
 
   const isRegularTicket = order && !order.route;
@@ -38,7 +38,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
   }, []);
 
   const unitPrice = jenisTiket === "Wisatawan Mancanegara" ? hargaMancanegara : hargaLokal;
-  const computedTotal = totalPrice ?? tc * unitPrice;
+  const computedTotal = tc * unitPrice;
   const fmt = formatRupiah ?? ((n) => `Rp ${n.toLocaleString("id-ID")}`);
 
   return (

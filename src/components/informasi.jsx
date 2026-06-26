@@ -1,5 +1,28 @@
-// src/components/Informasi.jsx
+import React, { useState, useEffect } from "react";
+import pengaturanService from "../services/pengaturanService";
+
 function Informasi({ openModal }) {
+  const [hargaLokal, setHargaLokal] = useState(15000);
+  const [hargaMancanegara, setHargaMancanegara] = useState(35000);
+  const [jamBuka, setJamBuka] = useState('07:00');
+  const [jamTutup, setJamTutup] = useState('17:00');
+
+  useEffect(() => {
+    const fetchHarga = async () => {
+      try {
+        const res = await pengaturanService.get();
+        if (res.data) {
+          setHargaLokal(res.data.harga_lokal || 15000);
+          setHargaMancanegara(res.data.harga_mancanegara || 35000);
+          if (res.data.jam_buka) setJamBuka(res.data.jam_buka);
+          if (res.data.jam_tutup) setJamTutup(res.data.jam_tutup);
+        }
+      } catch (err) {
+        console.error("Gagal memuat harga tiket", err);
+      }
+    };
+    fetchHarga();
+  }, []);
   return (
     <>
       <header className="max-w-7xl mx-auto px-8 mb-20">
@@ -21,7 +44,7 @@ function Informasi({ openModal }) {
             <ul className="space-y-6">
               <li className="flex justify-between items-center border-b border-outline-variant/20 pb-4">
                 <span className="text-on-surface-variant font-medium">Senin — Jumat</span>
-                <span className="text-primary font-bold">07:00 — 17:00</span>
+                <span className="text-primary font-bold">{jamBuka} — {jamTutup}</span>
               </li>
               <li className="flex justify-between items-center border-b border-outline-variant/20 pb-4">
                 <span className="text-on-surface-variant font-medium">Sabtu — Minggu</span>
@@ -50,7 +73,7 @@ function Informasi({ openModal }) {
                 <h3 className="text-primary-fixed font-label text-xs uppercase tracking-widest">Domestik</h3>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">Wisatawan Dewasa</span>
-                  <span className="text-2xl font-bold">Rp 15.000</span>
+                  <span className="text-2xl font-bold">Rp {hargaLokal.toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">Anak-anak</span>
@@ -61,7 +84,7 @@ function Informasi({ openModal }) {
                 <h3 className="text-primary-fixed font-label text-xs uppercase tracking-widest">Mancanegara</h3>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">International Visitor</span>
-                  <span className="text-2xl font-bold">Rp 30.000</span>
+                  <span className="text-2xl font-bold">Rp {hargaMancanegara.toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">Parking (Motor/Mobil)</span>

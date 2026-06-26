@@ -24,6 +24,12 @@ export default function AturTiketAdmin({ navigate }) {
         if (res.data) {
           setPriceDomestik(res.data.harga_lokal.toLocaleString('id-ID'))
           setPriceMancanegara(res.data.harga_mancanegara.toLocaleString('id-ID'))
+          if (res.data.harga_camping) setPriceCamping(res.data.harga_camping.toLocaleString('id-ID'))
+          if (res.data.jam_buka) setOpenTime(res.data.jam_buka)
+          if (res.data.jam_tutup) setCloseTime(res.data.jam_tutup)
+          if (res.data.kuota_harian) setQuota(res.data.kuota_harian)
+          if (res.data.kebijakan_pembatalan_aktif !== undefined) setCancelPolicyActive(!!res.data.kebijakan_pembatalan_aktif)
+          if (res.data.teks_kebijakan) setPolicyText(res.data.teks_kebijakan)
         }
       } catch (error) {
         console.error("Gagal mengambil pengaturan", error)
@@ -61,9 +67,16 @@ export default function AturTiketAdmin({ navigate }) {
     try {
       const pLokal = parseInt(String(priceDomestik).replace(/\D/g, '')) || 0;
       const pManca = parseInt(String(priceMancanegara).replace(/\D/g, '')) || 0;
+      const pCamping = parseInt(String(priceCamping).replace(/\D/g, '')) || 0;
       await pengaturanService.update({
         harga_lokal: pLokal,
-        harga_mancanegara: pManca
+        harga_mancanegara: pManca,
+        harga_camping: pCamping,
+        jam_buka: openTime,
+        jam_tutup: closeTime,
+        kuota_harian: quota,
+        kebijakan_pembatalan_aktif: cancelPolicyActive,
+        teks_kebijakan: policyText
       })
       setShowToast(true)
       setTimeout(() => {

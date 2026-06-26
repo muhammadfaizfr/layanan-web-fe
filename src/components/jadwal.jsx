@@ -1,5 +1,6 @@
 // src/components/Jadwal.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import pengaturanService from '../services/pengaturanService'
 
 function Jadwal({ onSaveSchedule, onProceedToPayment, initialData }) {
   const [selectedRoute, setSelectedRoute] = useState(initialData?.route?.includes('Hutan') ? 'hutan' : 'tangga')
@@ -9,6 +10,21 @@ function Jadwal({ onSaveSchedule, onProceedToPayment, initialData }) {
   const [teamName, setTeamName] = useState(initialData?.teamName ?? '')
   const [teamCount, setTeamCount] = useState(initialData?.qty ?? 1)
   const [contact, setContact] = useState(initialData?.contact ?? '')
+  const [hargaCamping, setHargaCamping] = useState(25000)
+
+  useEffect(() => {
+    const fetchHarga = async () => {
+      try {
+        const res = await pengaturanService.get();
+        if (res.data && res.data.harga_camping) {
+          setHargaCamping(res.data.harga_camping);
+        }
+      } catch (err) {
+        console.error("Gagal memuat harga camping", err);
+      }
+    };
+    fetchHarga();
+  }, []);
 
   const routeOptions = [
     {
@@ -36,7 +52,7 @@ function Jadwal({ onSaveSchedule, onProceedToPayment, initialData }) {
   const monthLabel = calendarMonth.toLocaleDateString('id-ID', { month: 'long' })
   const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
   const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay()
-  const estimatedCost = 25000 * teamCount
+  const estimatedCost = hargaCamping * teamCount
 
   const changeMonth = (offset) => {
     setCalendarMonth((current) => {
@@ -254,6 +270,8 @@ function Jadwal({ onSaveSchedule, onProceedToPayment, initialData }) {
                       teamName,
                       teamCount,
                       contact,
+                      unitPrice: hargaCamping,
+                      total: estimatedCost
                     };
 
                     if (typeof onSaveSchedule === 'function') {

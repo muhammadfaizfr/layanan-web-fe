@@ -26,9 +26,6 @@ function App() {
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [ticketCount, setTicketCount] = useState(1)
-  const pricePerTicket = 25000
-
-  const totalPrice = ticketCount * pricePerTicket
 
   const incrementTicket = () => {
     if (ticketCount < 10) setTicketCount(ticketCount + 1)
@@ -72,8 +69,8 @@ function App() {
       date: scheduleData.date,
       dateObj: scheduleData.dateObj,
       qty: scheduleData.teamCount,
-      unitPrice: pricePerTicket,
-      total: pricePerTicket * scheduleData.teamCount,
+      unitPrice: scheduleData.unitPrice || 25000,
+      total: scheduleData.total || (25000 * scheduleData.teamCount),
       route: selectedRouteObj,
       teamName: scheduleData.teamName,
       contact: scheduleData.contact,
@@ -379,7 +376,6 @@ function App() {
           ticketCount={ticketCount}
           incrementTicket={incrementTicket}
           decrementTicket={decrementTicket}
-          totalPrice={totalPrice}
           formatRupiah={formatRupiah}
           onProceed={handleProceedToPayment}
           order={order}
@@ -440,7 +436,6 @@ function App() {
         ticketCount={ticketCount}
         incrementTicket={incrementTicket}
         decrementTicket={decrementTicket}
-        totalPrice={totalPrice}
         formatRupiah={formatRupiah}
         onProceed={handleProceedToPayment}
         order={order}
