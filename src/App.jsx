@@ -419,16 +419,18 @@ function App() {
       </footer>
 
       {/* Modal Booking (komponen terpisah) */}
-      <PesanTiket
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        ticketCount={ticketCount}
-        incrementTicket={incrementTicket}
-        decrementTicket={decrementTicket}
-        formatRupiah={formatRupiah}
-        onProceed={handleProceedToPayment}
-        order={order}
-      />
+      {isModalOpen && (
+        <PesanTiket
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          ticketCount={ticketCount}
+          incrementTicket={incrementTicket}
+          decrementTicket={decrementTicket}
+          formatRupiah={formatRupiah}
+          onProceed={handleProceedToPayment}
+          order={order}
+        />
+      )}
     </>
   )
 }

@@ -126,33 +126,39 @@ export default function ManajemenGaleriAdmin({ navigate }) {
     }
   }
 
-  const handleStartEdit = (item) => {
-    setEditingId(item.id)
-    setEditCaption(item.caption || item.judul || '')
-  }
+  const [editFile, setEditFile] = useState(null)
+  const editFileRef = React.useRef(null)
 
   const handleSaveEdit = async (id) => {
     try {
-      await kontenGaleriService.update(id, { caption: editCaption, judul: editCaption })
-      setGaleriData(prev => prev.map(g => g.id === id ? { ...g, caption: editCaption, judul: editCaption } : g))
+      setErrorGaleri('')
+      const formData = new FormData()
+      formData.append('judul_konten', editCaption)
+      if (editFile) {
+        formData.append('file', editFile)
+      }
+      await kontenGaleriService.update(id, formData)
+      // Refresh data dari server
+      const data = await kontenGaleriService.getAll()
+      const list = Array.isArray(data) ? data : (data?.data ?? [])
+      setGaleriData(list)
       setEditingId(null)
+      setEditFile(null)
+      triggerSuccessPopup()
     } catch (err) {
-      setErrorGaleri(err.userMessage || 'Gagal menyimpan edit caption.')
+      setErrorGaleri(err?.response?.data?.message || err.userMessage || 'Gagal menyimpan perubahan.')
     }
   }
 
   const handleDeleteGaleri = async (id) => {
-    if (!window.confirm('Hapus foto ini?')) return
+    if (!window.confirm('Hapus foto ini dari galeri?')) return
     try {
+      setErrorGaleri('')
       await kontenGaleriService.delete(id)
-      setGaleriData(prev => prev.filter(g => g.id !== id))
+      setGaleriData(prev => prev.filter(g => (g.id_konten || g.id) !== id))
     } catch (err) {
-      setErrorGaleri(err.userMessage || 'Gagal menghapus foto.')
+      setErrorGaleri(err?.response?.data?.message || err.userMessage || 'Gagal menghapus foto.')
     }
-  }
-
-  const handleRemoveFile = (index) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -357,28 +363,66 @@ export default function ManajemenGaleriAdmin({ navigate }) {
                     const fullUrl = imageUrl
                       ? (imageUrl.startsWith('http') ? imageUrl : `http://127.0.0.1:8000/storage/${imageUrl}`)
                       : null
+                    
+                    // Preview: jika sedang edit dan sudah pilih file baru, tampilkan preview file baru
+                    const previewUrl = isEditing && editFile ? URL.createObjectURL(editFile) : fullUrl
+                    
                     return (
                       <div key={itemId} className="relative rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm bg-white group flex flex-col justify-between">
                         <div>
-                          {fullUrl ? (
-                            <img
-                              src={fullUrl}
-                              alt={caption}
-                              className="w-full h-36 object-cover block"
-                            />
-                          ) : (
-                            <div className="w-full h-36 bg-surface-container-low flex items-center justify-center">
-                              <span className="material-symbols-outlined text-secondary opacity-40 text-3xl">image</span>
-                            </div>
-                          )}
+                          {/* Image area — clickable to change photo when editing */}
+                          <div className="relative">
+                            {previewUrl ? (
+                              <img
+                                src={previewUrl}
+                                alt={caption}
+                                className="w-full h-36 object-cover block"
+                              />
+                            ) : (
+                              <div className="w-full h-36 bg-surface-container-low flex items-center justify-center">
+                                <span className="material-symbols-outlined text-secondary opacity-40 text-3xl">image</span>
+                              </div>
+                            )}
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => editFileRef.current?.click()}
+                                className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-white text-2xl mb-1">swap_horiz</span>
+                                <span className="text-white text-[10px] font-bold">Ganti Foto</span>
+                              </button>
+                            )}
+                          </div>
+                          
+                          {/* Caption area */}
                           <div className="p-3">
                             {isEditing ? (
-                              <input
-                                type="text"
-                                value={editCaption}
-                                onChange={(e) => setEditCaption(e.target.value)}
-                                className="w-full border border-outline-variant/30 rounded-lg px-2 py-1 text-xs text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
-                              />
+                              <>
+                                <input
+                                  ref={editFileRef}
+                                  type="file"
+                                  accept="image/jpeg,image/png"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0]
+                                    if (f) setEditFile(f)
+                                  }}
+                                />
+                                <label className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1 block">Caption</label>
+                                <input
+                                  type="text"
+                                  value={editCaption}
+                                  onChange={(e) => setEditCaption(e.target.value)}
+                                  className="w-full border border-outline-variant/30 rounded-lg px-2 py-1.5 text-xs text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                {editFile && (
+                                  <p className="text-[10px] text-primary mt-1 truncate flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[12px]">image</span>
+                                    {editFile.name}
+                                  </p>
+                                )}
+                              </>
                             ) : (
                               <p className="text-xs font-bold text-primary line-clamp-2 leading-tight">{caption}</p>
                             )}
@@ -395,7 +439,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
                                 <span className="material-symbols-outlined text-[13px]">save</span>Simpan
                               </button>
                               <button
-                                onClick={() => setEditingId(null)}
+                                onClick={() => { setEditingId(null); setEditFile(null) }}
                                 className="text-xs bg-surface-variant text-on-surface-variant px-3 py-1.5 rounded-lg hover:bg-outline/20"
                               >
                                 Batal
@@ -404,9 +448,9 @@ export default function ManajemenGaleriAdmin({ navigate }) {
                           ) : (
                             <>
                               <button
-                                onClick={() => { setEditingId(itemId); setEditCaption(caption) }}
+                                onClick={() => { setEditingId(itemId); setEditCaption(caption); setEditFile(null) }}
                                 className="text-secondary hover:text-primary hover:bg-primary/5 transition-colors p-1.5 rounded-lg"
-                                title="Edit Caption"
+                                title="Edit"
                               >
                                 <span className="material-symbols-outlined text-[18px]">edit</span>
                               </button>

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react'
 import laporanService from '../../services/laporanService'
 import bookingService from '../../services/bookingService'
 import authService from '../../services/authService'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 export default function LaporanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('laporan')
   const [showExportPopup, setShowExportPopup] = useState(false)
-  const [selectedFormat, setSelectedFormat] = useState('csv')
+  const [selectedFormat, setSelectedFormat] = useState('pdf-30')
+  const [filterDays, setFilterDays] = useState(30)
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -63,17 +66,17 @@ export default function LaporanAdmin({ navigate }) {
 
   // Build daily chart dynamically from booking data
   const buildDailyData = () => {
-    // If API provides grafik_harian, use it directly
-    if (laporanData?.grafik_harian) return laporanData.grafik_harian
-
     const dayLabels = ['MIN', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB']
     const counts = [0, 0, 0, 0, 0, 0, 0] // Sun=0..Sat=6
+
+    const filterDate = new Date()
+    filterDate.setDate(filterDate.getDate() - filterDays)
 
     bookingList.forEach(b => {
       const dateStr = b.tanggal || b.created_at || ''
       if (dateStr) {
         const d = new Date(dateStr)
-        if (!isNaN(d.getTime())) {
+        if (!isNaN(d.getTime()) && d >= filterDate) {
           counts[d.getDay()]++
         }
       }
@@ -219,11 +222,16 @@ export default function LaporanAdmin({ navigate }) {
             <div className="col-span-12 lg:col-span-8 bg-primary rounded-3xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[300px]">
               <div>
                 <span className="text-[#c8ebd0] bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                  TOTAL PENDAPATAN
+                  TOTAL PENDAPATAN ({filterDays} HARI)
                 </span>
                 <h3 className="text-5xl font-extrabold text-white mt-6">
                   {loadingLaporan ? 'Memuat...' : (() => {
-                    const total = bookingList.reduce((sum, b) => sum + (Number(b.total_harga || b.harga || 0)), 0);
+                    const fDate = new Date();
+                    fDate.setDate(fDate.getDate() - filterDays);
+                    const total = bookingList.filter(b => {
+                      const d = new Date(b.tanggal || b.created_at || '');
+                      return d >= fDate && b.status_booking !== 'Batal' && b.status_booking !== 'Dibatalkan';
+                    }).reduce((sum, b) => sum + (Number(b.total_harga || b.total_payar || b.total_bayar || b.harga || 0)), 0);
                     return `Rp ${total.toLocaleString('id-ID')}`;
                   })()}
                 </h3>
@@ -233,21 +241,21 @@ export default function LaporanAdmin({ navigate }) {
                 <div>
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Booking</p>
                   <p className="text-xl font-bold text-white">
-                    {loadingLaporan ? '...' : bookingList.length}
+                    {loadingLaporan ? '...' : bookingList.reduce((sum, b) => sum + Number(b.jumlah_orang || b.qty || 1), 0)}
                   </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pembayaran</p>
                   <p className="text-xl font-bold text-white">
-                    {loadingLaporan ? '...' : bookingList.filter(b => (b.status === 'Berhasil' || b.status_pembayaran === 'Berhasil' || b.status_booking === 'Berhasil')).length}
+                    {loadingLaporan ? '...' : bookingList.filter(b => b.status_booking !== 'Batal' && b.status_booking !== 'Dibatalkan').length}
                   </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pelanggan</p>
                   <p className="text-xl font-bold text-white">
                     {loadingLaporan ? '...' : (() => {
-                      const uEmails = new Set(bookingList.map(b => b.pelanggan?.email || b.email).filter(Boolean));
-                      return uEmails.size > 0 ? uEmails.size : bookingList.length;
+                      const uNames = new Set(bookingList.map(b => b.pelanggan?.nama_lengkap || b.pelanggan?.nama || b.nama || b.name || b.pelanggan?.email || b.email).filter(Boolean));
+                      return uNames.size > 0 ? uNames.size : bookingList.length;
                     })()}
                   </p>
                 </div>
@@ -264,10 +272,11 @@ export default function LaporanAdmin({ navigate }) {
                 </div>
                 <h4 className="text-4xl font-extrabold text-[#163422] mt-6 tracking-tight">
                   {loadingLaporan ? '...' : (() => {
-                    const uEmails = new Set(bookingList.map(b => b.pelanggan?.email || b.email).filter(Boolean));
-                    return uEmails.size > 0 ? uEmails.size : bookingList.length;
+                    const uNames = new Set(bookingList.map(b => b.pelanggan?.nama_lengkap || b.pelanggan?.nama || b.nama || b.name || b.pelanggan?.email || b.email).filter(Boolean));
+                    return uNames.size > 0 ? uNames.size : bookingList.length;
                   })()}
                 </h4>
+                
                 <p className="text-secondary font-medium text-xs mt-1">Total Pelanggan Terdaftar</p>
               </div>
               <div className="mt-8">
@@ -282,9 +291,13 @@ export default function LaporanAdmin({ navigate }) {
               <div className="flex justify-between items-center mb-8">
                 <h4 className="text-lg font-bold text-[#163422]">Grafik Kunjungan Harian</h4>
                 <div className="relative">
-                  <select className="bg-[#f4f4f2] text-[#695d47] border-none rounded-xl text-xs font-bold focus:ring-0 py-2 pl-4 pr-10 appearance-none cursor-pointer">
-                    <option>7 Hari Terakhir</option>
-                    <option>30 Hari Terakhir</option>
+                  <select 
+                    value={filterDays}
+                    onChange={(e) => setFilterDays(Number(e.target.value))}
+                    className="bg-[#f4f4f2] text-[#695d47] border-none rounded-xl text-xs font-bold focus:ring-0 py-2 pl-4 pr-10 appearance-none cursor-pointer"
+                  >
+                    <option value={7}>7 Hari Terakhir</option>
+                    <option value={30}>30 Hari Terakhir</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" style={{ fontSize: '16px' }}>
                     keyboard_arrow_down
@@ -335,25 +348,6 @@ export default function LaporanAdmin({ navigate }) {
 
             {/* Option Cards */}
             <div className="space-y-3 mb-8">
-              {/* Excel Option */}
-              <div 
-                onClick={() => setSelectedFormat('excel')}
-                className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
-                  selectedFormat === 'excel'
-                    ? 'border-[#163422] bg-[#f4f4f2]'
-                    : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
-                }`}
-              >
-                <div className="w-10 h-10 rounded-xl bg-white border border-[#eeeeec] flex items-center justify-center text-primary shadow-sm flex-shrink-0">
-                  <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>table_chart</span>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format Excel (.csv)</h4>
-                  <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
-                    Seluruh data transaksi booking pendakian.
-                  </p>
-                </div>
-              </div>
 
               {/* PDF Option 7 Hari */}
               <div 
@@ -407,94 +401,60 @@ export default function LaporanAdmin({ navigate }) {
               <button 
                 className="flex-1 py-3 bg-[#163422] text-[#f9f9f7] font-headline font-bold rounded-full transition-all duration-300 active:scale-95 shadow-md hover:opacity-90 text-xs flex items-center justify-center gap-1.5"
                 onClick={() => {
-                  if (selectedFormat === 'excel') {
-                    // Export Excel
-                    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-                    csvContent += "ID Booking,Nama Pelanggan,Email,Rute,Tanggal Kunjungan,Jumlah Orang,Total Harga,Status\n";
-                    bookingList.forEach(b => {
-                      const pelanggan = b.pelanggan || {};
-                      const name = pelanggan.nama_lengkap || pelanggan.nama || b.name || b.nama || '-';
-                      const email = pelanggan.email || b.email || '-';
-                      const rute = b.jenis_tiket || b.rute || b.route || '-';
-                      const date = (b.tanggal_kunjungan || b.tanggal || b.created_at || '').substring(0, 10);
-                      const qty = b.jumlah_orang || b.qty || 1;
-                      const total = b.total_harga || b.harga || 0;
-                      const status = b.status_booking || b.status || '-';
-                      csvContent += `"${b.id_booking || b.id}","${name}","${email}","${rute}","${date}","${qty}","${total}","${status}"\n`;
-                    });
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", `Laporan_Keuangan_Galunggung_${new Date().toISOString().substring(0,10)}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  } else {
+                  if (selectedFormat === 'pdf-7' || selectedFormat === 'pdf-30') {
                     // Export PDF (7 atau 30 hari)
                     const days = selectedFormat === 'pdf-7' ? 7 : 30;
                     const filterDate = new Date();
                     filterDate.setDate(filterDate.getDate() - days);
                     const filteredList = bookingList.filter(b => {
                       const bDate = new Date(b.tanggal_kunjungan || b.tanggal || b.created_at);
-                      return bDate >= filterDate;
+                      return bDate >= filterDate && b.status_booking !== 'Batal' && b.status_booking !== 'Dibatalkan';
                     });
 
-                    const printWindow = window.open('', '_blank');
-                    printWindow.document.write(`
-                      <html>
-                        <head>
-                          <title>Laporan Keuangan ${days} Hari Terakhir - Gunung Galunggung</title>
-                          <style>
-                            body { font-family: Arial, sans-serif; padding: 40px; color: #1a1c1b; }
-                            h1 { color: #163422; border-bottom: 2px solid #163422; padding-bottom: 10px; margin-bottom: 5px; }
-                            h2 { color: #695d47; font-size: 14px; font-weight: normal; margin-bottom: 30px; }
-                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                            th, td { border: 1px solid #eeeeec; padding: 12px; text-align: left; font-size: 12px; }
-                            th { background-color: #f4f4f2; color: #163422; font-weight: bold; }
-                            tr:nth-child(even) { background-color: #f9f9f7; }
-                            .total-section { margin-top: 30px; text-align: right; font-size: 14px; font-weight: bold; color: #163422; }
-                          </style>
-                        </head>
-                        <body>
-                          <h1>Laporan Keuangan Gunung Galunggung</h1>
-                          <h2>Periode: ${days} Hari Terakhir (Sejak ${filterDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })})</h2>
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>ID</th>
-                                <th>Nama</th>
-                                <th>Tanggal</th>
-                                <th>Rute</th>
-                                <th>Jumlah Orang</th>
-                                <th>Total Harga</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              ${filteredList.map(b => `
-                                <tr>
-                                  <td>BOOK-${String(b.id_booking || b.id).padStart(4, '0')}</td>
-                                  <td>${b.pelanggan?.nama_lengkap || b.nama || '-'}</td>
-                                  <td>${(b.tanggal_kunjungan || b.tanggal || b.created_at || '').substring(0, 10)}</td>
-                                  <td>${b.jenis_tiket || b.rute || '-'}</td>
-                                  <td>${b.jumlah_orang || b.qty || 1} orang</td>
-                                  <td>Rp ${Number(b.total_harga || b.harga || 0).toLocaleString('id-ID')}</td>
-                                </tr>
-                              `).join('')}
-                            </tbody>
-                          </table>
-                          <div class="total-section">
-                            Total Pendapatan (${days} Hari): Rp ${filteredList.reduce((sum, b) => sum + Number(b.total_harga || b.harga || 0), 0).toLocaleString('id-ID')}
-                          </div>
-                          <script>
-                            window.onload = function() {
-                              window.print();
-                              window.close();
-                            }
-                          </script>
-                        </body>
-                      </html>
-                    `);
-                    printWindow.document.close();
+                    const doc = new jsPDF()
+                    doc.setFont('helvetica')
+                    
+                    // Title
+                    doc.setFontSize(20)
+                    doc.setTextColor(22, 52, 34) // Primary color
+                    doc.text('Laporan Keuangan Gunung Galunggung', 14, 20)
+                    
+                    // Subtitle
+                    doc.setFontSize(11)
+                    doc.setTextColor(105, 93, 71)
+                    doc.text(`Periode: ${days} Hari Terakhir (Sejak ${filterDate.toLocaleDateString('id-ID')})`, 14, 28)
+                    
+                    const tableData = filteredList.map((b, index) => {
+                      return [
+                        index + 1,
+                        `BOOK-${String(b.id_booking || b.id).padStart(4, '0')}`,
+                        b.pelanggan?.nama_lengkap || b.nama || '-',
+                        (b.tanggal_kunjungan || b.tanggal || b.created_at || '').substring(0, 10),
+                        b.jenis_tiket || b.rute || '-',
+                        `${b.jumlah_orang || b.qty || 1}`,
+                        `Rp ${Number(b.total_harga || b.total_bayar || b.harga || 0).toLocaleString('id-ID')}`
+                      ]
+                    })
+
+                    doc.autoTable({
+                      startY: 35,
+                      head: [['No', 'ID Booking', 'Nama Pelanggan', 'Tanggal', 'Rute', 'Qty', 'Total']],
+                      body: tableData,
+                      theme: 'grid',
+                      headStyles: { fillColor: [22, 52, 34] },
+                      styles: { fontSize: 9 }
+                    })
+                    
+                    // Total Calculation
+                    const totalPendapatan = filteredList.reduce((sum, b) => sum + Number(b.total_harga || b.total_bayar || b.harga || 0), 0)
+                    const finalY = doc.lastAutoTable.finalY || 35
+                    
+                    doc.setFontSize(12)
+                    doc.setFont('helvetica', 'bold')
+                    doc.setTextColor(22, 52, 34)
+                    doc.text(`Total Pendapatan: Rp ${totalPendapatan.toLocaleString('id-ID')}`, 14, finalY + 10)
+                    
+                    doc.save(`Laporan_Keuangan_${days}_Hari.pdf`)
                   }
                   setShowExportPopup(false)
                 }}

@@ -204,14 +204,14 @@ export default function KotakMasukAdmin({ navigate }) {
                   </button>
                 </div>
 
-                {/* Subject */}
+                {/* Subject Header */}
                 {subjek && (
                   <div className="px-6 pb-2">
-                    <p className="text-xs font-bold text-secondary uppercase tracking-widest">{subjek}</p>
+                    <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-primary text-sm">{subjek}</h4>
                   </div>
                 )}
 
-                {/* Message Bubble */}
+                {/* Message Body */}
                 <div className="px-6 pb-4">
                   <div className="bg-[#f4f4f2] rounded-2xl rounded-tl-sm px-5 py-4 inline-block max-w-full">
                     <p className="text-sm text-[#1a1c1b] font-['Inter'] leading-relaxed">{pesan}</p>

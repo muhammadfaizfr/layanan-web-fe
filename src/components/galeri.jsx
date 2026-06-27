@@ -101,60 +101,48 @@ function Galeri() {
         </div>
       )}
 
-      {/* Gallery: 2-column aesthetic rows */}
+      {/* Gallery: Masonry Layout */}
       {!loading && images.length > 0 && (
         <section className="max-w-7xl mx-auto px-8 mb-20">
-          <div className="space-y-6">
-            {pairs.map((pair, rowIdx) => {
-              const isOdd = rowIdx % 2 === 0
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            {images.map((item, idx) => {
+              const imgUrl = getImageUrl(item)
+              const caption = getCaption(item, idx)
+              const itemId = item.id_konten || item.id
+
               return (
-                <div key={rowIdx} className={`grid gap-6 ${pair.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-                  {pair.map((item, colIdx) => {
-                    const imgUrl = getImageUrl(item)
-                    const caption = getCaption(item, rowIdx * 2 + colIdx)
-                    const itemId = item.id_konten || item.id
-                    // Alternate aspect ratios for visual rhythm
-                    const isTall = (isOdd && colIdx === 0) || (!isOdd && colIdx === 1)
-                    const aspectClass = pair.length === 1
-                      ? 'aspect-[21/9]'
-                      : isTall ? 'aspect-[3/4]' : 'aspect-[4/3]'
+                <div
+                  key={itemId || idx}
+                  className="group relative overflow-hidden rounded-3xl cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 break-inside-avoid"
+                  onClick={() => imgUrl && setLightbox({ url: imgUrl, caption })}
+                >
+                  {imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={caption}
+                      className="w-full h-auto object-contain bg-surface-container-low group-hover:scale-[1.02] transition-transform duration-700 ease-out"
+                    />
+                  ) : (
+                    <div className="w-full aspect-square bg-surface-container flex items-center justify-center">
+                      <span className="material-symbols-outlined text-5xl text-secondary/30">image</span>
+                    </div>
+                  )}
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  {/* Caption badge at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
+                    <p className="text-white font-headline font-bold text-lg leading-tight drop-shadow-lg">{caption}</p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="material-symbols-outlined text-white/70 text-sm">location_on</span>
+                      <span className="text-white/70 text-xs tracking-wide">Gunung Galunggung</span>
+                    </div>
+                  </div>
 
-                    return (
-                      <div
-                        key={itemId || colIdx}
-                        className={`group relative overflow-hidden rounded-3xl cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 ${aspectClass}`}
-                        onClick={() => imgUrl && setLightbox({ url: imgUrl, caption })}
-                      >
-                        {imgUrl ? (
-                          <img
-                            src={imgUrl}
-                            alt={caption}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-surface-container flex items-center justify-center">
-                            <span className="material-symbols-outlined text-5xl text-secondary/30">image</span>
-                          </div>
-                        )}
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        
-                        {/* Caption badge at bottom */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
-                          <p className="text-white font-headline font-bold text-lg leading-tight drop-shadow-lg">{caption}</p>
-                          <div className="flex items-center gap-1.5 mt-2">
-                            <span className="material-symbols-outlined text-white/70 text-sm">location_on</span>
-                            <span className="text-white/70 text-xs tracking-wide">Gunung Galunggung</span>
-                          </div>
-                        </div>
-
-                        {/* Zoom icon top-right */}
-                        <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
-                          <span className="material-symbols-outlined text-white text-[18px]">open_in_full</span>
-                        </div>
-                      </div>
-                    )
-                  })}
+                  {/* Zoom icon top-right */}
+                  <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
+                    <span className="material-symbols-outlined text-white text-[18px]">open_in_full</span>
+                  </div>
                 </div>
               )
             })}

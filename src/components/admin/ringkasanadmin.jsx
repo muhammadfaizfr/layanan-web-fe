@@ -60,9 +60,10 @@ export default function RingkasanAdmin({ navigate }) {
         const bookingList = Array.isArray(booking) ? booking : (booking?.data ?? [])
         const pembayaranList = Array.isArray(pembayaran) ? pembayaran : (pembayaran?.data ?? [])
 
-        setTotalPelanggan(pelangganList.length)
-        setTotalBooking(bookingList.length)
-        setTotalPembayaran(pembayaranList.length)
+        const uNames = new Set(bookingList.map(b => b.pelanggan?.nama_lengkap || b.pelanggan?.nama || b.nama || b.name || b.pelanggan?.email || b.email).filter(Boolean))
+        setTotalPelanggan(uNames.size > 0 ? uNames.size : bookingList.length)
+        setTotalBooking(bookingList.reduce((sum, b) => sum + Number(b.jumlah_orang || b.qty || 1), 0))
+        setTotalPembayaran(bookingList.filter(b => b.status_booking !== 'Batal' && b.status_booking !== 'Dibatalkan').length)
         
         const calcPendapatan = bookingList.reduce((sum, b) => {
           const st = (b.status_booking || '').toLowerCase()
