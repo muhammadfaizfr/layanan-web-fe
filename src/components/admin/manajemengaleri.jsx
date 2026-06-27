@@ -8,8 +8,12 @@ export default function ManajemenGaleriAdmin({ navigate }) {
   const [loadingGaleri, setLoadingGaleri] = useState(true)
   const [errorGaleri, setErrorGaleri] = useState('')
   const [isDragging, setIsDragging] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState([])
+  const [selectedFile, setSelectedFile] = useState(null)
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [captionInput, setCaptionInput] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editCaption, setEditCaption] = useState('')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -78,13 +82,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
       (f) => f.type === 'image/jpeg' || f.type === 'image/png'
     )
     if (files.length > 0) {
-      const previews = files.map((f) => ({
-        name: f.name,
-        url: URL.createObjectURL(f),
-        size: (f.size / 1024 / 1024).toFixed(2),
-      }))
-      setUploadedFiles((prev) => [...prev, ...previews])
-      triggerSuccessPopup()
+      setSelectedFile(files[0])
     }
   }, [])
 
@@ -93,13 +91,63 @@ export default function ManajemenGaleriAdmin({ navigate }) {
       (f) => f.type === 'image/jpeg' || f.type === 'image/png'
     )
     if (files.length > 0) {
-      const previews = files.map((f) => ({
-        name: f.name,
-        url: URL.createObjectURL(f),
-        size: (f.size / 1024 / 1024).toFixed(2),
-      }))
-      setUploadedFiles((prev) => [...prev, ...previews])
+      setSelectedFile(files[0])
+    }
+  }
+
+  const handleUploadToServer = async (e) => {
+    e.preventDefault()
+    if (!selectedFile) return setErrorGaleri('Pilih foto terlebih dahulu.')
+    if (!captionInput.trim()) return setErrorGaleri('Caption foto wajib diisi.')
+
+    setIsUploading(true)
+    setErrorGaleri('')
+    try {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      formData.append('judul_konten', captionInput)
+      formData.append('id_admin', localStorage.getItem('admin_id') || 1)
+      
+      await kontenGaleriService.create(formData)
+      
+      // refresh galeri
+      const data = await kontenGaleriService.getAll()
+      const list = Array.isArray(data) ? data : (data?.data ?? [])
+      setGaleriData(list)
+      
+      // reset form
+      setSelectedFile(null)
+      setCaptionInput('')
       triggerSuccessPopup()
+    } catch (err) {
+      setErrorGaleri(err.userMessage || 'Gagal mengunggah foto.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleStartEdit = (item) => {
+    setEditingId(item.id)
+    setEditCaption(item.caption || item.judul || '')
+  }
+
+  const handleSaveEdit = async (id) => {
+    try {
+      await kontenGaleriService.update(id, { caption: editCaption, judul: editCaption })
+      setGaleriData(prev => prev.map(g => g.id === id ? { ...g, caption: editCaption, judul: editCaption } : g))
+      setEditingId(null)
+    } catch (err) {
+      setErrorGaleri(err.userMessage || 'Gagal menyimpan edit caption.')
+    }
+  }
+
+  const handleDeleteGaleri = async (id) => {
+    if (!window.confirm('Hapus foto ini?')) return
+    try {
+      await kontenGaleriService.delete(id)
+      setGaleriData(prev => prev.filter(g => g.id !== id))
+    } catch (err) {
+      setErrorGaleri(err.userMessage || 'Gagal menghapus foto.')
     }
   }
 
@@ -181,19 +229,10 @@ export default function ManajemenGaleriAdmin({ navigate }) {
       <main className="ml-72 flex-1 min-h-screen flex flex-col relative overflow-hidden">
         {/* TopNavBar */}
         <header className="w-full h-16 bg-[#f9f9f7] dark:bg-[#1a1c1b] shadow-sm opacity-95 backdrop-blur-md sticky top-0 z-50 flex justify-end items-center px-8 font-['Plus_Jakarta_Sans'] text-sm tracking-tight border-b border-outline-variant/10 gap-6">
-          <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-              <span className="material-symbols-outlined text-secondary">notifications</span>
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-            </button>
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-              <span className="material-symbols-outlined text-secondary">settings</span>
-            </button>
-          </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
-              <p className="font-bold text-primary leading-none">Admin Galunggung</p>
-              <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+              <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img
@@ -216,91 +255,80 @@ export default function ManajemenGaleriAdmin({ navigate }) {
                   Kurasi visual terbaik untuk merepresentasikan keindahan abadi Gunung Galunggung kepada dunia.
                 </p>
               </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-[#163422] text-[#f9f9f7] px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all flex-shrink-0 active:scale-95 duration-200"
-              >
-                <span className="material-symbols-outlined text-sm">add</span>
-                Unggah Foto Baru
-              </button>
             </div>
 
-            {/* Drag and Drop Zone */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex flex-col items-center justify-center py-16 px-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
-                isDragging
-                  ? 'border-[#163422] bg-[#163422]/5'
-                  : 'border-[#c8c8c6] hover:border-[#163422] bg-transparent'
-              }`}
-            >
-              {/* Folder/Upload Icon Container */}
-              <div className="w-16 h-16 rounded-full bg-[#f4f4f2] flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-secondary" style={{ fontSize: '32px' }}>upload_file</span>
-              </div>
-
-              <h3 className="font-display font-bold text-[#1a1c1b] text-lg mb-2">Unggah Cepat</h3>
-              <p className="text-secondary text-sm font-['Inter'] text-center leading-relaxed mb-6">
-                Tarik &amp; lepas foto Anda<br />ke sini atau klik untuk<br />menelusuri file.
-              </p>
-
-              {/* Badges info */}
-              <div className="flex gap-2">
-                {['JPG', 'PNG', 'MAX 10MB'].map((tag) => (
-                  <span
-                    key={tag}
-                    className="border border-[#c8c8c6] bg-white rounded-full px-3 py-1 text-[11px] font-medium tracking-wide text-secondary font-['Inter']"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Hidden Input File */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png"
-              multiple
-              className="hidden"
-              onChange={handleFileSelect}
-            />
-
-            {/* Uploaded Previews (local) */}
-            {uploadedFiles.length > 0 && (
-              <div className="mt-8 pt-8 border-t border-outline-variant/20">
-                <h4 className="font-display font-bold text-primary text-base mb-4">File yang Diunggah</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {uploadedFiles.map((file, idx) => (
-                    <div
-                      key={idx}
-                      className="relative rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm bg-white group"
-                    >
-                      <img src={file.url} alt={file.name} className="w-full h-32 object-cover block" />
-                      <div className="p-3 flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-primary truncate leading-tight">{file.name}</p>
-                          <p className="text-[10px] text-secondary mt-1">{file.size} MB</p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleRemoveFile(idx)
-                          }}
-                          className="text-[#ba1a1a] hover:bg-red-50 p-1.5 rounded-full transition-colors flex-shrink-0"
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
-                        </button>
+            {/* Upload Form */}
+            <form onSubmit={handleUploadToServer} className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 mb-10 shadow-sm flex flex-col md:flex-row gap-8">
+              {/* Left: Drag and Drop */}
+              <div className="md:w-1/3 flex-shrink-0">
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`relative w-full h-48 md:h-full min-h-[200px] flex flex-col items-center justify-center border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden ${
+                    isDragging
+                      ? 'border-primary bg-primary/5'
+                      : selectedFile
+                      ? 'border-primary/30 bg-surface'
+                      : 'border-outline-variant/50 hover:border-primary bg-surface-container-low/30'
+                  }`}
+                >
+                  {selectedFile ? (
+                    <>
+                      <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <span className="material-symbols-outlined text-white text-3xl mb-2">swap_horiz</span>
+                        <p className="text-white text-xs font-bold">Ganti Foto</p>
                       </div>
-                    </div>
-                  ))}
+                      <div className="relative z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg border border-white/50 flex items-center gap-2 max-w-[80%] mt-auto mb-4 shadow-sm">
+                        <span className="material-symbols-outlined text-primary text-[16px]">image</span>
+                        <p className="text-xs font-bold text-primary truncate">{selectedFile.name}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm border border-outline-variant/10">
+                        <span className="material-symbols-outlined text-primary text-2xl">add_photo_alternate</span>
+                      </div>
+                      <h3 className="font-display font-bold text-on-surface text-sm mb-1">Unggah Foto</h3>
+                      <p className="text-secondary text-[11px] text-center px-4">Tarik & lepas foto ke sini atau klik untuk menelusuri</p>
+                    </>
+                  )}
                 </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
               </div>
-            )}
+
+              {/* Right: Caption & Submit */}
+              <div className="md:w-2/3 flex flex-col">
+                <div className="mb-6 flex-1">
+                  <label className="text-xs font-bold text-primary uppercase tracking-widest mb-3 block">Caption Foto</label>
+                  <textarea
+                    placeholder="Ceritakan kisah di balik foto ini..."
+                    value={captionInput}
+                    onChange={(e) => setCaptionInput(e.target.value)}
+                    className="w-full h-32 md:h-[130px] bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface resize-none transition-all"
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedFile || !captionInput.trim()}
+                  className="w-full bg-primary text-on-primary py-4 rounded-2xl font-bold text-sm hover:bg-primary/90 active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isUploading ? (
+                    <><span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> Mengunggah...</>
+                  ) : (
+                    <><span className="material-symbols-outlined text-[18px]">cloud_upload</span> Simpan ke Galeri</>
+                  )}
+                </button>
+              </div>
+            </form>
 
             {/* Galeri dari Database */}
             <div className="mt-8 pt-8 border-t border-outline-variant/20">
@@ -322,23 +350,75 @@ export default function ManajemenGaleriAdmin({ navigate }) {
               ) : galeriData.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {galeriData.map((item) => {
-                    const imageUrl = item.url || item.gambar || item.file_path || item.foto
-                    const caption = item.judul || item.caption || item.nama || `Foto ${item.id}`
+                    const itemId = item.id_konten || item.id
+                    const imageUrl = item.file || item.url || item.gambar || item.file_path || item.foto
+                    const caption = item.judul_konten || item.judul || item.caption || `Foto ${itemId}`
+                    const isEditing = editingId === itemId
+                    const fullUrl = imageUrl
+                      ? (imageUrl.startsWith('http') ? imageUrl : `http://127.0.0.1:8000/storage/${imageUrl}`)
+                      : null
                     return (
-                      <div key={item.id} className="relative rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm bg-white group">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl.startsWith('http') ? imageUrl : `http://127.0.0.1:8000/storage/${imageUrl}`}
-                            alt={caption}
-                            className="w-full h-32 object-cover block"
-                          />
-                        ) : (
-                          <div className="w-full h-32 bg-surface-container-low flex items-center justify-center">
-                            <span className="material-symbols-outlined text-secondary opacity-40 text-3xl">image</span>
+                      <div key={itemId} className="relative rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm bg-white group flex flex-col justify-between">
+                        <div>
+                          {fullUrl ? (
+                            <img
+                              src={fullUrl}
+                              alt={caption}
+                              className="w-full h-36 object-cover block"
+                            />
+                          ) : (
+                            <div className="w-full h-36 bg-surface-container-low flex items-center justify-center">
+                              <span className="material-symbols-outlined text-secondary opacity-40 text-3xl">image</span>
+                            </div>
+                          )}
+                          <div className="p-3">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={editCaption}
+                                onChange={(e) => setEditCaption(e.target.value)}
+                                className="w-full border border-outline-variant/30 rounded-lg px-2 py-1 text-xs text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                            ) : (
+                              <p className="text-xs font-bold text-primary line-clamp-2 leading-tight">{caption}</p>
+                            )}
                           </div>
-                        )}
-                        <div className="p-3">
-                          <p className="text-xs font-bold text-primary truncate leading-tight">{caption}</p>
+                        </div>
+                        
+                        <div className="p-3 pt-0 flex gap-2 justify-end border-t border-outline-variant/10">
+                          {isEditing ? (
+                            <>
+                              <button
+                                onClick={() => handleSaveEdit(itemId)}
+                                className="text-xs bg-primary text-on-primary px-3 py-1.5 rounded-lg hover:opacity-90 font-bold flex items-center gap-1"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">save</span>Simpan
+                              </button>
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="text-xs bg-surface-variant text-on-surface-variant px-3 py-1.5 rounded-lg hover:bg-outline/20"
+                              >
+                                Batal
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => { setEditingId(itemId); setEditCaption(caption) }}
+                                className="text-secondary hover:text-primary hover:bg-primary/5 transition-colors p-1.5 rounded-lg"
+                                title="Edit Caption"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteGaleri(itemId)}
+                                className="text-error hover:text-error hover:bg-error/5 transition-colors p-1.5 rounded-lg"
+                                title="Hapus Foto"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     )

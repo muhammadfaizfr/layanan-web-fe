@@ -58,7 +58,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
       ])
       const bookingList = Array.isArray(bookingData) ? bookingData : (bookingData?.data ?? [])
       const payList = Array.isArray(pembayaranData) ? pembayaranData : (pembayaranData?.data ?? [])
-      setTicketList(bookingList)
+      setTicketList(bookingList.filter(b => !b.route))
       setPembayaranList(payList)
     } catch (err) {
       setError(err.userMessage || 'Gagal memuat data booking.')
@@ -69,12 +69,32 @@ export default function ManajemenTiketAdmin({ navigate }) {
 
   // Hitung pendapatan & tiket dari data real
   const today = new Date().toISOString().split('T')[0]
-  const todayPayments = pembayaranList.filter(p => {
-    const tgl = p.tanggal_bayar || p.created_at || ''
-    return tgl.startsWith(today)
-  })
-  const pendapatanHarian = todayPayments.reduce((sum, p) => sum + Number(p.total_payar || p.jumlah_bayar || p.total_bayar || 0), 0)
-  const tiketCheckin = ticketList.filter(t => t.status_booking === 'Dikonfirmasi' || t.status_booking === 'Lunas' || t.status === 'Lunas').length
+  
+  // Calculate total income for today's bookings (that are not cancelled)
+  const pendapatanHarian = ticketList.reduce((sum, t) => {
+    // Support both created_at with time (ISO) and date-only
+    const tglRaw = t.created_at || t.tanggal || ''
+    const tgl = tglRaw.substring(0, 10) // take only YYYY-MM-DD part
+    if (tgl === today && t.status_booking !== 'Batal' && t.status_booking !== 'Dibatalkan') {
+      return sum + Number(t.total_payar || t.total_bayar || 0)
+    }
+    return sum
+  }, 0)
+  
+  const todayTransaksiCount = ticketList.filter(t => {
+    const tglRaw = t.created_at || t.tanggal || ''
+    return tglRaw.substring(0, 10) === today
+  }).length
+  
+  const tiketCheckin = ticketList.filter(t => {
+    const st = (t.status_booking || t.status || '')
+    return st === 'Dikonfirmasi' || st === 'Lunas' || st === 'Selesai' || st === 'Diproses'
+  }).length
+  
+  const waitingRequests = ticketList.filter(t => {
+    const st = (t.status_booking || t.status || '')
+    return st.toLowerCase().includes('menunggu')
+  }).length
 
   useEffect(() => {
     fetchBooking()
@@ -82,8 +102,11 @@ export default function ManajemenTiketAdmin({ navigate }) {
 
   const handleApprove = async (id) => {
     try {
-      await bookingService.update(id, { status: 'Lunas' })
-      setTicketList(prev => prev.map(t => t.id === id ? { ...t, status: 'Lunas', statusColor: 'blue' } : t))
+      await bookingService.update(id, { status_booking: 'Dikonfirmasi' })
+      setTicketList(prev => prev.map(t => {
+        const tId = t.id_booking || t.id
+        return tId === id ? { ...t, status_booking: 'Dikonfirmasi', status: 'Dikonfirmasi' } : t
+      }))
     } catch (err) {
       setError(err.userMessage || 'Gagal menyetujui booking.')
     }
@@ -93,7 +116,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
     if (!window.confirm('Yakin ingin menghapus tiket ini?')) return
     try {
       await bookingService.delete(id)
-      setTicketList(prev => prev.filter(t => t.id !== id))
+      setTicketList(prev => prev.filter(t => (t.id_booking || t.id) !== id))
     } catch (err) {
       setError(err.userMessage || 'Gagal menghapus tiket.')
     }
@@ -164,19 +187,10 @@ export default function ManajemenTiketAdmin({ navigate }) {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-                <span className="material-symbols-outlined text-primary">notifications</span>
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-              </button>
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-                <span className="material-symbols-outlined text-primary">settings</span>
-              </button>
-            </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>
@@ -215,10 +229,18 @@ export default function ManajemenTiketAdmin({ navigate }) {
             <div className="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm">
               <span className="material-symbols-outlined">calendar_today</span>
             </div>
-            <div>
-              <label className="block text-[9px] font-bold tracking-widest uppercase text-[#695d47] mb-0.5">Rentang Tanggal</label>
-              <div className="text-sm font-bold text-[#1a1c1b]">24 mei 2026 - 31 mei 2026</div>
-            </div>
+              <div>
+                <label className="block text-[9px] font-bold tracking-widest uppercase text-[#695d47] mb-0.5">Rentang Tanggal</label>
+                <div className="text-sm font-bold text-[#1a1c1b]">
+                  {(() => {
+                    const now = new Date();
+                    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    const fmt = (d) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    return `${fmt(firstDay)} - ${fmt(lastDay)}`;
+                  })()}
+                </div>
+              </div>
           </div>
 
           {/* Error display */}
@@ -254,16 +276,18 @@ export default function ManajemenTiketAdmin({ navigate }) {
                 )}
 
                 {!loading && ticketList.map((ticket) => {
-                  const name = ticket.name || ticket.nama || ticket.pelanggan?.nama || '-'
-                  const type = ticket.type || ticket.jenis_tiket || ticket.jenis || 'Tiket Standar'
-                  const date = ticket.date || ticket.tanggal || ticket.tanggal_kunjungan || ticket.created_at?.split('T')[0] || '-'
-                  const status = ticket.status || 'Menunggu'
-                  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                  const isLunas = status === 'Lunas' || status === 'lunas'
+                  // Nama diambil dari relasi pelanggan, jika tidak ada coba field lain
+                  const pelanggan = ticket.pelanggan || {}
+                  const name = pelanggan.nama_lengkap || pelanggan.nama || ticket.name || ticket.nama || ticket.nama_lengkap || 'Tidak diketahui'
+                  const type = ticket.jenis_tiket || ticket.type || ticket.jenis || 'Tiket Standar'
+                  const date = (ticket.created_at || ticket.date || ticket.tanggal || ticket.tanggal_kunjungan || '').substring(0, 10) || '-'
+                  const status = ticket.status_booking || ticket.status || 'Menunggu'
+                  const initials = name && name !== 'Tidak diketahui' ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
+                  const isLunas = status === 'Lunas' || status === 'Dikonfirmasi' || status === 'lunas' || status === 'Selesai' || status === 'Diproses'
                   const statusColor = isLunas ? 'blue' : 'amber'
 
                   return (
-                    <tr key={ticket.id} className="hover:bg-surface-container-low/30 transition-colors group">
+                    <tr key={ticket.id_booking || ticket.id} className="hover:bg-surface-container-low/30 transition-colors group">
                       <td className="px-6 py-4 font-label text-sm text-primary font-semibold">BOOK-{String(ticket.id_booking || ticket.id).padStart(4, '0')}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -287,7 +311,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
                         <div className="flex items-center justify-end gap-3">
                           {!isLunas && (
                             <button
-                              onClick={() => handleApprove(ticket.id)}
+                              onClick={() => handleApprove(ticket.id_booking || ticket.id)}
                               className="material-symbols-outlined text-emerald-600 hover:text-emerald-800 transition-colors"
                               title="Setujui Pembayaran"
                             >
@@ -295,7 +319,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
                             </button>
                           )}
                           <button
-                            onClick={() => handleDelete(ticket.id)}
+                            onClick={() => handleDelete(ticket.id_booking || ticket.id)}
                             className="material-symbols-outlined text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all"
                             title="Hapus Tiket"
                           >
@@ -319,7 +343,9 @@ export default function ManajemenTiketAdmin({ navigate }) {
 
             {/* Pagination */}
             <div className="px-6 py-5 bg-surface-container-lowest flex justify-between items-center border-t border-outline-variant/10">
-              <span className="text-sm text-on-surface-variant font-body">Menampilkan 1 sampai 5 dari 128 hasil</span>
+              <span className="text-sm text-on-surface-variant font-body">
+                {loading ? 'Memuat...' : `Menampilkan ${ticketList.length} hasil`}
+              </span>
               <div className="flex gap-2">
                 <button className="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant/20 hover:bg-surface-container-low transition-colors">
                   <span className="material-symbols-outlined text-sm">chevron_left</span>
@@ -345,7 +371,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
                 </p>
                 <div className="flex items-center gap-2 text-on-primary/80 text-sm">
                   <span className="material-symbols-outlined text-sm">receipt_long</span>
-                  <span>{todayPayments.length} transaksi hari ini</span>
+                  <span>{todayTransaksiCount} transaksi hari ini</span>
                 </div>
               </div>
             </div>
@@ -366,7 +392,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
               <div className="relative z-10">
                 <h3 className="text-on-surface-variant font-label font-bold tracking-widest uppercase text-xs mb-4">Permintaan Menunggu</h3>
                 <p className="text-primary text-3xl font-display font-extrabold mb-2">
-                  {loading ? '...' : ticketList.filter(t => t.status_booking === 'Menunggu' || t.status === 'Menunggu').length}
+                  {loading ? '...' : waitingRequests}
                 </p>
                 <div className="flex items-center gap-2 text-on-surface-variant text-sm">
                   <span className="material-symbols-outlined text-sm">assignment</span>

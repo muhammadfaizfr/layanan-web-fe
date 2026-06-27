@@ -6,6 +6,7 @@ function Galeri() {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [lightbox, setLightbox] = useState(null)
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -24,77 +25,45 @@ function Galeri() {
     fetchImages()
   }, [])
 
-  const firstConfigs = [
-    {
-      container: "md:col-span-8 group relative overflow-hidden rounded-tl-[3rem] rounded-br-[3rem] aspect-[16/10]",
-      img: "w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out",
-      overlay: (title) => (
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-          <span className="text-surface/80 text-[10px] tracking-widest uppercase mb-1">07° 15' 0" S, 108° 4' 0" E</span>
-          <h3 className="text-surface text-2xl font-headline font-bold">{title}</h3>
-        </div>
-      )
-    },
-    {
-      container: "md:col-span-4 group relative overflow-hidden rounded-tr-[3rem] rounded-bl-[1.5rem] aspect-[3/4] md:mt-12",
-      img: "w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out",
-      overlay: (title) => (
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-          <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
-        </div>
-      )
-    },
-    {
-      container: "md:col-span-4 group relative overflow-hidden rounded-xl aspect-square",
-      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
-      overlay: (title) => (
-        <>
-          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="absolute bottom-6 left-6">
-            <p className="text-surface font-headline font-medium tracking-tight">{title}</p>
-          </div>
-        </>
-      )
-    },
-    {
-      container: "md:col-span-8 group relative overflow-hidden rounded-[2.5rem] aspect-[21/9]",
-      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
-      overlay: (title) => (
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-          <h3 className="text-surface text-2xl font-headline font-bold">{title}</h3>
-        </div>
-      )
-    },
-    {
-      container: "md:col-span-5 group relative overflow-hidden rounded-3xl aspect-[4/3]",
-      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
-      overlay: (title) => (
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-          <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
-        </div>
-      )
-    },
-    {
-      container: "md:col-span-7 group relative overflow-hidden rounded-tl-[1.5rem] rounded-br-[4rem] aspect-[16/9]",
-      img: "w-full h-full object-cover group-hover:scale-105 transition-all duration-700",
-      overlay: (title) => (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
-            <h3 className="text-surface text-xl font-headline font-bold">{title}</h3>
-          </div>
-          <div className="absolute top-8 right-8 z-10">
-            <span className="bg-surface/90 backdrop-blur px-4 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Editorial Pick</span>
-          </div>
-        </>
-      )
-    }
-  ]
+  const getImageUrl = (item) => {
+    const fileUrl = item.file || item.gambar || item.url || item.file_path
+    if (!fileUrl) return null
+    return fileUrl.startsWith('http') ? fileUrl : `http://127.0.0.1:8000/storage/${fileUrl}`
+  }
 
-  const firstSectionImages = images.slice(0, 6)
-  const secondSectionImages = images.slice(6)
+  const getCaption = (item, idx) => item.judul_konten || item.judul || item.caption || `Foto ${idx + 1}`
+
+  // Pair images into rows of 2
+  const pairs = []
+  for (let i = 0; i < images.length; i += 2) {
+    pairs.push(images.slice(i, i + 2))
+  }
 
   return (
     <>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-4xl">close</span>
+            </button>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption}
+              className="max-h-[80vh] w-auto rounded-2xl object-contain shadow-2xl"
+            />
+            <p className="text-white/80 mt-4 text-center font-medium text-sm px-8">{lightbox.caption}</p>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <header className="max-w-7xl mx-auto px-8 mb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -107,14 +76,13 @@ function Galeri() {
               Menelusuri keheningan kawah, kabut pagi yang menyelimuti puncak, hingga detail terkecil dari flora endemik yang tumbuh di tanah vulkanik Galunggung.
             </p>
           </div>
-          <div className="flex gap-4 pb-2">
-            <button className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all">
-              <span className="material-symbols-outlined">grid_view</span>
-            </button>
-            <button className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all">
-              <span className="material-symbols-outlined">filter_list</span>
-            </button>
-          </div>
+          {!loading && images.length > 0 && (
+            <div className="flex items-center gap-2 bg-surface-container rounded-2xl px-5 py-3 border border-outline-variant/10">
+              <span className="material-symbols-outlined text-primary">photo_library</span>
+              <span className="font-bold text-primary">{images.length}</span>
+              <span className="text-secondary text-sm">Foto</span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -133,24 +101,60 @@ function Galeri() {
         </div>
       )}
 
-      {/* Atmo-Gallery: Asymmetrical Masonry */}
+      {/* Gallery: 2-column aesthetic rows */}
       {!loading && images.length > 0 && (
-        <section className="max-w-7xl mx-auto px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-            {firstSectionImages.map((item, idx) => {
-              const config = firstConfigs[idx % firstConfigs.length]
-              const fileUrl = item.file || item.gambar || item.url
-              const fullUrl = fileUrl.startsWith('http') ? fileUrl : `http://127.0.0.1:8000/storage/${fileUrl}`
-              const caption = item.judul_konten || item.judul || item.caption || `Foto ${item.id}`
-              
+        <section className="max-w-7xl mx-auto px-8 mb-20">
+          <div className="space-y-6">
+            {pairs.map((pair, rowIdx) => {
+              const isOdd = rowIdx % 2 === 0
               return (
-                <div key={item.id || idx} className={config.container}>
-                  <img 
-                    alt={caption} 
-                    className={config.img} 
-                    src={fullUrl} 
-                  />
-                  {config.overlay(caption)}
+                <div key={rowIdx} className={`grid gap-6 ${pair.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                  {pair.map((item, colIdx) => {
+                    const imgUrl = getImageUrl(item)
+                    const caption = getCaption(item, rowIdx * 2 + colIdx)
+                    const itemId = item.id_konten || item.id
+                    // Alternate aspect ratios for visual rhythm
+                    const isTall = (isOdd && colIdx === 0) || (!isOdd && colIdx === 1)
+                    const aspectClass = pair.length === 1
+                      ? 'aspect-[21/9]'
+                      : isTall ? 'aspect-[3/4]' : 'aspect-[4/3]'
+
+                    return (
+                      <div
+                        key={itemId || colIdx}
+                        className={`group relative overflow-hidden rounded-3xl cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 ${aspectClass}`}
+                        onClick={() => imgUrl && setLightbox({ url: imgUrl, caption })}
+                      >
+                        {imgUrl ? (
+                          <img
+                            src={imgUrl}
+                            alt={caption}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-surface-container flex items-center justify-center">
+                            <span className="material-symbols-outlined text-5xl text-secondary/30">image</span>
+                          </div>
+                        )}
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        
+                        {/* Caption badge at bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
+                          <p className="text-white font-headline font-bold text-lg leading-tight drop-shadow-lg">{caption}</p>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            <span className="material-symbols-outlined text-white/70 text-sm">location_on</span>
+                            <span className="text-white/70 text-xs tracking-wide">Gunung Galunggung</span>
+                          </div>
+                        </div>
+
+                        {/* Zoom icon top-right */}
+                        <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
+                          <span className="material-symbols-outlined text-white text-[18px]">open_in_full</span>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}
@@ -158,9 +162,10 @@ function Galeri() {
         </section>
       )}
 
-      {/* Gallery Quote/Intermission */}
+      {/* Gallery Quote */}
       {!loading && images.length > 0 && (
-        <section className="max-w-4xl mx-auto px-8 py-32 text-center">
+        <section className="max-w-4xl mx-auto px-8 py-20 text-center">
+          <div className="w-12 h-px bg-primary/20 mx-auto mb-10"></div>
           <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-8 tracking-tight">
             "Setiap sudut Galunggung menyimpan rahasia purba yang hanya bisa dipahami oleh mereka yang mau berhenti sejenak dan melihat."
           </h2>
@@ -168,40 +173,17 @@ function Galeri() {
         </section>
       )}
 
-      {/* Additional Grid */}
-      {!loading && secondSectionImages.length > 0 && (
-        <section className="max-w-7xl mx-auto px-8 mb-32">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {secondSectionImages.map((item, idx) => {
-              const fileUrl = item.file || item.gambar || item.url
-              const fullUrl = fileUrl.startsWith('http') ? fileUrl : `http://127.0.0.1:8000/storage/${fileUrl}`
-              const caption = item.judul_konten || item.judul || item.caption || `Foto ${item.id}`
-
-              return (
-                <div key={item.id || idx} className="aspect-square overflow-hidden rounded-2xl group relative">
-                  <img 
-                    alt={caption} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                    src={fullUrl} 
-                  />
-                  <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-                    <span className="text-surface font-headline font-bold text-sm">{caption}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-      )}
-
       {!loading && images.length === 0 && (
-        <div className="text-center py-20 max-w-xl mx-auto bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-          <span className="material-symbols-outlined text-5xl text-stone-300 mb-4">photo_library</span>
-          <p className="text-stone-500 font-medium text-lg">Belum ada konten galeri</p>
+        <div className="text-center py-24 max-w-xl mx-auto">
+          <div className="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-4xl text-secondary/40">photo_library</span>
+          </div>
+          <p className="text-on-surface-variant font-medium text-lg">Belum ada foto di galeri</p>
+          <p className="text-secondary text-sm mt-2">Administrator sedang menyiapkan koleksi foto terbaik untuk Anda.</p>
         </div>
       )}
     </>
   )
 }
 
-export default Galeri
+export default Galeri

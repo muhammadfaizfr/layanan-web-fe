@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import slotPendakianService from '../../services/slotPendakianService'
+import bookingService from '../../services/bookingService'
 import authService from '../../services/authService'
 
 export default function JadwalPendakianAdmin({ navigate }) {
@@ -34,6 +35,7 @@ export default function JadwalPendakianAdmin({ navigate }) {
   ]
 
   const [slots, setSlots] = useState([])
+  const [allBookings, setAllBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -68,7 +70,7 @@ export default function JadwalPendakianAdmin({ navigate }) {
         if(isNaN(d.getTime())) d = new Date()
         
         return {
-          id: item.id,
+          id: item.id_slot || item.id,
           dateStr: mDateStr,
           dayNum: d.getDate(),
           month: d.getMonth(),
@@ -81,6 +83,15 @@ export default function JadwalPendakianAdmin({ navigate }) {
         }
       })
       setSlots(normalized)
+
+      // Fetch all bookings for counting
+      try {
+        const bData = await bookingService.getAll()
+        const bList = Array.isArray(bData) ? bData : (bData?.data ?? [])
+        setAllBookings(bList)
+      } catch (e) {
+        // ignore booking fetch error, kalender tetap jalan
+      }
     } catch (err) {
       setError(err.userMessage || 'Gagal memuat data slot pendakian.')
     } finally {
@@ -99,7 +110,15 @@ export default function JadwalPendakianAdmin({ navigate }) {
     setSelectedDayNum(dayNum)
     setMaxCountInput(existingSlot ? existingSlot.maxCount : 200)
     setSaveSuccess(false)
+    setError('')
   }
+
+  // Auto-clear success message setelah 3 detik
+  useEffect(() => {
+    if (!saveSuccess) return
+    const t = setTimeout(() => setSaveSuccess(false), 3000)
+    return () => clearTimeout(t)
+  }, [saveSuccess])
 
   const handleUpdateSchedule = async (e) => {
     e.preventDefault()
@@ -116,7 +135,7 @@ export default function JadwalPendakianAdmin({ navigate }) {
       const payload = {
         tanggal_pendakian: dateStr,
         kuota_maksimal: Number(maxCountInput),
-        id_admin: 1 // fallback
+        id_admin: 1 // fallback to 1
       }
       
       // Try to get actual admin ID from localStorage
@@ -169,8 +188,30 @@ export default function JadwalPendakianAdmin({ navigate }) {
     const existingSlot = slots.find(s => s.dayNum === d && s.month === currentMonth && s.year === currentYear)
     const isSelected = selectedDayNum === d
     
+    // Hitung jumlah booking pada tanggal ini
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const bookedCount = allBookings.reduce((sum, b) => {
+      // Dapatkan tanggal (utamakan relasi slotPendakian jika ada)
+      let tgl = ''
+      if (b.slotPendakian && b.slotPendakian.tanggal_pendakian) {
+        tgl = b.slotPendakian.tanggal_pendakian
+      } else if (b.slot_pendakian && b.slot_pendakian.tanggal_pendakian) {
+        tgl = b.slot_pendakian.tanggal_pendakian
+      } else {
+        tgl = b.tanggal_kunjungan || b.tanggal || b.created_at || ''
+      }
+      tgl = tgl.substring(0, 10)
+
+      // Pastikan booking ini adalah untuk pendakian
+      const jenis = (b.jenis_tiket || b.route || '').toLowerCase()
+      const isPendakian = jenis.includes('rute') || jenis.includes('tangga') || jenis.includes('hutan') || jenis.includes('cipanas') || jenis.includes('pendakian')
+
+      const qty = isPendakian ? Number(b.jml_tiket || b.jumlah_orang || b.qty || b.team_count || b.teamCount || 1) : 0
+      return tgl === dateStr ? sum + qty : sum
+    }, 0)
+    
     let maxC = existingSlot ? existingSlot.maxCount : 200
-    let curC = existingSlot ? existingSlot.currentCount : 0
+    let curC = bookedCount // Gunakan nilai asli dari jumlah booking
     let isFull = curC >= maxC && maxC > 0
     let dayWknd = isWeekend(d)
     
@@ -260,19 +301,10 @@ export default function JadwalPendakianAdmin({ navigate }) {
       <main className="ml-72 flex-1 min-h-screen flex flex-col relative overflow-hidden">
         {/* TopNavBar */}
         <header className="w-full h-16 bg-[#f9f9f7] dark:bg-[#1a1c1b] shadow-sm opacity-95 backdrop-blur-md sticky top-0 z-50 flex justify-end items-center px-8 font-['Plus_Jakarta_Sans'] text-sm tracking-tight border-b border-outline-variant/10 gap-6">
-          <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-              <span className="material-symbols-outlined text-primary">notifications</span>
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-            </button>
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-              <span className="material-symbols-outlined text-primary">settings</span>
-            </button>
-          </div>
           <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>
@@ -347,30 +379,40 @@ export default function JadwalPendakianAdmin({ navigate }) {
                   <p className="text-xs text-[#163422] font-semibold">Jadwal diperbarui!</p>
                 </div>
               )}
-              <form onSubmit={handleUpdateSchedule} className="space-y-6">
+              <form onSubmit={handleUpdateSchedule} className="space-y-5">
                 <div>
                   <label className="text-[10px] uppercase font-bold tracking-widest text-[#695d47] block mb-2">Tanggal Terpilih</label>
-                  <div className="bg-[#f4f4f2] px-4 py-3.5 rounded-xl font-bold text-[#163422] text-sm text-center">
-                    {selectedDayNum ? `${selectedDayNum} ${monthNames[currentMonth]} ${currentYear}` : 'Pilih tanggal di kalender'}
+                  <div className={`px-4 py-3.5 rounded-xl font-bold text-sm text-center transition-all ${
+                    selectedDayNum
+                      ? 'bg-[#163422] text-white shadow-md'
+                      : 'bg-[#f4f4f2] text-[#695d47]'
+                  }`}>
+                    {selectedDayNum
+                      ? `${selectedDayNum} ${monthNames[currentMonth]} ${currentYear}`
+                      : '← Klik tanggal di kalender'}
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold tracking-widest text-[#695d47] block mb-2">Batas Maksimum</label>
+                  <label className="text-[10px] uppercase font-bold tracking-widest text-[#695d47] block mb-2">Kapasitas Harian (Maks)</label>
                   <input
-                    className="w-full bg-[#f9f9f7] border border-[#e2e3e1] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#163422] text-sm outline-none text-[#1a1c1b] font-medium"
+                    className="w-full bg-[#f9f9f7] border border-[#e2e3e1] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#163422] text-sm outline-none text-[#1a1c1b] font-medium disabled:opacity-50"
                     type="number"
+                    min="1"
                     value={maxCountInput}
-                    onChange={(e) => setMaxCountInput(e.target.value)}
+                    disabled={!selectedDayNum}
+                    onChange={(e) => setMaxCountInput(Math.max(1, Number(e.target.value)))}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={saving || !selectedDayNum}
-                  className="w-full py-3.5 bg-[#163422] hover:bg-[#0f2418] text-[#f9f9f7] rounded-full font-bold text-sm transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-[#163422] hover:bg-[#0f2418] text-[#f9f9f7] rounded-full font-bold text-sm transition-all active:scale-95 shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> Menyimpan...</>
-                  ) : 'Perbarui Jadwal'}
+                  ) : (
+                    <><span className="material-symbols-outlined text-sm">save</span> Simpan Jadwal</>
+                  )}
                 </button>
               </form>
             </section>

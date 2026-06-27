@@ -171,19 +171,10 @@ export default function LaporanAdmin({ navigate }) {
       <main className="ml-72 flex-1 min-h-screen flex flex-col relative overflow-hidden">
         {/* TopNavBar */}
         <header className="w-full h-16 bg-[#f9f9f7] dark:bg-[#1a1c1b] shadow-sm opacity-95 backdrop-blur-md sticky top-0 z-50 flex justify-end items-center px-8 font-['Plus_Jakarta_Sans'] text-sm tracking-tight border-b border-outline-variant/10 gap-6">
-          <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-              <span className="material-symbols-outlined text-secondary">notifications</span>
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-            </button>
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-              <span className="material-symbols-outlined text-secondary">settings</span>
-            </button>
-          </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img
@@ -208,19 +199,16 @@ export default function LaporanAdmin({ navigate }) {
             <div>
               <h2 className="text-4xl font-display font-extrabold text-[#163422] tracking-tight">Laporan Analitik</h2>
               <p className="text-secondary text-sm font-medium mt-2 max-w-2xl leading-relaxed">
-                Ringkasan performa pariwisata Gunung Galunggung untuk periode Oktober 2023.
+                Ringkasan performa pariwisata Gunung Galunggung berdasarkan data transaksi masuk.
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2.5 bg-surface-container-high text-[#695d47] hover:bg-surface-container-highest transition-colors rounded-full font-bold text-xs tracking-wide">
-                Filter Periode
-              </button>
               <button 
                 onClick={() => setShowExportPopup(true)}
                 className="px-6 py-2.5 bg-primary text-white hover:opacity-90 rounded-full font-bold text-xs tracking-wide flex items-center gap-2 shadow-lg shadow-primary/10 active:scale-95 duration-200"
               >
                 <span className="material-symbols-outlined text-sm font-bold">download</span>
-                Export Semua
+                Export Laporan
               </button>
             </div>
           </div>
@@ -234,11 +222,10 @@ export default function LaporanAdmin({ navigate }) {
                   TOTAL PENDAPATAN
                 </span>
                 <h3 className="text-5xl font-extrabold text-white mt-6">
-                  {loadingLaporan ? 'Memuat...' : (
-                    laporanData?.total_pendapatan
-                      ? `Rp ${Number(laporanData.total_pendapatan).toLocaleString('id-ID')}`
-                      : 'Rp 0'
-                  )}
+                  {loadingLaporan ? 'Memuat...' : (() => {
+                    const total = bookingList.reduce((sum, b) => sum + (Number(b.total_harga || b.harga || 0)), 0);
+                    return `Rp ${total.toLocaleString('id-ID')}`;
+                  })()}
                 </h3>
               </div>
               {/* Stats subdivisions */}
@@ -246,19 +233,22 @@ export default function LaporanAdmin({ navigate }) {
                 <div>
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Booking</p>
                   <p className="text-xl font-bold text-white">
-                    {loadingLaporan ? '...' : (laporanData?.total_booking ?? '-')}
+                    {loadingLaporan ? '...' : bookingList.length}
                   </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pembayaran</p>
                   <p className="text-xl font-bold text-white">
-                    {loadingLaporan ? '...' : (laporanData?.total_pembayaran ?? '-')}
+                    {loadingLaporan ? '...' : bookingList.filter(b => (b.status === 'Berhasil' || b.status_pembayaran === 'Berhasil' || b.status_booking === 'Berhasil')).length}
                   </p>
                 </div>
                 <div className="border-l border-white/10 pl-6">
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pelanggan</p>
                   <p className="text-xl font-bold text-white">
-                    {loadingLaporan ? '...' : (laporanData?.total_pelanggan ?? '-')}
+                    {loadingLaporan ? '...' : (() => {
+                      const uEmails = new Set(bookingList.map(b => b.pelanggan?.email || b.email).filter(Boolean));
+                      return uEmails.size > 0 ? uEmails.size : bookingList.length;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -273,7 +263,10 @@ export default function LaporanAdmin({ navigate }) {
                   </div>
                 </div>
                 <h4 className="text-4xl font-extrabold text-[#163422] mt-6 tracking-tight">
-                  {loadingLaporan ? '...' : (laporanData?.total_pelanggan ?? '-')}
+                  {loadingLaporan ? '...' : (() => {
+                    const uEmails = new Set(bookingList.map(b => b.pelanggan?.email || b.email).filter(Boolean));
+                    return uEmails.size > 0 ? uEmails.size : bookingList.length;
+                  })()}
                 </h4>
                 <p className="text-secondary font-medium text-xs mt-1">Total Pelanggan Terdaftar</p>
               </div>
@@ -333,20 +326,20 @@ export default function LaporanAdmin({ navigate }) {
           <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(22,52,34,0.15)] overflow-hidden w-full max-w-sm p-8 text-left relative mx-4 animate-fade-in-up border border-[#e2e3e1]">
             {/* Headline */}
             <h3 className="font-display font-extrabold text-[#163422] text-xl tracking-tight mb-2">
-              Ekspor Semua Data
+              Ekspor Laporan Keuangan
             </h3>
             {/* Description */}
             <p className="text-[#695d47] font-['Inter'] text-xs leading-relaxed mb-6 font-medium">
-              Pilih format file untuk mengunduh seluruh data laporan periode Oktober 2023.
+              Pilih format file dan tipe laporan untuk mengunduh.
             </p>
 
             {/* Option Cards */}
             <div className="space-y-3 mb-8">
-              {/* CSV Option */}
+              {/* Excel Option */}
               <div 
-                onClick={() => setSelectedFormat('csv')}
+                onClick={() => setSelectedFormat('excel')}
                 className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
-                  selectedFormat === 'csv'
+                  selectedFormat === 'excel'
                     ? 'border-[#163422] bg-[#f4f4f2]'
                     : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
                 }`}
@@ -355,18 +348,18 @@ export default function LaporanAdmin({ navigate }) {
                   <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>table_chart</span>
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format CSV (.csv)</h4>
+                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format Excel (.csv)</h4>
                   <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
-                    Cocok untuk pengolahan data di Excel atau Sheets.
+                    Seluruh data transaksi booking pendakian.
                   </p>
                 </div>
               </div>
 
-              {/* PDF Option */}
+              {/* PDF Option 7 Hari */}
               <div 
-                onClick={() => setSelectedFormat('pdf')}
+                onClick={() => setSelectedFormat('pdf-7')}
                 className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
-                  selectedFormat === 'pdf'
+                  selectedFormat === 'pdf-7'
                     ? 'border-[#163422] bg-[#f4f4f2]'
                     : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
                 }`}
@@ -375,9 +368,29 @@ export default function LaporanAdmin({ navigate }) {
                   <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0", color: '#ba1a1a' }}>picture_as_pdf</span>
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">Format PDF (.pdf)</h4>
+                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">PDF 7 Hari Terakhir</h4>
                   <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
-                    Format dokumen siap cetak dan presentasi.
+                    Laporan keuangan 7 hari ke belakang.
+                  </p>
+                </div>
+              </div>
+
+              {/* PDF Option 30 Hari */}
+              <div 
+                onClick={() => setSelectedFormat('pdf-30')}
+                className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer border-2 transition-all duration-200 ${
+                  selectedFormat === 'pdf-30'
+                    ? 'border-[#163422] bg-[#f4f4f2]'
+                    : 'border-transparent bg-[#f9f9f7] hover:bg-[#f4f4f2]'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#eeeeec] flex items-center justify-center text-primary shadow-sm flex-shrink-0">
+                  <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 0", color: '#ba1a1a' }}>picture_as_pdf</span>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display font-extrabold text-[#1a1c1b] text-xs">PDF 30 Hari Terakhir</h4>
+                  <p className="text-[10px] text-secondary font-medium mt-0.5 leading-tight">
+                    Laporan keuangan 30 hari ke belakang.
                   </p>
                 </div>
               </div>
@@ -394,7 +407,95 @@ export default function LaporanAdmin({ navigate }) {
               <button 
                 className="flex-1 py-3 bg-[#163422] text-[#f9f9f7] font-headline font-bold rounded-full transition-all duration-300 active:scale-95 shadow-md hover:opacity-90 text-xs flex items-center justify-center gap-1.5"
                 onClick={() => {
-                  alert(`Downloading as ${selectedFormat.toUpperCase()}...`)
+                  if (selectedFormat === 'excel') {
+                    // Export Excel
+                    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                    csvContent += "ID Booking,Nama Pelanggan,Email,Rute,Tanggal Kunjungan,Jumlah Orang,Total Harga,Status\n";
+                    bookingList.forEach(b => {
+                      const pelanggan = b.pelanggan || {};
+                      const name = pelanggan.nama_lengkap || pelanggan.nama || b.name || b.nama || '-';
+                      const email = pelanggan.email || b.email || '-';
+                      const rute = b.jenis_tiket || b.rute || b.route || '-';
+                      const date = (b.tanggal_kunjungan || b.tanggal || b.created_at || '').substring(0, 10);
+                      const qty = b.jumlah_orang || b.qty || 1;
+                      const total = b.total_harga || b.harga || 0;
+                      const status = b.status_booking || b.status || '-';
+                      csvContent += `"${b.id_booking || b.id}","${name}","${email}","${rute}","${date}","${qty}","${total}","${status}"\n`;
+                    });
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Laporan_Keuangan_Galunggung_${new Date().toISOString().substring(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } else {
+                    // Export PDF (7 atau 30 hari)
+                    const days = selectedFormat === 'pdf-7' ? 7 : 30;
+                    const filterDate = new Date();
+                    filterDate.setDate(filterDate.getDate() - days);
+                    const filteredList = bookingList.filter(b => {
+                      const bDate = new Date(b.tanggal_kunjungan || b.tanggal || b.created_at);
+                      return bDate >= filterDate;
+                    });
+
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Laporan Keuangan ${days} Hari Terakhir - Gunung Galunggung</title>
+                          <style>
+                            body { font-family: Arial, sans-serif; padding: 40px; color: #1a1c1b; }
+                            h1 { color: #163422; border-bottom: 2px solid #163422; padding-bottom: 10px; margin-bottom: 5px; }
+                            h2 { color: #695d47; font-size: 14px; font-weight: normal; margin-bottom: 30px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #eeeeec; padding: 12px; text-align: left; font-size: 12px; }
+                            th { background-color: #f4f4f2; color: #163422; font-weight: bold; }
+                            tr:nth-child(even) { background-color: #f9f9f7; }
+                            .total-section { margin-top: 30px; text-align: right; font-size: 14px; font-weight: bold; color: #163422; }
+                          </style>
+                        </head>
+                        <body>
+                          <h1>Laporan Keuangan Gunung Galunggung</h1>
+                          <h2>Periode: ${days} Hari Terakhir (Sejak ${filterDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })})</h2>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Tanggal</th>
+                                <th>Rute</th>
+                                <th>Jumlah Orang</th>
+                                <th>Total Harga</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${filteredList.map(b => `
+                                <tr>
+                                  <td>BOOK-${String(b.id_booking || b.id).padStart(4, '0')}</td>
+                                  <td>${b.pelanggan?.nama_lengkap || b.nama || '-'}</td>
+                                  <td>${(b.tanggal_kunjungan || b.tanggal || b.created_at || '').substring(0, 10)}</td>
+                                  <td>${b.jenis_tiket || b.rute || '-'}</td>
+                                  <td>${b.jumlah_orang || b.qty || 1} orang</td>
+                                  <td>Rp ${Number(b.total_harga || b.harga || 0).toLocaleString('id-ID')}</td>
+                                </tr>
+                              `).join('')}
+                            </tbody>
+                          </table>
+                          <div class="total-section">
+                            Total Pendapatan (${days} Hari): Rp ${filteredList.reduce((sum, b) => sum + Number(b.total_harga || b.harga || 0), 0).toLocaleString('id-ID')}
+                          </div>
+                          <script>
+                            window.onload = function() {
+                              window.print();
+                              window.close();
+                            }
+                          </script>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                  }
                   setShowExportPopup(false)
                 }}
               >
@@ -405,7 +506,7 @@ export default function LaporanAdmin({ navigate }) {
 
             {/* Footer Metadata */}
             <div className="text-[9px] font-label font-bold tracking-widest text-secondary/40 text-center uppercase border-t border-[#eeeeec] pt-4">
-              WAKTU PEMBUATAN: 12 OKT 2023, 14:20 WIB
+              WAKTU PEMBUATAN: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
         </div>

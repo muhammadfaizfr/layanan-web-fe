@@ -7,6 +7,7 @@ import pembayaranService from '../../services/pembayaranService'
 
 export default function RingkasanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('ringkasan')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleNavClick = (page) => {
     setActiveTab(page)
@@ -35,7 +36,9 @@ export default function RingkasanAdmin({ navigate }) {
   const [totalPelanggan, setTotalPelanggan] = useState(0)
   const [totalBooking, setTotalBooking] = useState(0)
   const [totalPembayaran, setTotalPembayaran] = useState(0)
+  const [totalPendapatan, setTotalPendapatan] = useState(0)
   const [recentBookings, setRecentBookings] = useState([])
+  const [allBookings, setAllBookings] = useState([])
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -60,6 +63,15 @@ export default function RingkasanAdmin({ navigate }) {
         setTotalPelanggan(pelangganList.length)
         setTotalBooking(bookingList.length)
         setTotalPembayaran(pembayaranList.length)
+        
+        const calcPendapatan = bookingList.reduce((sum, b) => {
+          const st = (b.status_booking || '').toLowerCase()
+          if (!st.includes('batal')) {
+            return sum + Number(b.total_payar || b.total_bayar || 0)
+          }
+          return sum
+        }, 0)
+        setTotalPendapatan(calcPendapatan)
 
         // Sort bookings by id descending and take top 3
         const sorted = [...bookingList].sort((a, b) => {
@@ -67,6 +79,7 @@ export default function RingkasanAdmin({ navigate }) {
           const idB = b.id_booking || b.id || 0
           return idB - idA
         })
+        setAllBookings(sorted)
         setRecentBookings(sorted.slice(0, 3))
 
       } catch (err) {
@@ -152,23 +165,20 @@ export default function RingkasanAdmin({ navigate }) {
           <div className="flex items-center gap-8 w-1/3">
             <div className="relative w-full max-w-sm">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
-              <input className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-xs focus:ring-1 focus:ring-primary-container/20 placeholder:text-outline-variant outline-none" placeholder="Cari analitik, jadwal, atau pendaki..." type="text"/>
+              <input
+                className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-xs focus:ring-1 focus:ring-primary-container/20 placeholder:text-outline-variant outline-none"
+                placeholder="Cari nama pendaki atau ID tiket..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-                <span className="material-symbols-outlined text-primary">notifications</span>
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-              </button>
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-                <span className="material-symbols-outlined text-primary">settings</span>
-              </button>
-            </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP9kHefTuNYQnLdctRKENaSisXtamaIBxslPvK0m4yNQn31vIg34PQcZnSnY4PYnyrpptNh_2oNZuDiMXVDzcUseE6sHhuxfwgublcdO3lgYfPUAkD0eas6mMJBociC8Wp4s2J_v4jcVWlXw10p9-ovOlY6lp2CDjjivJDzQz8zOST_Qo9Z_qYjYSn3xA_wKyJBzMnMu8nnLzz_wQNXK-Pt6T4jr3oHYwHcfs_RWNrKMU8s2QqHJHFgm1IkA_HvzaJyZz6Dnur7g"/>
@@ -185,10 +195,9 @@ export default function RingkasanAdmin({ navigate }) {
               <p className="text-secondary body-lg mt-2 font-medium">Memantau kabut di atas Gunung Galunggung hari ini.</p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface font-semibold text-sm hover:bg-surface-container-highest transition-colors">Ekspor Laporan</button>
               <button className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm hover:opacity-95 transition-opacity flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">calendar_today</span>
-                24 Agt 2024
+                {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
               </button>
             </div>
           </section>
@@ -250,9 +259,7 @@ export default function RingkasanAdmin({ navigate }) {
               <div className="flex items-end gap-3">
                 <h3 className="text-4xl font-display font-extrabold text-white leading-none">
                   {loadingLaporan ? '...' : (
-                    laporanData?.total_pendapatan
-                      ? `Rp ${Number(laporanData.total_pendapatan).toLocaleString('id-ID')}`
-                      : '-'
+                    `Rp ${Number(totalPendapatan || 0).toLocaleString('id-ID')}`
                   )}
                 </h3>
               </div>
@@ -266,7 +273,7 @@ export default function RingkasanAdmin({ navigate }) {
             <div className="flex-[2] bg-surface-container-low p-8 rounded-2xl">
               <div className="flex justify-between items-center mb-8">
                 <h4 className="text-xl font-headline font-bold text-primary">Log Pengunjung Terbaru</h4>
-                <button className="text-primary text-sm font-semibold hover:underline">Lihat Semua Entri</button>
+                <button onClick={() => navigate('admin-manajemen-tiket')} className="text-primary text-sm font-semibold hover:underline">Lihat Semua Entri</button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-y-3">
@@ -279,8 +286,19 @@ export default function RingkasanAdmin({ navigate }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentBookings.map((booking, idx) => {
-                      const name = booking.pelanggan?.nama_lengkap || booking.pelanggan?.nama || booking.name || booking.nama || 'Pengunjung'
+                    {(searchQuery.trim()
+                      ? allBookings.filter(b => {
+                          const pelangganObj = b.pelanggan || {}
+                          const nm = (pelangganObj.nama_lengkap || pelangganObj.nama || b.name || b.nama || b.nama_lengkap || '').toLowerCase()
+                          const idTicket = 'BOOK-' + String(b.id_booking || b.id || '').padStart(4, '0')
+                          const q = searchQuery.toLowerCase()
+                          return nm.includes(q) || idTicket.toLowerCase().includes(q)
+                        })
+                      : recentBookings
+                    ).map((booking, idx) => {
+                      // Ambil nama dari relasi pelanggan
+                      const pelanggan = booking.pelanggan || {}
+                      const name = pelanggan.nama_lengkap || pelanggan.nama || booking.name || booking.nama || booking.nama_lengkap || 'Pengunjung'
                       const idVal = booking.id_booking || booking.id || '-'
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       
@@ -318,7 +336,7 @@ export default function RingkasanAdmin({ navigate }) {
                               <span className="font-semibold text-primary">{name}</span>
                             </div>
                           </td>
-                          <td className="py-4 font-medium text-secondary">#GG-REG-{idVal}</td>
+                          <td className="py-4 font-medium text-secondary">BOOK-{String(idVal).padStart(4, '0')}</td>
                           <td className="py-4">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-tight ${badgeBg}`}>{statusText}</span>
                           </td>

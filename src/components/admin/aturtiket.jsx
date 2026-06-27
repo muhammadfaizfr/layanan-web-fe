@@ -5,16 +5,14 @@ export default function AturTiketAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-tiket')
 
   // Input states
-  const [priceDomestik, setPriceDomestik] = useState('15.000')
-  const [priceMancanegara, setPriceMancanegara] = useState('35.000')
-  const [priceCamping, setPriceCamping] = useState('25.000')
-  const [openTime, setOpenTime] = useState('07:00')
-  const [closeTime, setCloseTime] = useState('17:00')
-  const [quota, setQuota] = useState(2500)
-  const [cancelPolicyActive, setCancelPolicyActive] = useState(true)
-  const [policyText, setPolicyText] = useState(
-    'Pengembalian dana (refund) dapat dilakukan maksimal 24 jam sebelum jadwal kunjungan. \n\nDana akan dikembalikan sebesar 80% dari total harga tiket setelah dipotong biaya administrasi platform sebesar Rp 2.500 per transaksi.\n\nKebijakan ini tidak berlaku untuk tiket promo atau event khusus tertentu.'
-  )
+  const [priceDomestik, setPriceDomestik] = useState('')
+  const [priceMancanegara, setPriceMancanegara] = useState('')
+  const [priceCamping, setPriceCamping] = useState('')
+  const [openTime, setOpenTime] = useState('')
+  const [closeTime, setCloseTime] = useState('')
+  const [quota, setQuota] = useState(0)
+  const [cancelPolicyActive, setCancelPolicyActive] = useState(false)
+  const [policyText, setPolicyText] = useState('')
   const [showToast, setShowToast] = useState(false)
 
   useEffect(() => {
@@ -85,7 +83,7 @@ export default function AturTiketAdmin({ navigate }) {
       }, 1500)
     } catch (err) {
       console.error(err)
-      alert("Gagal menyimpan pengaturan")
+      alert("Gagal menyimpan tiket")
     }
   }
 
@@ -179,25 +177,14 @@ export default function AturTiketAdmin({ navigate }) {
             <p className="text-secondary text-sm font-medium">Pengaturan Tiket</p>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-                <span className="material-symbols-outlined text-primary">notifications</span>
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-              </button>
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-                <span className="material-symbols-outlined text-primary">settings</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>
               </div>
             </div>
-          </div>
         </header>
 
         {/* Content Area */}
@@ -265,8 +252,8 @@ export default function AturTiketAdmin({ navigate }) {
                 </div>
               </section>
 
-              {/* Operational Hours & Quota */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Operational Hours */}
+              <div className="grid grid-cols-1 gap-8">
                 {/* Hours */}
                 <section className="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant/10">
                   <div className="flex items-center gap-3 mb-6">
@@ -292,31 +279,6 @@ export default function AturTiketAdmin({ navigate }) {
                         value={closeTime}
                         onChange={(e) => setCloseTime(e.target.value)}
                       />
-                    </div>
-                  </div>
-                </section>
-
-                {/* Daily Quota */}
-                <section className="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="material-symbols-outlined text-primary">groups</span>
-                    <h4 className="text-xl font-display font-bold">Kuota Harian</h4>
-                  </div>
-                  <p className="text-xs text-secondary mb-6">Batas maksimum pengunjung harian</p>
-                  <div className="space-y-4">
-                    <input 
-                      className="w-full h-2 bg-[#e8e8e6] rounded-full appearance-none cursor-pointer accent-[#163422]" 
-                      max="5000" 
-                      min="100" 
-                      type="range" 
-                      value={quota}
-                      onChange={(e) => setQuota(parseInt(e.target.value))}
-                    />
-                    <div className="flex justify-between items-center bg-[#f4f4f2] px-4 py-2 rounded-lg">
-                      <span className="text-xs font-bold text-secondary">Batas Saat Ini</span>
-                      <span className="text-lg font-display font-extrabold text-primary">
-                        {quota.toLocaleString('id-ID')} <span className="text-xs font-medium text-secondary">Orang</span>
-                      </span>
                     </div>
                   </div>
                 </section>

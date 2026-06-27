@@ -55,6 +55,7 @@ export default function PengaturanAdmin({ navigate }) {
       const res = await authService.updateProfile(payload)
       localStorage.setItem('admin_nama', res.admin.nama_admin)
       localStorage.setItem('admin_email', res.admin.email)
+      localStorage.setItem('admin_jabatan', jabatan)
       setKataSandi('')
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
@@ -148,19 +149,10 @@ export default function PengaturanAdmin({ navigate }) {
       <main className="ml-72 flex-1 min-h-screen flex flex-col relative overflow-hidden bg-[#f9f9f7]">
         {/* TopNavBar */}
         <header className="w-full h-16 bg-[#f9f9f7] dark:bg-[#1a1c1b] shadow-sm opacity-95 backdrop-blur-md sticky top-0 z-50 flex justify-end items-center px-8 font-['Plus_Jakarta_Sans'] text-sm tracking-tight border-b border-[#e8e8e6] gap-6">
-          <div className="flex items-center gap-4 border-r border-[#e8e8e6] pr-6">
-            <button className="p-2 rounded-full hover:bg-[#e8e8e6] transition-colors relative">
-              <span className="material-symbols-outlined text-[#695d47]">notifications</span>
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#ba1a1a] rounded-full border-2 border-[#f9f9f7]"></span>
-            </button>
-            <button className="p-2 rounded-full hover:bg-[#e8e8e6] transition-colors">
-              <span className="material-symbols-outlined text-[#695d47]">settings</span>
-            </button>
-          </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-[#163422] leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-[#695d47] mt-1">Administrator Super</p>
+              <p className="text-[10px] text-[#695d47] mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-[#163422]/20 overflow-hidden">
               <img

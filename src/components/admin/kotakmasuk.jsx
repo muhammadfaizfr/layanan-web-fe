@@ -135,15 +135,10 @@ export default function KotakMasukAdmin({ navigate }) {
       <main className="ml-72 flex-1 min-h-screen flex flex-col">
         {/* TopNavBar */}
         <header className="w-full h-16 bg-[#f9f9f7] shadow-sm sticky top-0 z-50 flex justify-end items-center px-8 border-b border-outline-variant/10 gap-6">
-          <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-            <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-              <span className="material-symbols-outlined text-primary">settings</span>
-            </button>
-          </div>
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
-              <p className="font-['Plus_Jakarta_Sans'] font-bold text-primary text-sm leading-none">Admin Galunggung</p>
-              <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+              <p className="font-['Plus_Jakarta_Sans'] font-bold text-primary text-sm leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img

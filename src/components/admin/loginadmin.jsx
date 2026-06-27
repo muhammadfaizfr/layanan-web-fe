@@ -19,6 +19,10 @@ export default function LoginAdmin({ navigate }) {
       if (token) {
         localStorage.setItem('token', token)
       }
+      if (data.admin) {
+        localStorage.setItem('admin_data', JSON.stringify(data.admin))
+        localStorage.setItem('admin_nama', data.admin.nama_admin)
+      }
       navigate('admin-ringkasan')
     } catch (err) {
       setError(err.userMessage || 'Email atau kata sandi salah!')

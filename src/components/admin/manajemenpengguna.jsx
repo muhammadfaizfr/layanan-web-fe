@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import pelangganService from '../../services/pelangganService'
+import bookingService from '../../services/bookingService'
 import authService from '../../services/authService'
 
 export default function ManajemenPenggunaAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('manajemen-pengguna')
-  const [activeFilter, setActiveFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   const handleNavClick = (page) => {
@@ -52,11 +51,20 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
     setLoading(true)
     setError('')
     try {
-      const data = await pelangganService.getAll()
+      const data = await bookingService.getAll()
       const list = Array.isArray(data) ? data : (data?.data ?? [])
-      setUsers(list)
+      // Filter booking yang merupakan jadwal pendakian:
+      // - dari jadwal.jsx langsung (ada field route)
+      // - dari PembayaranPendakian (jenis_tiket berisi nama rute)
+      const RUTE_KEYWORDS = ['tangga', 'hutan', 'rute', 'cipanas']
+      const isPendakian = (b) => {
+        if (b.route) return true
+        const jt = (b.jenis_tiket || '').toLowerCase()
+        return RUTE_KEYWORDS.some(k => jt.includes(k))
+      }
+      setUsers(list.filter(isPendakian))
     } catch (err) {
-      setError(err.userMessage || 'Gagal memuat data pelanggan.')
+      setError(err.userMessage || 'Gagal memuat data pendaki.')
     } finally {
       setLoading(false)
     }
@@ -66,41 +74,30 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
     fetchPelanggan()
   }, [])
 
-  const handleVerify = async (id) => {
-    try {
-      await pelangganService.update(id, { status: 'Terverifikasi' })
-      setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'Terverifikasi' } : u))
-    } catch (err) {
-      setError(err.userMessage || 'Gagal memverifikasi pelanggan.')
-    }
-  }
-
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus pelanggan ini?')) return
+    if (!window.confirm('Yakin ingin menghapus data pendaki ini?')) return
     try {
-      await pelangganService.delete(id)
-      setUsers(prev => prev.filter(u => u.id !== id))
+      await bookingService.delete(id)
+      setUsers(prev => prev.filter(u => (u.id_booking || u.id) !== id))
     } catch (err) {
-      setError(err.userMessage || 'Gagal menghapus pelanggan.')
+      setError(err.userMessage || 'Gagal menghapus data pendaki.')
     }
   }
 
-  // Filter users based on tab search term
+  // Filter users based on search term
   const filteredUsers = users.filter(user => {
-    if (activeFilter === 'pending' && user.status !== 'Menunggu') return false
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      const name = user.name || user.nama || ''
-      const email = user.email || ''
-      const phone = user.phone || user.no_hp || user.telepon || ''
-      const location = user.location || user.alamat || ''
-      const userId = String(user.id || '')
+      const pelanggan = user.pelanggan || {}
+      const name = pelanggan.nama_lengkap || pelanggan.nama || user.name || user.nama || ''
+      const email = pelanggan.email || user.email || ''
+      const rute = user.rute || user.jenis_tiket || user.route || ''
+      const userId = String(user.id_booking || user.id || '')
       return (
         name.toLowerCase().includes(term) ||
         userId.toLowerCase().includes(term) ||
         email.toLowerCase().includes(term) ||
-        phone.toLowerCase().includes(term) ||
-        location.toLowerCase().includes(term)
+        rute.toLowerCase().includes(term)
       )
     }
     return true
@@ -177,19 +174,10 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 border-r border-outline-variant/20 pr-6">
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-                <span className="material-symbols-outlined text-primary">notifications</span>
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
-              </button>
-              <button className="p-2 rounded-full hover:bg-surface-container transition-colors">
-                <span className="material-symbols-outlined text-primary">settings</span>
-              </button>
-            </div>
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">Administrator Super</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>
@@ -204,7 +192,7 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
           <section className="flex justify-between items-end">
             <div>
               <span className="text-xs font-bold tracking-[0.2em] text-[#695d47] uppercase">Portal Manajemen</span>
-              <h2 className="text-4xl font-display font-extrabold text-primary tracking-tight mt-1">Pendaki Terdaftar</h2>
+              <h2 className="text-4xl font-display font-extrabold text-primary tracking-tight mt-1">Data Pendaki Terdaftar</h2>
             </div>
             <div className="flex gap-4">
               {/* Total Pendaki Card */}
@@ -212,37 +200,15 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
                 <span className="text-[9px] text-[#695d47] font-bold uppercase tracking-widest">Total Pendaki</span>
                 <span className="text-3xl font-display font-extrabold text-primary mt-1">{users.length}</span>
               </div>
-              {/* Terverifikasi Card */}
-              <div className="bg-surface-container-lowest shadow-sm rounded-3xl px-6 py-4 flex flex-col items-center justify-center min-w-[130px] border border-outline-variant/10">
-                <span className="text-[9px] text-[#695d47] font-bold uppercase tracking-widest">Terverifikasi</span>
-                <span className="text-3xl font-display font-extrabold text-[#695d47] mt-1">
-                  {users.filter(u => u.status === 'Terverifikasi').length}
-                </span>
-              </div>
             </div>
           </section>
 
-          {/* Filter Tab Row */}
+          {/* Filter Tab Row - hanya Semua */}
           <div className="flex items-center gap-4 mb-6">
             <button
-              onClick={() => setActiveFilter('all')}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all ${
-                activeFilter === 'all'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'bg-surface-container-low text-secondary hover:bg-surface-container-high'
-              }`}
+              className="px-6 py-2.5 rounded-full text-xs font-bold transition-all bg-primary text-on-primary shadow-md"
             >
               Semua Pendaki
-            </button>
-            <button
-              onClick={() => setActiveFilter('pending')}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all ${
-                activeFilter === 'pending'
-                  ? 'bg-primary text-[#f9f9f7] shadow-md'
-                  : 'bg-surface-container-low text-secondary hover:bg-surface-container-high'
-              }`}
-            >
-              Menunggu Verifikasi
             </button>
           </div>
 
@@ -257,11 +223,10 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
           {/* Data Table */}
           <div className="space-y-4">
             {/* Header Columns */}
-            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr_1fr] gap-4 px-6 py-3 text-[10px] font-bold text-secondary uppercase tracking-[0.15em]">
+            <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 px-6 py-3 text-[10px] font-bold text-secondary uppercase tracking-[0.15em]">
               <div>Profil Pendaki</div>
-              <div>Detail Kontak</div>
-              <div>Registrasi</div>
-              <div className="text-center">Status</div>
+              <div>Rute & Tanggal</div>
+              <div>Kontak</div>
               <div className="text-right">Aksi</div>
             </div>
 
@@ -275,20 +240,23 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
 
             {/* List Hiker Cards */}
             {!loading && filteredUsers.map((user) => {
-              const name = user.name || user.nama || '-'
-              const email = user.email || '-'
-              const phone = user.phone || user.no_hp || user.telepon || '-'
-              const date = user.date || user.created_at?.split('T')[0] || '-'
-              const location = user.location || user.alamat || user.asal || '-'
-              const status = user.status || 'Aktif'
-              const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-              const isPending = status === 'Menunggu'
-              const borderLeftClass = isPending ? 'border-l-4 border-amber-500/80' : ''
+              // Dari PembayaranPendakian (API): pelanggan.nama_lengkap, jenis_tiket, jml_tiket, tanggal_kunjungan
+              // Dari jadwal.jsx langsung (state): teamName, route, teamCount, date, contact
+              const pelanggan = user.pelanggan || {}
+              const name = user.teamName || pelanggan.nama_lengkap || pelanggan.nama || user.nama || '-'
+              const phone = user.contact || pelanggan.no_hp || user.no_hp || '-'
+              const rawRute = user.route === 'tangga' ? 'Tangga 620'
+                : user.route === 'hutan' ? 'Hutan Cipanas'
+                : user.jenis_tiket || user.route || 'Pendakian'
+              const date = user.date || (user.tanggal_kunjungan || user.created_at || '').substring(0, 10) || '-'
+              const jumlah = user.teamCount || user.jml_tiket || user.qty || 1
+              const idVal = user.id_booking || user.id
+              const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
 
               return (
                 <div
-                  key={user.id}
-                  className={`bg-surface-container-lowest rounded-2xl p-4 shadow-sm hover:shadow-md transition-all grid grid-cols-[2fr_1.5fr_1.5fr_1fr_1fr] gap-4 items-center ${borderLeftClass}`}
+                  key={idVal}
+                  className="bg-surface-container-lowest rounded-2xl p-4 shadow-sm hover:shadow-md transition-all grid grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 items-center"
                 >
                   {/* Profil Column */}
                   <div className="flex items-center gap-3">
@@ -297,49 +265,29 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
                     </div>
                     <div>
                       <p className="font-headline font-bold text-on-surface leading-tight">{name}</p>
-                      <p className="text-[11px] text-secondary font-medium mt-0.5">ID: {user.id}</p>
+                      <p className="text-[11px] text-secondary font-medium mt-0.5">BOOK-{String(idVal).padStart(4, '0')}</p>
                     </div>
                   </div>
 
-                  {/* Contact Column */}
+                  {/* Rute & Tanggal Column */}
                   <div>
-                    <p className="text-xs text-on-surface font-medium">{email}</p>
-                    <p className="text-[11px] text-secondary mt-0.5">{phone}</p>
-                    <p className="text-[10px] text-secondary mt-0.5" title="No. Identitas">{user.no_identitas || '-'}</p>
+                    <p className="text-xs text-on-surface font-medium">{rawRute}</p>
+                    <p className="text-[11px] text-secondary mt-0.5">{date}</p>
+                    <p className="text-[11px] text-secondary mt-0.5">{jumlah} orang</p>
                   </div>
 
-                  {/* Registration Column */}
+                  {/* Kontak Column */}
                   <div>
-                    <p className="text-xs text-on-surface font-medium">{date}</p>
-                    <p className="text-[11px] text-secondary mt-0.5">{location}</p>
-                  </div>
-
-                  {/* Status Badge Column */}
-                  <div className="flex justify-center">
-                    <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                      status === 'Terverifikasi' || status === 'aktif'
-                        ? 'bg-primary-fixed text-on-primary-fixed-variant'
-                        : 'bg-[#f1e1c4] text-[#6f634c]'
-                    }`}>
-                      {status}
-                    </span>
+                    <p className="text-xs text-on-surface font-medium">WhatsApp</p>
+                    <p className="text-[11px] text-secondary mt-0.5">{phone || '-'}</p>
                   </div>
 
                   {/* Actions Column */}
                   <div className="flex justify-end gap-3.5">
-                    {isPending && (
-                      <button
-                        onClick={() => handleVerify(user.id)}
-                        className="material-symbols-outlined text-emerald-600 hover:text-emerald-800 transition-colors"
-                        title="Verifikasi Pengguna"
-                      >
-                        check_circle
-                      </button>
-                    )}
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(idVal)}
                       className="material-symbols-outlined text-red-600 hover:text-red-800 transition-colors"
-                      title="Hapus Pengguna"
+                      title="Hapus Data Pendaki"
                     >
                       delete
                     </button>

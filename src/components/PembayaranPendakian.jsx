@@ -181,26 +181,15 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-[0_20px_40px_rgba(22,52,34,0.04)]">
-        <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+      <nav className="fixed top-0 w-full z-50 bg-[#f9f9f7]/80 backdrop-blur-md shadow-[0_4px_40px_0_rgba(22,52,34,0.04)]">
+        <div className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
           <button
             type="button"
             onClick={() => navigate?.('home')}
-            className="text-2xl font-extrabold tracking-tighter text-[#163422]"
+            className="text-xl font-bold tracking-tighter text-[#163422]"
           >
-            Galunggung
+            Gunung Galunggung
           </button>
-          <div className="hidden md:flex items-center space-x-8">
-            <button type="button" onClick={() => navigate?.('home')} className="text-[#695d47] hover:text-[#163422] transition-colors duration-300 font-jakarta font-semibold text-sm">Home</button>
-            <button type="button" onClick={() => navigate?.('tentang')} className="text-[#695d47] hover:text-[#163422] transition-colors duration-300 font-jakarta font-semibold text-sm">Tentang</button>
-            <button type="button" onClick={() => navigate?.('informasi')} className="text-[#695d47] hover:text-[#163422] transition-colors duration-300 font-jakarta font-semibold text-sm">Informasi</button>
-            <button type="button" onClick={() => navigate?.('galeri')} className="text-[#695d47] hover:text-[#163422] transition-colors duration-300 font-jakarta font-semibold text-sm">Galeri</button>
-            <button type="button" onClick={() => navigate?.('lokasi')} className="text-[#695d47] hover:text-[#163422] transition-colors duration-300 font-jakarta font-semibold text-sm">Lokasi</button>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="material-symbols-outlined text-primary cursor-pointer">notifications</span>
-            <span className="material-symbols-outlined text-primary cursor-pointer">account_circle</span>
-          </div>
         </div>
       </nav>
 

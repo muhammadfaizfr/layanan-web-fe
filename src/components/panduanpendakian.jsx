@@ -1,49 +1,39 @@
 import React from 'react'
 import heroPanduan from '../assets/images/Screenshot_2023_0618_2140241.png'
 
-export default function PanduanPendakian({ navigate }) {
+export default function PanduanPendakian({ navigate, openModal }) {
   return (
     <div className="bg-[#f9f9f7] text-[#1a1c1b] font-body selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen">
       {/* TopAppBar */}
-      <header className="bg-[#f9f9f7]/90 backdrop-blur-xl dark:bg-[#1a1c1b]/90 text-[#163422] dark:text-[#f9f9f7] docked full-width top-0 sticky z-50 shadow-[0_40px_40px_rgba(22,52,34,0.04)]">
-        <div className="flex justify-between items-center px-8 py-6 w-full max-w-screen-2xl mx-auto">
-          <span 
-            className="text-2xl font-extrabold tracking-tighter text-[#163422] dark:text-[#f9f9f7] cursor-pointer" 
-            onClick={() => navigate?.('home')}
-          >
-            Galunggung
-          </span>
-          <nav className="hidden md:flex gap-8 items-center font-['Plus_Jakarta_Sans'] font-semibold tracking-tight">
+      <header className="fixed top-0 w-full z-50 bg-[#f9f9f7]/80 backdrop-blur-md shadow-[0_4px_40px_0_rgba(22,52,34,0.04)]">
+        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto w-full">
+          <button onClick={() => navigate?.('home')} className="text-xl font-bold tracking-tighter text-[#163422] cursor-pointer">Gunung Galunggung</button>
+          <div className="hidden md:flex items-center gap-8">
+            <button onClick={() => navigate?.('home')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Home</button>
+            <button onClick={() => navigate?.('tentang')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Tentang</button>
+            <button onClick={() => navigate?.('informasi')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Informasi</button>
+            <button onClick={() => navigate?.('galeri')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Galeri</button>
+            <button onClick={() => navigate?.('lokasi')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Lokasi</button>
+            <button onClick={() => navigate?.('riwayat-tiket')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Tiket Saya</button>
+            <button onClick={() => navigate?.('kontak')} className="text-sm tracking-wide font-medium pb-1 text-[#695d47] hover:text-[#163422] transition-colors duration-300">Kontak</button>
+            <button onClick={() => navigate?.('panduan-pendakian')} className="text-sm tracking-wide font-medium pb-1 text-[#163422] border-b-2 border-[#163422] transition-colors duration-300">Panduan Pendakian</button>
+          </div>
+          <div className="flex items-center gap-3">
             <button 
-              onClick={() => navigate?.('home')} 
-              className="text-[#695d47] dark:text-[#f9f9f7]/60 hover:text-[#163422] transition-colors duration-300"
+              onClick={() => navigate?.('jadwal')}
+              className="bg-[#163422] text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]"
             >
-              Jelajah
+              Jadwal Pendakian
             </button>
-            <button 
-              className="text-[#163422] dark:text-[#f9f9f7] border-b-2 border-[#163422] dark:border-[#f9f9f7] pb-1"
-            >
-              Panduan
-            </button>
-            <button 
-              onClick={() => navigate?.('tentang')} 
-              className="text-[#695d47] dark:text-[#f9f9f7]/60 hover:text-[#163422] transition-colors duration-300"
-            >
-              Tentang
-            </button>
-            <button 
-              onClick={() => navigate?.('e-tiket')} 
-              className="text-[#695d47] dark:text-[#f9f9f7]/60 hover:text-[#163422] transition-colors duration-300"
-            >
-              Tiket
-            </button>
-          </nav>
-          <button 
-            onClick={() => navigate?.('jadwal')}
-            className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold tracking-tight active:opacity-80 active:scale-95 transition-all"
-          >
-            Pesan Tiket
-          </button>
+            {openModal && (
+              <button 
+                onClick={openModal}
+                className="bg-[#163422] text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all active:scale-95 opacity-90 shadow-[inset_0_1px_4px_rgba(255,255,255,0.2)]"
+              >
+                Pesan Tiket
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

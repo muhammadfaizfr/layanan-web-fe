@@ -39,7 +39,7 @@ function Lokasi({ openModal, navigate }) {
               <div className="flex flex-col gap-3">
                 <a
                   className="inline-flex items-center justify-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 w-full"
-                  href="https://maps.google.com"
+                  href="https://maps.google.com/?q=Gunung+Galunggung"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -82,38 +82,16 @@ function Lokasi({ openModal, navigate }) {
 
           {/* Styled Map View Container */}
           <div className="lg:col-span-8 bg-surface-container-high rounded-xl overflow-hidden relative min-h-[500px] shadow-[0_20px_50px_rgba(22,52,34,0.1)]">
-            <div className="absolute inset-0 bg-[#e5e5e5] grayscale contrast-125">
-              <img
-                className="w-full h-full object-cover opacity-60"
-                alt="a stylized topographical map of a mountain range with intricate contour lines and lush green elevation shading"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeZzIA6pMEuDQmEhjbXmGlMCg8vk7rcz0G_tQU6aPptR84XTQMUuNZCoiebsDQvx7wkAP5VTrbcKpUi5VrqHaGPaK5lUZjRw8BUwsgNaCFRvnbKdbJhAnL34DXgwHfhrh5wqlm2QJKAd0adV25Q8TvknwbwtX8MsiZ--IzRyNx4CZWoiwpt3hN6Hu9SCf4EbkceKGPOYdXhnT0-z1g9qABowRTvnTEgNURPNU_ta1u8SHZCZcdwOJyI3lbF4Hs8Ag9NlWDtnmReg"
-              />
-            </div>
-
-            {/* Decorative Map Elements */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-32 h-32 bg-primary/10 rounded-full animate-pulse border border-primary/20 flex items-center justify-center">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                  <div className="w-6 h-6 bg-primary rounded-full ring-8 ring-primary/20"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Map Controls (Visual Only) */}
-            <div className="absolute bottom-8 right-8 flex flex-col gap-2">
-              <button className="bg-surface-container-lowest w-12 h-12 rounded-lg flex items-center justify-center shadow-md text-primary">
-                <span className="material-symbols-outlined">add</span>
-              </button>
-              <button className="bg-surface-container-lowest w-12 h-12 rounded-lg flex items-center justify-center shadow-md text-primary">
-                <span className="material-symbols-outlined">remove</span>
-              </button>
-            </div>
-
-            {/* Location Label Overlay */}
-            <div className="absolute top-8 left-8 bg-surface-container-lowest/90 backdrop-blur px-6 py-4 rounded-xl shadow-lg border-l-4 border-primary">
-              <p className="label-md text-[10px] tracking-widest text-secondary font-bold uppercase mb-1">Titik Koordinat</p>
-              <p className="text-xl font-bold text-primary tabular-nums tracking-tighter">7.2583° S, 108.0583° E</p>
-            </div>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1d63292.05206687002!2d108.02685794711674!3d-7.269438012678663!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f54316d3f23db%3A0xc3f3458bfb15b6d!2sGn.%20Galunggung!5e0!3m2!1sid!2sid!4v1689240000000!5m2!1sid!2sid"
+              width="100%"
+              height="100%"
+              style={{ border: 0, minHeight: '500px' }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Peta Gunung Galunggung"
+            ></iframe>
           </div>
         </div>
       </section>

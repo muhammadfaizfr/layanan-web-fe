@@ -8,11 +8,6 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
 
   const [name, setName] = useState(isRegularTicket ? (order.name || "") : "");
   const [date, setDate] = useState(isRegularTicket ? (order.date || new Date().toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10));
-  const [keterangan, setKeterangan] = useState(isRegularTicket ? (order.keterangan || "") : "");
-  const [noIdentitas, setNoIdentitas] = useState(isRegularTicket ? (order.noIdentitas || "") : "");
-  const [email, setEmail] = useState(isRegularTicket ? (order.email || "") : "");
-  const [jenisTiket, setJenisTiket] = useState(isRegularTicket ? (order.jenisTiket || "Wisatawan Lokal") : "Wisatawan Lokal");
-  const [noHp, setNoHp] = useState(isRegularTicket ? (order.noHp || "") : "");
 
   const [localCount, setLocalCount] = useState(ticketCount ?? 1);
   const tc = ticketCount ?? localCount;
@@ -21,6 +16,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
 
   const [hargaLokal, setHargaLokal] = useState(15000);
   const [hargaMancanegara, setHargaMancanegara] = useState(35000);
+  const [visitorType, setVisitorType] = useState("lokal"); // 'lokal' | 'mancanegara'
 
   useEffect(() => {
     const fetchHarga = async () => {
@@ -37,9 +33,9 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
     fetchHarga();
   }, []);
 
-  const unitPrice = jenisTiket === "Wisatawan Mancanegara" ? hargaMancanegara : hargaLokal;
+  const unitPrice = visitorType === "mancanegara" ? hargaMancanegara : hargaLokal;
   const computedTotal = tc * unitPrice;
-  const fmt = formatRupiah ?? ((n) => `Rp ${n.toLocaleString("id-ID")}`);
+  const fmt = formatRupiah ?? ((n) => `IDR ${n.toLocaleString("id-ID")}`);
 
   return (
     <div
@@ -49,222 +45,175 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
       {/* Backdrop click to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      {/* MODAL WRAPPER — relative so X button can anchor to it */}
-      <div className="relative w-full max-w-md" style={{ maxHeight: "90vh" }}>
-
-        {/* ===== TOMBOL X — DI LUAR modal card, selalu terlihat ===== */}
-        <button
-          onClick={onClose}
-          type="button"
-          aria-label="Tutup"
-          style={{
-            position: "absolute",
-            top: "-14px",
-            right: "-14px",
-            zIndex: 9999,
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            backgroundColor: "#163422",
-            color: "#fff",
-            border: "2px solid #fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-            fontSize: "18px",
-            fontWeight: "bold",
-            lineHeight: 1,
-          }}
-        >
-          ✕
-        </button>
-
+      {/* MODAL WRAPPER */}
+      <div className="relative w-full max-w-[460px] animate-fade-in-up">
+        
         {/* MODAL CARD */}
         <div
-          className="bg-white rounded-2xl shadow-2xl flex flex-col"
-          style={{ maxHeight: "90vh", overflowY: "auto" }}
+          className="bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden relative"
+          style={{ maxHeight: "92vh" }}
         >
+          {/* TOMBOL X */}
+          <button
+            onClick={onClose}
+            type="button"
+            aria-label="Tutup"
+            className="absolute top-5 right-5 text-gray-400 hover:text-gray-800 transition-colors z-10"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>close</span>
+          </button>
+
           {/* HEADER */}
-          <div className="px-6 pt-6 pb-5 border-b border-gray-100 flex-shrink-0">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <span className="w-8 h-px bg-secondary"></span>
-              <span className="text-secondary font-label text-[10px] uppercase tracking-[0.2em] font-semibold">Reservasi Digital</span>
+          <div className="px-8 pt-8 pb-4 flex-shrink-0">
+            <div className="inline-flex items-center gap-2 mb-3">
+              <span className="w-6 h-[1.5px] bg-[#a8a192]"></span>
+              <span className="text-[#a8a192] font-label text-[10px] uppercase tracking-[0.15em] font-bold">Reservasi Digital</span>
             </div>
-            <h2 className="text-3xl font-extrabold text-primary tracking-tighter">Pesan Tiket Kunjungan</h2>
-            <p className="text-on-surface-variant mt-1 text-sm">Lengkapi data untuk akses eksklusif ke kawah Galunggung.</p>
+            <h2 className="text-[26px] font-extrabold text-[#1a1c1b] tracking-tight leading-tight">Pesan Tiket Kunjungan</h2>
+            <p className="text-[#695d47] mt-2 text-[13.5px] leading-relaxed pr-6">Lengkapi data untuk akses eksklusif ke kawah Galunggung.</p>
           </div>
 
           {/* FORM BODY */}
           <form
-            className="p-6 space-y-5"
+            className="px-8 pb-8 pt-2 overflow-y-auto"
             onSubmit={(e) => {
               e.preventDefault();
-              const orderData = { name, date, keterangan, qty: tc, unitPrice, total: computedTotal, noIdentitas, email, jenisTiket, noHp };
+              const jenisTiket = visitorType === "mancanegara" ? "Mancanegara" : "Wisatawan Lokal";
+              const orderData = { name, date, qty: tc, unitPrice, total: computedTotal, jenisTiket };
               if (typeof onProceed === "function") {
                 onProceed(orderData);
               } else {
-                alert(`Pesanan:\nNama: ${name || "-"}\nTanggal: ${date || "-"}\nJumlah: ${tc}\nTotal: ${fmt(computedTotal)}`);
+                alert(`Pesanan:\nNama: ${name || "-"}\nTanggal: ${date || "-"}\nJenis: ${jenisTiket}\nJumlah: ${tc}\nTotal: ${fmt(computedTotal)}`);
               }
             }}
           >
-            {/* Nama */}
-            <div>
-              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Nama Lengkap</label>
-              <input
-                className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
-                placeholder="Sesuai kartu identitas"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* No. Identitas */}
-            <div>
-              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">No. Identitas (KTP/Paspor)</label>
-              <input
-                className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
-                placeholder="Masukkan nomor KTP atau Paspor"
-                type="text"
-                value={noIdentitas}
-                onChange={(e) => setNoIdentitas(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Email */}
+            <div className="space-y-5">
+              {/* Nama */}
               <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Email</label>
+                <label className="block text-[11px] font-bold text-[#695d47] uppercase tracking-widest mb-2">Nama Lengkap</label>
                 <input
-                  className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
-                  placeholder="email@contoh.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              {/* No. HP */}
-              <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">No. HP</label>
-                <input
-                  className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition"
-                  placeholder="08xxxxxxxxx"
-                  type="tel"
-                  value={noHp}
-                  onChange={(e) => setNoHp(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Jenis Tiket */}
-            <div>
-              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Jenis Tiket</label>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setJenisTiket("Wisatawan Lokal")}
-                  className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
-                    jenisTiket === "Wisatawan Lokal"
-                      ? "bg-primary text-white shadow-md"
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  🇮🇩 Wisatawan Lokal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setJenisTiket("Wisatawan Mancanegara")}
-                  className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${
-                    jenisTiket === "Wisatawan Mancanegara"
-                      ? "bg-primary text-white shadow-md"
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  🌍 Mancanegara
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Tanggal */}
-              <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Tanggal Kunjungan</label>
-                <input
-                  className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface outline-none focus:ring-2 focus:ring-primary/30 transition"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-4 py-3.5 bg-[#f5f5f5] rounded-xl text-[#1a1c1b] font-medium placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-transparent focus:border-primary/20"
+                  placeholder="Nama lengkap pengunjung"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
 
-              {/* Jumlah Tiket */}
+              {/* Jenis Pengunjung */}
               <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Jumlah Tiket</label>
-                <div className="flex items-center bg-gray-50 rounded-lg px-2 py-1 gap-2">
+                <label className="block text-[11px] font-bold text-[#695d47] uppercase tracking-widest mb-2">Jenis Pengunjung</label>
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={dec}
                     type="button"
-                    className="w-10 h-10 flex items-center justify-center text-primary hover:bg-gray-200 rounded-md transition font-bold text-xl"
-                  >−</button>
-                  <span className="flex-1 text-center font-bold text-on-surface text-lg">{tc}</span>
+                    onClick={() => setVisitorType("lokal")}
+                    className={`relative flex flex-col items-start px-4 py-3.5 rounded-xl border-2 transition-all text-left ${
+                      visitorType === "lokal"
+                        ? "border-[#163422] bg-[#163422]/5"
+                        : "border-gray-200 bg-[#f5f5f5] hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        visitorType === "lokal" ? "border-[#163422]" : "border-gray-400"
+                      }`}>
+                        {visitorType === "lokal" && <span className="w-2 h-2 rounded-full bg-[#163422]"></span>}
+                      </span>
+                      <span className={`text-[13px] font-bold ${visitorType === "lokal" ? "text-[#163422]" : "text-gray-600"}`}>
+                        🇮🇩 Lokal
+                      </span>
+                    </div>
+                    <span className={`text-[12px] font-black ml-6 ${visitorType === "lokal" ? "text-[#163422]" : "text-gray-500"}`}>
+                      {fmt(hargaLokal)}/orang
+                    </span>
+                  </button>
+
                   <button
-                    onClick={inc}
                     type="button"
-                    className="w-10 h-10 flex items-center justify-center text-primary hover:bg-gray-200 rounded-md transition font-bold text-xl"
-                  >+</button>
+                    onClick={() => setVisitorType("mancanegara")}
+                    className={`relative flex flex-col items-start px-4 py-3.5 rounded-xl border-2 transition-all text-left ${
+                      visitorType === "mancanegara"
+                        ? "border-[#163422] bg-[#163422]/5"
+                        : "border-gray-200 bg-[#f5f5f5] hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        visitorType === "mancanegara" ? "border-[#163422]" : "border-gray-400"
+                      }`}>
+                        {visitorType === "mancanegara" && <span className="w-2 h-2 rounded-full bg-[#163422]"></span>}
+                      </span>
+                      <span className={`text-[13px] font-bold ${visitorType === "mancanegara" ? "text-[#163422]" : "text-gray-600"}`}>
+                        🌍 Mancanegara
+                      </span>
+                    </div>
+                    <span className={`text-[12px] font-black ml-6 ${visitorType === "mancanegara" ? "text-[#163422]" : "text-gray-500"}`}>
+                      {fmt(hargaMancanegara)}/orang
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Tanggal */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#695d47] uppercase tracking-widest mb-2">Tanggal Kunjungan</label>
+                  <input
+                    className="w-full px-4 py-3.5 bg-[#f5f5f5] rounded-xl text-[#1a1c1b] font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-transparent focus:border-primary/20 [color-scheme:light]"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Jumlah Tiket */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#695d47] uppercase tracking-widest mb-2">Jumlah Tiket</label>
+                  <div className="flex items-center bg-[#f5f5f5] rounded-xl h-[52px] px-1 border border-transparent focus-within:border-primary/20 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                    <button
+                      onClick={dec}
+                      type="button"
+                      className="w-10 h-full flex items-center justify-center text-[#1a1c1b] hover:bg-black/5 rounded-lg transition-colors font-black text-xl"
+                    >−</button>
+                    <span className="flex-1 text-center font-bold text-[#1a1c1b] text-sm">{tc}</span>
+                    <button
+                      onClick={inc}
+                      type="button"
+                      className="w-10 h-full flex items-center justify-center text-[#1a1c1b] hover:bg-black/5 rounded-lg transition-colors font-black text-xl"
+                    >+</button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Keterangan */}
-            <div>
-              <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wider mb-2">Keterangan</label>
-              <textarea
-                value={keterangan}
-                onChange={(e) => setKeterangan(e.target.value)}
-                placeholder="Catatan tambahan (opsional)"
-                rows={2}
-                className="w-full px-4 py-3 bg-gray-50 rounded-lg text-on-surface placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 resize-none transition"
-              />
-            </div>
-
-            {/* Summary */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200">
+            {/* Summary Box */}
+            <div className="bg-[#f5f5f5] rounded-2xl p-5 mt-6 mb-6 border border-gray-100/50 shadow-sm">
+              <div className="flex justify-between items-end pb-3 mb-3 border-b border-gray-200/60">
                 <div>
-                  <span className="text-xs text-gray-500 block">Jenis Tiket</span>
-                  <span className="text-sm font-semibold text-on-surface">{jenisTiket}</span>
+                  <span className="text-[11px] font-bold text-[#695d47] block mb-1">Harga Satuan</span>
+                  <span className="text-[13px] font-black text-[#1a1c1b]">{fmt(unitPrice)}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-gray-500 block">Harga Satuan</span>
-                  <span className="text-sm font-semibold text-on-surface">IDR {unitPrice.toLocaleString("id-ID")}</span>
+                  <span className="text-[11px] font-bold text-[#695d47] block mb-1">Subtotal</span>
+                  <span className="text-[13px] font-black text-[#1a1c1b]">{tc} × {fmt(unitPrice)}</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-primary">Total Pembayaran ({tc}x)</span>
-                <span className="text-xl font-extrabold text-primary">{fmt(computedTotal)}</span>
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-[13px] font-bold text-[#1a1c1b]">Total Pembayaran</span>
+                <span className="text-lg font-black text-[#1a1c1b] tracking-tight">{fmt(computedTotal)}</span>
               </div>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-4 bg-primary text-white rounded-full font-bold text-base flex items-center justify-center gap-2 shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all"
+              className="w-full h-14 bg-[#163422] text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#1f4a31] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all"
             >
               Lanjutkan Pembayaran
-              <span style={{ fontSize: "20px" }}>→</span>
+              <span className="material-symbols-outlined text-[20px]" style={{ fontWeight: 600 }}>arrow_forward</span>
             </button>
-
-            <p className="text-center text-[11px] text-gray-400 px-4">
-              Dengan melanjutkan, Anda menyetujui <a className="underline font-semibold hover:text-primary" href="#">Syarat &amp; Ketentuan</a> kami.
-            </p>
           </form>
         </div>
       </div>
