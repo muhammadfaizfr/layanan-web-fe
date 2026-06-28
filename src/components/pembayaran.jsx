@@ -1,39 +1,130 @@
 import React, { useState } from 'react'
+import pelangganService from '../services/pelangganService'
+import bookingService from '../services/bookingService'
+import pembayaranService from '../services/pembayaranService'
+import slotPendakianService from '../services/slotPendakianService'
 
-export default function Pembayaran({ order, formatRupiah, navigate, onComplete }) {
+export default function Pembayaran({ order, formatRupiah, navigate, onComplete, onBack }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [selectedMethod, setSelectedMethod] = useState(null)
+
   const ord = order || {}
   const qty = ord.qty ?? 1
-  const price = ord.price ?? ord.unitPrice ?? 25000
-  const admin = ord.admin ?? 2500
-  const item = ord.item ?? `Tiket Wisatawan Domestik (x${qty})`
+  const price = ord.price ?? ord.unitPrice ?? 15000
+  const item = ord.item ?? (ord.jenisTiket ? `Tiket ${ord.jenisTiket} (x${qty})` : `Tiket Wisatawan Domestik (x${qty})`)
   const location = ord.location ?? 'Gunung Galunggung, Tasikmalaya'
 
-  const subtotal = qty * price
-  const total = subtotal + admin
-
+  const total = qty * price
   const fmt = formatRupiah ?? ((n) => `Rp ${n.toLocaleString('id-ID')}`)
-  const [selectedMethod, setSelectedMethod] = useState(null)
+
+  const handlePayment = async () => {
+    if (!selectedMethod) {
+      alert('Pilih metode pembayaran terlebih dahulu.')
+      return
+    }
+    
+    setLoading(true)
+    setError('')
+    try {
+      // 1. Create Pelanggan
+      const pelangganData = {
+        nama_lengkap: ord.name || 'Pengunjung Galunggung',
+        no_hp: ord.contact || '08123456789',
+        no_identitas: '',
+        email: ''
+      }
+      const pelangganRes = await pelangganService.create(pelangganData)
+      const pelanggan = pelangganRes?.data || pelangganRes
+      const idPelanggan = pelanggan?.id_pelanggan || pelanggan?.id
+
+      if (!idPelanggan) throw new Error('Gagal menyimpan data pelanggan.')
+
+      // 1.5 Create or Find Slot for today (because DB requires id_slot)
+      const dateString = new Date().toISOString().split('T')[0]
+      const slotsData = await slotPendakianService.getAll()
+      const slotsList = Array.isArray(slotsData) ? slotsData : (slotsData?.data ?? [])
+      let slot = slotsList.find(s => (s.tanggal_pendakian === dateString || s.tanggal === dateString))
+      let idSlot = slot?.id_slot || slot?.id
+
+      if (!idSlot) {
+        const newSlotData = {
+          tanggal_pendakian: dateString,
+          kuota_maksimal: 500,
+          kuota_tersedia: 500,
+          id_admin: 1
+        }
+        const slotRes = await slotPendakianService.create(newSlotData)
+        const newSlot = slotRes?.data || slotRes
+        idSlot = newSlot?.id_slot || newSlot?.id
+      }
+
+      if (!idSlot) throw new Error('Gagal menentukan slot tiket.')
+
+      // 2. Create Booking
+      const bookingData = {
+        id_pelanggan: Number(idPelanggan),
+        id_slot: Number(idSlot),
+        jenis_tiket: ord.jenisTiket || 'Wisatawan Lokal',
+        jumlah_tiket: Number(qty),
+        harga_tiket: Number(price),
+        status_booking: 'Menunggu Pembayaran'
+      }
+      const bookingRes = await bookingService.create(bookingData)
+      const booking = bookingRes?.data || bookingRes
+      const idBooking = booking?.id_booking || booking?.id
+
+      if (!idBooking) throw new Error('Gagal menyimpan pesanan tiket.')
+
+      // 3. Create Pembayaran
+      const now = new Date()
+      const localTimeString = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0') + ' ' +
+        String(now.getHours()).padStart(2, '0') + ':' +
+        String(now.getMinutes()).padStart(2, '0') + ':' +
+        String(now.getSeconds()).padStart(2, '0')
+
+      const pembayaranData = {
+        id_booking: Number(idBooking),
+        metode_pembayaran: selectedMethod,
+        waktu_pembayaran: localTimeString,
+        status_pembayaran: 'Menunggu Verifikasi'
+      }
+      await pembayaranService.create(pembayaranData)
+
+      if (order) order.reference = `GG-TIK-${idBooking}`
+      
+      if (typeof onComplete === 'function') {
+        onComplete(selectedMethod)
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err.response?.data?.message || err.message || 'Gagal memproses pembayaran')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
       <nav className="fixed top-0 w-full z-50 bg-[#f9f9f7]/80 backdrop-blur-md shadow-[0_4px_40px_0_rgba(22,52,34,0.04)]">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto w-full">
           <button onClick={() => navigate ? navigate('home') : null} className="text-xl font-bold tracking-tighter text-[#163422]">Gunung Galunggung</button>
-          <div className="hidden md:flex items-center gap-8">
-            <button onClick={() => navigate ? navigate('home') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Home</button>
-            <button onClick={() => navigate ? navigate('tentang') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Tentang</button>
-            <button onClick={() => navigate ? navigate('informasi') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Informasi</button>
-            <button onClick={() => navigate ? navigate('galeri') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Galeri</button>
-            <button onClick={() => navigate ? navigate('lokasi') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Lokasi</button>
-            <button onClick={() => navigate ? navigate('kontak') : null} className="text-sm tracking-wide font-medium text-[#695d47] pb-1 hover:text-[#163422] transition-colors duration-300">Kontak</button>
-          </div>
-          <button onClick={() => navigate ? navigate('home') : null} className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 active:scale-95 opacity-90 hover:opacity-100 shadow-[0_4px_20px_0_rgba(22,52,34,0.1)]">
-            Pesan Tiket
-          </button>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="bg-[#163422] text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-[#1f4a31] transition-colors shadow-sm"
+            >
+              Kembali
+            </button>
+          )}
         </div>
       </nav>
 
       <main className="pt-32 pb-32 px-8 max-w-7xl mx-auto">
+
         <div className="flex justify-center items-center mb-16">
           <div className="flex items-center space-x-4 md:space-x-12">
             <div className="flex items-center space-x-2 text-on-surface-variant opacity-60">
@@ -126,11 +217,7 @@ export default function Pembayaran({ order, formatRupiah, navigate, onComplete }
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-sm font-body">
                     <span className="text-on-surface-variant">Subtotal</span>
-                    <span className="text-on-surface font-semibold">{fmt(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm font-body">
-                    <span className="text-on-surface-variant">Biaya Administrasi</span>
-                    <span className="text-on-surface font-semibold">{fmt(admin)}</span>
+                    <span className="text-on-surface font-semibold">{fmt(total)}</span>
                   </div>
                 </div>
                 <div className="pt-6 border-t border-outline-variant/30 flex justify-between items-end">
@@ -138,18 +225,21 @@ export default function Pembayaran({ order, formatRupiah, navigate, onComplete }
                   <p className="text-3xl font-headline font-extrabold text-primary tracking-tighter">{fmt(total)}</p>
                 </div>
                 <div className="pt-8">
-                  <button onClick={() => {
-                      if (!selectedMethod) {
-                        alert('Pilih metode pembayaran terlebih dahulu (Bank atau E-Wallet).')
-                        return
-                      }
-                      if (typeof onComplete === 'function') {
-                        onComplete(selectedMethod)
-                      }
-                    }}
-                    className="w-full py-5 bg-primary text-on-primary rounded-full font-headline font-bold text-lg flex items-center justify-center space-x-3 shadow-lg shadow-primary/10 hover:bg-primary-container transition-all active:scale-[0.98]">
-                    <span className="material-symbols-outlined">lock</span>
-                    <span>Bayar Sekarang</span>
+                  {error && (
+                    <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm mb-4">
+                      {error}
+                    </div>
+                  )}
+                  <button onClick={handlePayment} disabled={loading}
+                    className="w-full py-5 bg-primary text-on-primary rounded-full font-headline font-bold text-lg flex items-center justify-center space-x-3 shadow-lg shadow-primary/10 hover:bg-primary-container transition-all active:scale-[0.98] disabled:opacity-70">
+                    {loading ? (
+                      <span>Memproses...</span>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined">lock</span>
+                        <span>Bayar Sekarang</span>
+                      </>
+                    )}
                   </button>
                   <div className="mt-8 flex items-center justify-center space-x-6 opacity-50">
                     <div className="flex items-center space-x-2">

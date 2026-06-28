@@ -238,7 +238,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img

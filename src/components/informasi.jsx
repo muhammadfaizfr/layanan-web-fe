@@ -6,6 +6,7 @@ function Informasi({ openModal }) {
   const [hargaMancanegara, setHargaMancanegara] = useState(35000);
   const [jamBukaSenin, setJamBukaSenin] = useState('07:00');
   const [jamTutupJumat, setJamTutupJumat] = useState('21:00');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchHarga = async () => {
@@ -19,6 +20,8 @@ function Informasi({ openModal }) {
         }
       } catch (err) {
         console.error("Gagal memuat harga tiket", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchHarga();
@@ -44,7 +47,7 @@ function Informasi({ openModal }) {
             <ul className="space-y-6">
               <li className="flex justify-between items-center border-b border-outline-variant/20 pb-4">
                 <span className="text-on-surface-variant font-medium">Senin — Jumat</span>
-                <span className="text-primary font-bold">{jamBukaSenin} — {jamTutupJumat}</span>
+                <span className="text-primary font-bold">{loading ? '...' : `${jamBukaSenin} — ${jamTutupJumat}`}</span>
               </li>
               <li className="flex justify-between items-center border-b border-outline-variant/20 pb-4">
                 <span className="text-on-surface-variant font-medium">Sabtu — Minggu</span>
@@ -73,14 +76,14 @@ function Informasi({ openModal }) {
                 <h3 className="text-primary-fixed font-label text-xs uppercase tracking-widest">Domestik / Lokal</h3>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">Wisatawan Lokal</span>
-                  <span className="text-2xl font-bold">Rp {hargaLokal.toLocaleString('id-ID')}</span>
+                  <span className="text-2xl font-bold">{loading ? '...' : `Rp ${hargaLokal.toLocaleString('id-ID')}`}</span>
                 </div>
               </div>
               <div className="space-y-4">
                 <h3 className="text-primary-fixed font-label text-xs uppercase tracking-widest">Mancanegara</h3>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">International Visitor</span>
-                  <span className="text-2xl font-bold">Rp {hargaMancanegara.toLocaleString('id-ID')}</span>
+                  <span className="text-2xl font-bold">{loading ? '...' : `Rp ${hargaMancanegara.toLocaleString('id-ID')}`}</span>
                 </div>
                 <div className="flex justify-between items-end border-b border-primary-container pb-2">
                   <span className="text-lg">Parking (Motor/Mobil)</span>

@@ -3,12 +3,11 @@ import React, { useMemo } from 'react'
 export default function BerhasilPembayaran({ order, navigate, formatRupiah }) {
   const qty = order?.qty ?? 1
   const price = order?.price ?? order?.unitPrice ?? 25000
-  const admin = order?.admin ?? 2500
-  const item = order?.item ?? `Tiket Wisatawan Domestik (x${qty})`
+  const item = order?.item ?? (order?.jenisTiket ? `Tiket ${order.jenisTiket} (x${qty})` : `Tiket Wisatawan Domestik (x${qty})`)
   const location = order?.location ?? 'Kawah Galunggung, Tasikmalaya'
   const name = order?.name ?? 'Pengunjung'
   const date = order?.date ?? '24 April 2026'
-  const total = qty * price + admin
+  const total = qty * price
   const fmt = formatRupiah ?? ((n) => `Rp ${n.toLocaleString('id-ID')}`)
 
   const reference = useMemo(() => {
@@ -55,11 +54,7 @@ export default function BerhasilPembayaran({ order, navigate, formatRupiah }) {
               <div className="rounded-[2rem] bg-white p-6 border border-outline-variant/10 shadow-sm">
                 <div className="flex justify-between text-sm text-on-surface-variant mb-3">
                   <span>Subtotal</span>
-                  <span>{fmt(qty * price)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-on-surface-variant mb-3">
-                  <span>Biaya Administrasi</span>
-                  <span>{fmt(admin)}</span>
+                  <span>{fmt(total)}</span>
                 </div>
                 <div className="pt-3 border-t border-outline-variant/20 flex justify-between items-center">
                   <span className="font-semibold text-primary">Total Pembayaran</span>

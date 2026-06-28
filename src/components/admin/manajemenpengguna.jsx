@@ -177,7 +177,7 @@ export default function ManajemenPenggunaAdmin({ navigate }) {
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>

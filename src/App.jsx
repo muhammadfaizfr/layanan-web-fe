@@ -7,6 +7,7 @@ import Lokasi from './components/lokasi.jsx'
 import Tentang from './components/tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
+import Pembayaran from './components/pembayaran.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
 import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
@@ -81,7 +82,7 @@ function App() {
     setOrder(orderData)
     setPaymentMethod(null)
     setScheduleInfo(null)
-    setCurrentPage('pembayaran')
+    setCurrentPage('pembayaran-jadwal')
   }
 
   const handleProceedToPayment = (orderData) => {
@@ -89,7 +90,7 @@ function App() {
     setPaymentMethod(null)
     setScheduleInfo(null)
     setIsModalOpen(false)
-    setCurrentPage('pembayaran')
+    setCurrentPage('pembayaran-tiket')
   }
 
   const handleBackFromPayment = () => {
@@ -101,9 +102,9 @@ function App() {
     }
   }
 
-  const handleCompletePayment = (method) => {
+  const handleCompletePayment = (method, isTiket = false) => {
     setPaymentMethod(method)
-    setCurrentPage('berhasil')
+    setCurrentPage(isTiket ? 'berhasil-tiket' : 'berhasil-jadwal')
   }
 
   // Scroll to top when page changes (so new page appears at top)
@@ -270,14 +271,22 @@ function App() {
           </>
         )
 
-      case 'pembayaran':
+      case 'pembayaran-jadwal':
         return (
-          <PembayaranPendakian order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={handleCompletePayment} onBack={handleBackFromPayment} />
+          <PembayaranPendakian order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={(method) => handleCompletePayment(method, false)} onBack={handleBackFromPayment} />
+        )
+      case 'pembayaran-tiket':
+        return (
+          <Pembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={(method) => handleCompletePayment(method, true)} onBack={handleBackFromPayment} />
         )
 
-      case 'berhasil':
+      case 'berhasil-jadwal':
         return (
           <PendaftaranSelesai order={order} navigate={setCurrentPage} />
+        )
+      case 'berhasil-tiket':
+        return (
+          <BerhasilPembayaran order={order} navigate={setCurrentPage} formatRupiah={formatRupiah} />
         )
       case 'e-tiket':
         return (
@@ -354,7 +363,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage === 'pembayaran' || currentPage === 'berhasil' || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket' || currentPage === 'admin-tiket-berhasil' || currentPage === 'admin-tiket-gagal'
+  const isStandalonePage = currentPage.startsWith('pembayaran') || currentPage.startsWith('berhasil') || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket' || currentPage === 'admin-tiket-berhasil' || currentPage === 'admin-tiket-gagal'
 
   if (isStandalonePage) {
     return (

@@ -3,7 +3,7 @@ import laporanService from '../../services/laporanService'
 import bookingService from '../../services/bookingService'
 import authService from '../../services/authService'
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 
 export default function LaporanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('laporan')
@@ -85,9 +85,7 @@ export default function LaporanAdmin({ navigate }) {
     const maxCount = Math.max(...counts, 1) // avoid division by zero
 
     return dayLabels.map((label, idx) => {
-      // Reorder: SEN(1) SEL(2) RAB(3) KAM(4) JUM(5) SAB(6) MIN(0)
-      const dayIdx = idx === 6 ? 0 : idx + 1
-      const count = counts[dayIdx]
+      const count = counts[idx]
       const pct = Math.max(Math.round((count / maxCount) * 100), 4) // min 4% so bar is visible
 
       let bgClass = 'bg-[#eeeeec]'
@@ -177,7 +175,7 @@ export default function LaporanAdmin({ navigate }) {
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img
@@ -412,17 +410,22 @@ export default function LaporanAdmin({ navigate }) {
                     });
 
                     const doc = new jsPDF()
+                    const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth()
                     doc.setFont('helvetica')
                     
                     // Title
-                    doc.setFontSize(20)
+                    doc.setFontSize(16)
+                    doc.setFont('helvetica', 'bold')
                     doc.setTextColor(22, 52, 34) // Primary color
-                    doc.text('Laporan Keuangan Gunung Galunggung', 14, 20)
+                    doc.text('LAPORAN KEUANGAN GUNUNG GALUNGGUNG', pageWidth / 2, 20, { align: 'center' })
                     
                     // Subtitle
-                    doc.setFontSize(11)
+                    const endDateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    const startDateStr = filterDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    doc.setFontSize(10)
+                    doc.setFont('helvetica', 'normal')
                     doc.setTextColor(105, 93, 71)
-                    doc.text(`Periode: ${days} Hari Terakhir (Sejak ${filterDate.toLocaleDateString('id-ID')})`, 14, 28)
+                    doc.text(`Periode: ${days} Hari Terakhir (Dari tanggal ${startDateStr} s.d. ${endDateStr})`, pageWidth / 2, 28, { align: 'center' })
                     
                     const tableData = filteredList.map((b, index) => {
                       return [
@@ -436,8 +439,8 @@ export default function LaporanAdmin({ navigate }) {
                       ]
                     })
 
-                    doc.autoTable({
-                      startY: 35,
+                    autoTable(doc, {
+                      startY: 38,
                       head: [['No', 'ID Booking', 'Nama Pelanggan', 'Tanggal', 'Rute', 'Qty', 'Total']],
                       body: tableData,
                       theme: 'grid',
@@ -447,12 +450,28 @@ export default function LaporanAdmin({ navigate }) {
                     
                     // Total Calculation
                     const totalPendapatan = filteredList.reduce((sum, b) => sum + Number(b.total_harga || b.total_bayar || b.harga || 0), 0)
-                    const finalY = doc.lastAutoTable.finalY || 35
+                    const finalY = doc.lastAutoTable.finalY || 40
                     
-                    doc.setFontSize(12)
+                    doc.setFontSize(11)
                     doc.setFont('helvetica', 'bold')
                     doc.setTextColor(22, 52, 34)
-                    doc.text(`Total Pendapatan: Rp ${totalPendapatan.toLocaleString('id-ID')}`, 14, finalY + 10)
+                    doc.text(`Total Pendapatan: Rp ${totalPendapatan.toLocaleString('id-ID')}`, 14, finalY + 12)
+                    
+                    // Signature Block
+                    const signatureY = finalY + 30
+                    doc.setFontSize(10)
+                    doc.setFont('helvetica', 'normal')
+                    doc.setTextColor(0, 0, 0)
+                    doc.text(`Tasikmalaya, ${endDateStr}`, pageWidth - 14, signatureY, { align: 'right' })
+                    doc.text('Mengetahui,', pageWidth - 14, signatureY + 6, { align: 'right' })
+                    
+                    const adminName = localStorage.getItem('admin_nama') || 'Administrator'
+                    const adminJabatan = localStorage.getItem('admin_jabatan') || 'Super Administrator'
+                    
+                    doc.setFont('helvetica', 'bold')
+                    doc.text(adminName, pageWidth - 14, signatureY + 30, { align: 'right' })
+                    doc.setFont('helvetica', 'normal')
+                    doc.text(adminJabatan, pageWidth - 14, signatureY + 35, { align: 'right' })
                     
                     doc.save(`Laporan_Keuangan_${days}_Hari.pdf`)
                   }

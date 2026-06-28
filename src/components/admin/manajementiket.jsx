@@ -70,13 +70,16 @@ export default function ManajemenTiketAdmin({ navigate }) {
   // Hitung pendapatan & tiket dari data real
   const today = new Date().toISOString().split('T')[0]
   
-  // Calculate total income for today's bookings (that are not cancelled)
+  // Calculate total income for today's bookings (that are confirmed)
   const pendapatanHarian = ticketList.reduce((sum, t) => {
     // Support both created_at with time (ISO) and date-only
     const tglRaw = t.created_at || t.tanggal || ''
     const tgl = tglRaw.substring(0, 10) // take only YYYY-MM-DD part
-    if (tgl === today && t.status_booking !== 'Batal' && t.status_booking !== 'Dibatalkan') {
-      return sum + Number(t.total_payar || t.total_bayar || 0)
+    const status = (t.status_booking || t.status || '').toLowerCase()
+    
+    // Only count if status is confirmed/processed
+    if (tgl === today && (status === 'dikonfirmasi' || status === 'lunas' || status === 'selesai' || status === 'diproses')) {
+      return sum + Number(t.total_harga || t.total_payar || t.total_bayar || 0)
     }
     return sum
   }, 0)
@@ -190,7 +193,7 @@ export default function ManajemenTiketAdmin({ navigate }) {
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMvhEE7I7ULuvnrFWDA-DSj3Um7d5H73abEJnmEa-8i9WX1NGmlDi-OJy_9x49_ZawSSFr5nOsIckaga4kQXNAO7QpFXtdUov2HpENov7o5-zPoVJ8m4Z2jobTb44KOc7afiUbGh9bpYu1I0Z1Yvot3uNgJoK_ycxOO17DN1FnhVLjEmpt0FRv0TheL7txitcO9215_WfVQdnG-geGeqLCLjDYfZ-AKl-Xx-BmS14eUef5NcdJxHqng5krbQAoNeOc42aW6H6Gvg"/>
@@ -259,7 +262,9 @@ export default function ManajemenTiketAdmin({ navigate }) {
                   <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">ID Tiket</th>
                   <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Nama Pengunjung</th>
                   <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Jenis Tiket</th>
-                  <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Tanggal</th>
+                  <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Jml</th>
+                  <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Harga</th>
+                  <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Total</th>
                   <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant">Status</th>
                   <th className="px-6 py-5 text-[10px] font-label font-bold tracking-widest uppercase text-on-surface-variant text-right">Aksi</th>
                 </tr>
@@ -285,6 +290,9 @@ export default function ManajemenTiketAdmin({ navigate }) {
                   const initials = name && name !== 'Tidak diketahui' ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
                   const isLunas = status === 'Lunas' || status === 'Dikonfirmasi' || status === 'lunas' || status === 'Selesai' || status === 'Diproses'
                   const statusColor = isLunas ? 'blue' : 'amber'
+                  const jml = ticket.jumlah_tiket || ticket.jml_tiket || 1
+                  const harga = ticket.harga_tiket || (ticket.total_payar / jml) || 0
+                  const total = ticket.total_harga || ticket.total_payar || 0
 
                   return (
                     <tr key={ticket.id_booking || ticket.id} className="hover:bg-surface-container-low/30 transition-colors group">
@@ -295,8 +303,10 @@ export default function ManajemenTiketAdmin({ navigate }) {
                           <span className="text-sm font-medium text-on-surface">{name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-secondary">{type}</td>
-                      <td className="px-6 py-4 text-sm text-on-surface-variant">{date}</td>
+                      <td className="px-6 py-4 text-sm text-secondary">{type} <br/><span className="text-xs text-outline opacity-70">{date}</span></td>
+                      <td className="px-6 py-4 text-sm font-bold text-on-surface">{jml}</td>
+                      <td className="px-6 py-4 text-sm text-secondary">Rp {Number(harga).toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-primary">Rp {Number(total).toLocaleString('id-ID')}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                           statusColor === 'blue' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'

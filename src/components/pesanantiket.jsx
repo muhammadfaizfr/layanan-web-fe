@@ -17,25 +17,29 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
   const [hargaLokal, setHargaLokal] = useState(15000);
   const [hargaMancanegara, setHargaMancanegara] = useState(35000);
   const [visitorType, setVisitorType] = useState("lokal"); // 'lokal' | 'mancanegara'
+  const [loadingHarga, setLoadingHarga] = useState(true);
 
   useEffect(() => {
     const fetchHarga = async () => {
       try {
         const res = await pengaturanService.get();
         if (res.data) {
-          setHargaLokal(res.data.harga_lokal || 15000);
-          setHargaMancanegara(res.data.harga_mancanegara || 35000);
+          setHargaLokal(Number(res.data.harga_lokal) || 15000);
+          setHargaMancanegara(Number(res.data.harga_mancanegara) || 35000);
         }
       } catch (err) {
         console.error("Gagal memuat harga tiket", err);
+      } finally {
+        setLoadingHarga(false);
       }
     };
     fetchHarga();
   }, []);
 
-  const unitPrice = visitorType === "mancanegara" ? hargaMancanegara : hargaLokal;
-  const computedTotal = tc * unitPrice;
-  const fmt = formatRupiah ?? ((n) => `IDR ${n.toLocaleString("id-ID")}`);
+  const unitPrice = visitorType === "mancanegara" ? Number(hargaMancanegara) : Number(hargaLokal);
+  const tcNumber = Number(tc) || 1;
+  const computedTotal = tcNumber * unitPrice;
+  const fmt = formatRupiah ?? ((n) => `IDR ${Number(n).toLocaleString("id-ID")}`);
 
   return (
     <div
@@ -74,12 +78,18 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
           </div>
 
           {/* FORM BODY */}
+          {loadingHarga ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20">
+              <span className="material-symbols-outlined animate-spin text-primary text-4xl mb-4">progress_activity</span>
+              <p className="text-secondary font-medium text-sm">Menyiapkan data pemesanan...</p>
+            </div>
+          ) : (
           <form
             className="px-8 pb-8 pt-2 overflow-y-auto"
             onSubmit={(e) => {
               e.preventDefault();
               const jenisTiket = visitorType === "mancanegara" ? "Mancanegara" : "Wisatawan Lokal";
-              const orderData = { name, date, qty: tc, unitPrice, total: computedTotal, jenisTiket };
+              const orderData = { name, date, qty: tcNumber, unitPrice, total: computedTotal, jenisTiket };
               if (typeof onProceed === "function") {
                 onProceed(orderData);
               } else {
@@ -177,7 +187,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
                       type="button"
                       className="w-10 h-full flex items-center justify-center text-[#1a1c1b] hover:bg-black/5 rounded-lg transition-colors font-black text-xl"
                     >−</button>
-                    <span className="flex-1 text-center font-bold text-[#1a1c1b] text-sm">{tc}</span>
+                    <span className="flex-1 text-center font-bold text-[#1a1c1b] text-sm">{tcNumber}</span>
                     <button
                       onClick={inc}
                       type="button"
@@ -197,7 +207,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
                 </div>
                 <div className="text-right">
                   <span className="text-[11px] font-bold text-[#695d47] block mb-1">Subtotal</span>
-                  <span className="text-[13px] font-black text-[#1a1c1b]">{tc} × {fmt(unitPrice)}</span>
+                  <span className="text-[13px] font-black text-[#1a1c1b]">{tcNumber} × {fmt(unitPrice)}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center pt-1">
@@ -215,6 +225,7 @@ function PesanTiket({ isOpen, onClose, ticketCount, incrementTicket, decrementTi
               <span className="material-symbols-outlined text-[20px]" style={{ fontWeight: 600 }}>arrow_forward</span>
             </button>
           </form>
+          )}
         </div>
       </div>
     </div>

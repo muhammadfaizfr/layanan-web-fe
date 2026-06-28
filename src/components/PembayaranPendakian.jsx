@@ -134,8 +134,8 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
         id_pelanggan: Number(idPelanggan),
         id_slot: Number(idSlot),
         jenis_tiket: order?.jenisTiket || order?.route || 'Wisatawan Lokal',
-        jml_tiket: Number(order?.qty || 1),
-        total_payar: Number(order?.total || 25000),
+        jumlah_tiket: Number(order?.qty || 1),
+        harga_tiket: Number(order?.unitPrice || order?.price || 25000),
         status_booking: 'Menunggu Pembayaran'
       }
       const bookingRes = await bookingService.create(bookingData)

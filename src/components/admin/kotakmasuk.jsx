@@ -46,6 +46,20 @@ export default function KotakMasukAdmin({ navigate }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // State untuk popup konfirmasi hapus
+  const [showDeletePopup, setShowDeletePopup] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState(null)
+  const [deleteTargetName, setDeleteTargetName] = useState('')
+  const [deleting, setDeleting] = useState(false)
+
+  // State untuk toast notifikasi
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000)
+  }
+
   const fetchKontak = async () => {
     setLoading(true)
     setError('')
@@ -64,14 +78,37 @@ export default function KotakMasukAdmin({ navigate }) {
     fetchKontak()
   }, [])
 
-  const handleDeleteMessage = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus pesan ini?')) return
+  // Buka popup konfirmasi hapus
+  const handleDeleteClick = (msg) => {
+    const name = msg.name || msg.nama || msg.pengirim || 'Anonim'
+    setDeleteTargetId(msg.id_kontak || msg.id)
+    setDeleteTargetName(name)
+    setShowDeletePopup(true)
+  }
+
+  // Eksekusi hapus setelah konfirmasi
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return
+    setDeleting(true)
     try {
-      await kontakService.delete(id)
-      setMessages(prev => prev.filter(m => m.id !== id))
+      await kontakService.delete(deleteTargetId)
+      setMessages(prev => prev.filter(m => (m.id_kontak || m.id) !== deleteTargetId))
+      setShowDeletePopup(false)
+      showToast('Pesan berhasil dihapus')
     } catch (err) {
       setError(err.userMessage || 'Gagal menghapus pesan.')
+      setShowDeletePopup(false)
+    } finally {
+      setDeleting(false)
+      setDeleteTargetId(null)
+      setDeleteTargetName('')
     }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeletePopup(false)
+    setDeleteTargetId(null)
+    setDeleteTargetName('')
   }
 
   return (
@@ -79,6 +116,39 @@ export default function KotakMasukAdmin({ navigate }) {
       <style>{`
         .material-symbols-outlined {
           font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(1rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(1rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.3s ease-out forwards;
         }
       `}</style>
 
@@ -138,7 +208,7 @@ export default function KotakMasukAdmin({ navigate }) {
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-['Plus_Jakarta_Sans'] font-bold text-primary text-sm leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+              <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
               <img
@@ -180,7 +250,7 @@ export default function KotakMasukAdmin({ navigate }) {
 
             return (
               <div
-                key={msg.id}
+                key={msg.id_kontak || msg.id}
                 className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden max-w-2xl mb-4"
               >
                 {/* Message Header */}
@@ -196,7 +266,7 @@ export default function KotakMasukAdmin({ navigate }) {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleDeleteMessage(msg.id)}
+                    onClick={() => handleDeleteClick(msg)}
                     className="material-symbols-outlined text-red-400 hover:text-red-600 transition-colors text-xl"
                     title="Hapus pesan"
                   >
@@ -236,6 +306,72 @@ export default function KotakMasukAdmin({ navigate }) {
           )}
         </div>
       </main>
+
+      {/* Popup Konfirmasi Hapus */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] animate-fade-in">
+          <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(22,52,34,0.15)] overflow-hidden w-full max-w-sm p-8 text-left relative mx-4 animate-fade-in-up border border-[#e2e3e1]">
+            {/* Icon */}
+            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mb-5">
+              <span className="material-symbols-outlined text-[#ba1a1a] text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>delete_forever</span>
+            </div>
+
+            {/* Headline */}
+            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-[#163422] text-xl tracking-tight mb-2">
+              Hapus Pesan?
+            </h3>
+
+            {/* Description */}
+            <p className="text-[#695d47] font-['Inter'] text-sm leading-relaxed mb-6 font-medium">
+              Pesan dari <span className="font-bold text-[#163422]">{deleteTargetName}</span> akan dihapus secara permanen dan tidak dapat dikembalikan.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={handleCancelDelete}
+                disabled={deleting}
+                className="flex-1 py-3 bg-[#eeeeec] hover:bg-[#e2e3e1] text-[#1a1c1b] font-['Plus_Jakarta_Sans'] font-bold rounded-full transition-all duration-300 active:scale-95 text-sm shadow-sm disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex-1 py-3 bg-[#ba1a1a] text-white font-['Plus_Jakarta_Sans'] font-bold rounded-full transition-all duration-300 active:scale-95 shadow-md hover:opacity-90 text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    Menghapus...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                    Hapus Pesan
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-5 right-5 z-[110] animate-slide-in-right">
+          <div className={`px-6 py-3.5 rounded-xl shadow-xl flex items-center gap-3 ${
+            toast.type === 'success' 
+              ? 'bg-[#163422] text-white' 
+              : 'bg-[#ba1a1a] text-white'
+          }`}>
+            <span className="material-symbols-outlined text-emerald-400 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {toast.type === 'success' ? 'check_circle' : 'error'}
+            </span>
+            <span className="font-['Inter'] font-medium text-sm">{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import laporanService from '../../services/laporanService'
 import authService from '../../services/authService'
-import pelangganService from '../../services/pelangganService'
 import bookingService from '../../services/bookingService'
-import pembayaranService from '../../services/pembayaranService'
 
 export default function RingkasanAdmin({ navigate }) {
   const [activeTab, setActiveTab] = useState('ringkasan')
@@ -30,11 +28,11 @@ export default function RingkasanAdmin({ navigate }) {
     }
   }
 
-  const [laporanData, setLaporanData] = useState(null)
   const [loadingLaporan, setLoadingLaporan] = useState(true)
   const [errorLaporan, setErrorLaporan] = useState('')
   const [totalPelanggan, setTotalPelanggan] = useState(0)
   const [totalBooking, setTotalBooking] = useState(0)
+  const [totalTiketTerjual, setTotalTiketTerjual] = useState(0)
   const [totalPembayaran, setTotalPembayaran] = useState(0)
   const [totalPendapatan, setTotalPendapatan] = useState(0)
   const [recentBookings, setRecentBookings] = useState([])
@@ -45,36 +43,22 @@ export default function RingkasanAdmin({ navigate }) {
       setLoadingLaporan(true)
       setErrorLaporan('')
       try {
-        const [laporan, pelanggan, booking, pembayaran] = await Promise.all([
+        const [laporan, booking] = await Promise.all([
           laporanService.getAll().catch(() => null),
-          pelangganService.getAll().catch(() => []),
           bookingService.getAll().catch(() => []),
-          pembayaranService.getAll().catch(() => [])
         ])
 
+        // Data KPI dari API /api/laporan
         if (laporan) {
-          setLaporanData(laporan?.data || laporan)
+          const data = laporan?.data || laporan
+          setTotalPelanggan(data.total_pelanggan ?? 0)
+          setTotalBooking(data.total_booking ?? 0)
+          setTotalPembayaran(data.total_pembayaran ?? 0)
+          setTotalPendapatan(data.total_pendapatan ?? 0)
         }
 
-        const pelangganList = Array.isArray(pelanggan) ? pelanggan : (pelanggan?.data ?? [])
+        // Data booking untuk tabel pengunjung terbaru
         const bookingList = Array.isArray(booking) ? booking : (booking?.data ?? [])
-        const pembayaranList = Array.isArray(pembayaran) ? pembayaran : (pembayaran?.data ?? [])
-
-        const uNames = new Set(bookingList.map(b => b.pelanggan?.nama_lengkap || b.pelanggan?.nama || b.nama || b.name || b.pelanggan?.email || b.email).filter(Boolean))
-        setTotalPelanggan(uNames.size > 0 ? uNames.size : bookingList.length)
-        setTotalBooking(bookingList.reduce((sum, b) => sum + Number(b.jumlah_orang || b.qty || 1), 0))
-        setTotalPembayaran(bookingList.filter(b => b.status_booking !== 'Batal' && b.status_booking !== 'Dibatalkan').length)
-        
-        const calcPendapatan = bookingList.reduce((sum, b) => {
-          const st = (b.status_booking || '').toLowerCase()
-          if (!st.includes('batal')) {
-            return sum + Number(b.total_payar || b.total_bayar || 0)
-          }
-          return sum
-        }, 0)
-        setTotalPendapatan(calcPendapatan)
-
-        // Sort bookings by id descending and take top 3
         const sorted = [...bookingList].sort((a, b) => {
           const idA = a.id_booking || a.id || 0
           const idB = b.id_booking || b.id || 0
@@ -179,7 +163,7 @@ export default function RingkasanAdmin({ navigate }) {
             <div className="flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
               <div className="text-right hidden xl:block">
                 <p className="font-bold text-primary leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+                <p className="text-[10px] text-secondary mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
               </div>
               <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
                 <img alt="Profil Administrator" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP9kHefTuNYQnLdctRKENaSisXtamaIBxslPvK0m4yNQn31vIg34PQcZnSnY4PYnyrpptNh_2oNZuDiMXVDzcUseE6sHhuxfwgublcdO3lgYfPUAkD0eas6mMJBociC8Wp4s2J_v4jcVWlXw10p9-ovOlY6lp2CDjjivJDzQz8zOST_Qo9Z_qYjYSn3xA_wKyJBzMnMu8nnLzz_wQNXK-Pt6T4jr3oHYwHcfs_RWNrKMU8s2QqHJHFgm1IkA_HvzaJyZz6Dnur7g"/>
@@ -203,7 +187,7 @@ export default function RingkasanAdmin({ navigate }) {
             </div>
           </section>
 
-          {/* KPI Cards Bento Grid */}
+          {/* KPI Cards Bento Grid — 4 cards */}
           {errorLaporan && (
             <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4">
               <span className="material-symbols-outlined text-error text-lg">error</span>
@@ -236,7 +220,7 @@ export default function RingkasanAdmin({ navigate }) {
                   {loadingLaporan ? '...' : totalBooking}
                 </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Semua pemesanan</p>
+              <p className="text-xs text-outline mt-6">Tiket yang dipesan</p>
             </div>
 
             {/* Total Pembayaran */}
@@ -250,7 +234,7 @@ export default function RingkasanAdmin({ navigate }) {
                   {loadingLaporan ? '...' : totalPembayaran}
                 </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Semua transaksi</p>
+              <p className="text-xs text-outline mt-6">Transaksi terkonfirmasi</p>
             </div>
 
             {/* Total Pendapatan */}
@@ -291,7 +275,7 @@ export default function RingkasanAdmin({ navigate }) {
                       ? allBookings.filter(b => {
                           const pelangganObj = b.pelanggan || {}
                           const nm = (pelangganObj.nama_lengkap || pelangganObj.nama || b.name || b.nama || b.nama_lengkap || '').toLowerCase()
-                          const idTicket = 'BOOK-' + String(b.id_booking || b.id || '').padStart(4, '0')
+                          const idTicket = b.id_tiket || ('BOOK-' + String(b.id_booking || b.id || '').padStart(4, '0'))
                           const q = searchQuery.toLowerCase()
                           return nm.includes(q) || idTicket.toLowerCase().includes(q)
                         })
@@ -300,7 +284,7 @@ export default function RingkasanAdmin({ navigate }) {
                       // Ambil nama dari relasi pelanggan
                       const pelanggan = booking.pelanggan || {}
                       const name = pelanggan.nama_lengkap || pelanggan.nama || booking.name || booking.nama || booking.nama_lengkap || 'Pengunjung'
-                      const idVal = booking.id_booking || booking.id || '-'
+                      const idTiket = booking.id_tiket || ('BOOK-' + String(booking.id_booking || booking.id || '').padStart(4, '0'))
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       
                       const statusRaw = booking.status_booking || booking.status || 'Menunggu Pembayaran'
@@ -330,14 +314,14 @@ export default function RingkasanAdmin({ navigate }) {
                       }
 
                       return (
-                        <tr key={idVal || idx} className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
+                        <tr key={booking.id_booking || booking.id || idx} className="bg-surface-container-lowest group hover:bg-surface-container-high transition-colors">
                           <td className="py-4 pl-4 rounded-l-xl">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-secondary text-xs">{initials}</div>
                               <span className="font-semibold text-primary">{name}</span>
                             </div>
                           </td>
-                          <td className="py-4 font-medium text-secondary">BOOK-{String(idVal).padStart(4, '0')}</td>
+                          <td className="py-4 font-medium text-secondary">{idTiket}</td>
                           <td className="py-4">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-tight ${badgeBg}`}>{statusText}</span>
                           </td>

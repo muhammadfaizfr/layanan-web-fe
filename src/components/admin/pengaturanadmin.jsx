@@ -152,7 +152,7 @@ export default function PengaturanAdmin({ navigate }) {
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="font-bold text-[#163422] leading-none">{localStorage.getItem('admin_nama') || 'Admin Galunggung'}</p>
-              <p className="text-[10px] text-[#695d47] mt-1">{localStorage.getItem('admin_jabatan') || 'Administrator Super'}</p>
+              <p className="text-[10px] text-[#695d47] mt-1">{localStorage.getItem('admin_jabatan') || 'Super Administrator'}</p>
             </div>
             <div className="w-10 h-10 rounded-full border-2 border-[#163422]/20 overflow-hidden">
               <img
