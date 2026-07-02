@@ -1,4 +1,28 @@
+import React, { useState, useEffect } from 'react';
+import pengaturanService from '../services/pengaturanService';
+
 function Lokasi({ openModal, navigate }) {
+  const [jamBukaSenin, setJamBukaSenin] = useState('06:00');
+  const [jamTutupJumat, setJamTutupJumat] = useState('18:00');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJam = async () => {
+      try {
+        const res = await pengaturanService.get();
+        if (res.data) {
+          if (res.data.jam_buka) setJamBukaSenin(res.data.jam_buka);
+          if (res.data.jam_tutup) setJamTutupJumat(res.data.jam_tutup);
+        }
+      } catch (err) {
+        console.error("Gagal memuat jam operasional", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJam();
+  }, []);
+
   return (
     <>
       {/* Hero Section & Map Canvas */}
@@ -32,7 +56,9 @@ function Lokasi({ openModal, navigate }) {
                   <span className="material-symbols-outlined text-primary">schedule</span>
                   <div className="body-lg text-on-surface-variant">
                     Buka Setiap Hari<br/>
-                    <span className="font-semibold text-primary">06:00 — 18:00 WIB</span>
+                    <span className="font-semibold text-primary">
+                      {loading ? '...' : `${jamBukaSenin} — ${jamTutupJumat} WIB`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -83,7 +109,7 @@ function Lokasi({ openModal, navigate }) {
           {/* Styled Map View Container */}
           <div className="lg:col-span-8 bg-surface-container-high rounded-xl overflow-hidden relative min-h-[500px] shadow-[0_20px_50px_rgba(22,52,34,0.1)]">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1d63292.05206687002!2d108.02685794711674!3d-7.269438012678663!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f54316d3f23db%3A0xc3f3458bfb15b6d!2sGn.%20Galunggung!5e0!3m2!1sid!2sid!4v1689240000000!5m2!1sid!2sid"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.777085734346!2d108.0560233!3d-7.2588383!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f510842db7d55%3A0xc22a690740a6e3d!2sGunung%20Galunggung!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
               width="100%"
               height="100%"
               style={{ border: 0, minHeight: '500px' }}

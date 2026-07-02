@@ -161,11 +161,13 @@ export default function PembayaranPendakian({ order, formatRupiah, navigate, onC
         waktu_pembayaran: localTimeString,
         status_pembayaran: 'Menunggu Verifikasi'
       }
-      await pembayaranService.create(pembayaranData)
+      const resPembayaran = await pembayaranService.create(pembayaranData)
+      const pembayaranObj = resPembayaran?.data || resPembayaran
 
       // 6. Selesaikan transaksi
       if (order) {
         order.reference = `GG-REG-${idBooking}`
+        order.id_pembayaran = pembayaranObj?.id_pembayaran || pembayaranObj?.id
       }
 
       if (typeof onComplete === 'function') {

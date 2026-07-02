@@ -40,6 +40,20 @@ const pembayaranService = {
     const response = await api.delete(`/pembayaran/${id}`)
     return response.data
   },
+
+  /**
+   * Upload bukti pembayaran
+   */
+  uploadBukti: async (id, file) => {
+    const formData = new FormData()
+    formData.append('bukti_transfer', file)
+    const response = await api.post(`/pembayaran/${id}/bukti`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  }
 }
 
 export default pembayaranService

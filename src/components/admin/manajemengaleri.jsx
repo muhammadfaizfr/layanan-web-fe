@@ -46,6 +46,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
     else if (page === 'manajemen-pengguna') navigate('admin-manajemen-pengguna')
     else if (page === 'kotak-masuk') navigate('admin-kotak-masuk')
     else if (page === 'laporan') navigate('admin-laporan')
+    else if (page === 'pengaturan-tampilan') navigate('admin-pengaturan-tampilan')
     else if (page === 'pengaturan') navigate('admin-pengaturan')
   }
 
@@ -62,6 +63,7 @@ export default function ManajemenGaleriAdmin({ navigate }) {
     { id: 'manajemen-galeri', label: 'Manajemen Galeri', icon: 'photo_library' },
     { id: 'kotak-masuk', label: 'Kotak Masuk', icon: 'inbox' },
     { id: 'laporan', label: 'Laporan', icon: 'analytics' },
+    { id: 'pengaturan-tampilan', label: 'Atur Tampilan', icon: 'web' },
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 

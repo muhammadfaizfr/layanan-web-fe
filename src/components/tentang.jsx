@@ -1,4 +1,5 @@
 // src/components/Tentang.jsx
+import { useState, useEffect } from 'react'
 import img1 from '../assets/images/1.jpg'
 import img2 from '../assets/images/2.jpg'
 import img3 from '../assets/images/3.jpg'
@@ -6,8 +7,29 @@ import img4 from '../assets/images/4.jpg'
 import img5 from '../assets/images/5.jpg'
 import img6 from '../assets/images/6.webp'
 import img7 from '../assets/images/7.jpg'
+import uiService from '../services/uiService'
 
 function Tentang({ navigate }) {
+  const [uiImages, setUiImages] = useState({})
+
+  useEffect(() => {
+    uiService.getImages().then(data => {
+      setUiImages(data)
+    }).catch(() => {})
+  }, [])
+
+  const getUiImage = (key, fallback) => {
+    if (uiImages[key]) {
+      return uiImages[key].includes('?') ? uiImages[key] : uiImages[key] + '?t=' + Date.now()
+    }
+    return `http://127.0.0.1:8000/storage/ui/${key}.jpg?t=${Date.now()}`
+  }
+
+  const handleImageError = (e, fallback) => {
+    e.target.onerror = null
+    e.target.src = fallback
+  }
+
   return (
     <section className="pt-24 overflow-hidden">
         {/* Hero Section */}
@@ -27,7 +49,8 @@ function Tentang({ navigate }) {
                 <img 
                   alt="Majestic view of green crater lake" 
                   className="w-full h-[600px] object-cover" 
-                  src={img1} 
+                  src={getUiImage('tentang_hero', img1)}
+                  onError={(e) => handleImageError(e, img1)} 
                 />
               </div>
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-tertiary-fixed rounded-xl -z-10 opacity-50"></div>
@@ -51,12 +74,12 @@ function Tentang({ navigate }) {
                 </div>
               </div>
               <div className="w-full md:w-1/2 space-y-12">
-                <img className="w-full h-96 object-cover rounded-xl shadow-sm" alt="Volcanic rock textures" src={img2} />
+                <img className="w-full h-96 object-cover rounded-xl shadow-sm" alt="Volcanic rock textures" src={getUiImage('tentang_sejarah_1', img2)} onError={(e) => handleImageError(e, img2)} />
                 <div className="bg-surface p-12 rounded-xl shadow-[0_40px_80px_-20px_rgba(22,52,34,0.08)]">
                   <h3 className="text-xl font-bold text-primary mb-4 italic">"Alam tidak terburu-buru, namun segalanya tercapai."</h3>
                   <p className="text-sm text-on-surface-variant">Lanskap Galunggung mengajarkan kita tentang ketahanan. Setiap lapisan tanah bercerita tentang kehancuran yang bertransformasi menjadi keindahan yang megah.</p>
                 </div>
-                <img className="w-full h-[500px] object-cover rounded-xl shadow-sm" alt="Steep stairs to crater" src={img3} />
+                <img className="w-full h-[500px] object-cover rounded-xl shadow-sm" alt="Steep stairs to crater" src={getUiImage('tentang_sejarah_2', img3)} onError={(e) => handleImageError(e, img3)} />
               </div>
             </div>
           </div>
@@ -71,16 +94,16 @@ function Tentang({ navigate }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[800px]">
               <div className="md:col-span-8 overflow-hidden rounded-tr-xl rounded-bl-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Crater sunset" src={img4} />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Crater sunset" src={getUiImage('tentang_galeri_1', img4)} onError={(e) => handleImageError(e, img4)} />
               </div>
               <div className="md:col-span-4 overflow-hidden rounded-tl-xl rounded-br-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Pine forest" src={img5} />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Pine forest" src={getUiImage('tentang_galeri_2', img5)} onError={(e) => handleImageError(e, img5)} />
               </div>
               <div className="md:col-span-4 overflow-hidden rounded-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hot springs" src={img6} />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hot springs" src={getUiImage('tentang_galeri_3', img6)} onError={(e) => handleImageError(e, img6)} />
               </div>
               <div className="md:col-span-8 overflow-hidden rounded-tr-[5rem] rounded-bl-xl group">
-                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Night stars" src={img7} />
+                <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Night stars" src={getUiImage('tentang_galeri_4', img7)} onError={(e) => handleImageError(e, img7)} />
               </div>
             </div>
           </div>
@@ -90,21 +113,28 @@ function Tentang({ navigate }) {
         <section className="py-24 px-8">
           <div className="max-w-5xl mx-auto bg-primary rounded-xl p-12 md:p-24 text-center relative overflow-hidden">
             <div className="absolute inset-0 opacity-20 pointer-events-none">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-primary-container rounded-full blur-[100px]"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-container rounded-full blur-[100px]"></div>
             </div>
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-5xl font-bold text-on-primary tracking-tight mb-8">Siap Untuk Menjelajah?</h2>
-              <p className="text-on-primary-container text-lg mb-12 max-w-xl mx-auto">Mulailah perjalanan Anda menuju puncak kesegaran raga dan ketenangan jiwa.</p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <button onClick={() => navigate?.('jadwal')} className="bg-surface text-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-surface-bright transition-all">Jadwalkan Kunjungan</button>
-                <button onClick={() => navigate?.('panduan-pendakian')} className="border border-on-primary/20 text-on-primary px-8 py-4 rounded-full font-bold text-sm hover:bg-on-primary/10 transition-all">Panduan Pendakian</button>
-              </div>
+            <span className="inline-block label-md text-primary-container tracking-[0.2em] uppercase mb-6 font-bold opacity-80">Petualangan Menanti</span>
+            <h2 className="text-4xl md:text-6xl font-extrabold text-on-primary leading-tight tracking-tighter mb-6">Siap Mendaki<br/>Galunggung?</h2>
+            <p className="text-on-primary/80 text-lg max-w-lg mx-auto leading-relaxed mb-12">Pesan tiket Anda sekarang dan rasakan pengalaman mendaki yang aman, nyaman, dan tak terlupakan.</p>
+            <div className="flex gap-6 justify-center flex-wrap">
+              <button
+                onClick={() => navigate('jadwal')}
+                className="bg-on-primary text-primary px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all active:scale-95"
+              >
+                Pesan Tiket
+              </button>
+              <button
+                onClick={() => navigate('informasi')}
+                className="border border-on-primary/30 text-on-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-on-primary/10 transition-all"
+              >
+                Pelajari Lebih Lanjut
+              </button>
             </div>
           </div>
         </section>
-      </section>
-  );
+    </section>
+  )
 }
 
-export default Tentang;
+export default Tentang
