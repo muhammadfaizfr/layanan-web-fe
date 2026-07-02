@@ -51,6 +51,8 @@ function AdminRingkasanPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -82,6 +84,8 @@ function AdminManajemenTiketPage() {
       nav('/admin/scan-tiket')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -111,6 +115,8 @@ function AdminAturTiketPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -144,6 +150,8 @@ function AdminScanTiketPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -201,6 +209,8 @@ function AdminJadwalPendakianPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -230,6 +240,8 @@ function AdminManajemenPenggunaPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -257,6 +269,8 @@ function AdminKotakMasukPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -284,6 +298,8 @@ function AdminManajemenGaleriPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -311,6 +327,8 @@ function AdminLaporanPage() {
       nav('/admin/manajemen-galeri')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -340,6 +358,8 @@ function AdminPengaturanPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
@@ -369,6 +389,8 @@ function AdminPengaturanTampilanPage() {
       nav('/admin/laporan')
     } else if (page === 'admin-pengaturan') {
       nav('/admin/pengaturan')
+    } else if (page === 'admin-pengaturan-tampilan') {
+      nav('/admin/pengaturan-tampilan')
     } else {
       nav('/')
     }
