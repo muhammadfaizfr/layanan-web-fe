@@ -8,6 +8,7 @@ import Tentang from './components/tentang.jsx'
 import PesanTiket from './components/pesanantiket.jsx'
 import PembayaranPendakian from './components/PembayaranPendakian.jsx'
 import Pembayaran from './components/pembayaran.jsx'
+import KonfirmasiPembayaran from './components/KonfirmasiPembayaran.jsx'
 import BerhasilPembayaran from './components/berhasilpembayaran.jsx'
 import PendaftaranSelesai from './components/pendaftaranselesai.jsx'
 import ETiket from './components/e-tiket.jsx'
@@ -25,8 +26,35 @@ import mountainStaircaseImg from './assets/images/mountain-staircase.jpg'
 import pemandianAirPanasImg from './assets/images/pemandian air panas.jpeg'
 import bukitNangreuImg from './assets/images/Bukit-Nangreu-Galunggung.jpeg'
 import spotImg from './assets/images/spot.jpg'
+import uiService from './services/uiService'
+
+const UI_BASE_URL = 'http://127.0.0.1:8000/storage/ui'
 
 function App() {
+  // ===== UI IMAGES STATE — load dari API saat mount =====
+  const [uiImages, setUiImages] = useState({})
+
+  useEffect(() => {
+    uiService.getImages().then(data => {
+      setUiImages(data)
+    }).catch(() => {})
+  }, [])
+
+  // Helper: ambil URL dari server jika ada, fallback ke asset lokal
+  const getUiImage = (key, fallback) => {
+    if (uiImages[key]) {
+      // Tambahkan cache buster agar browser tidak pakai cache lama
+      return uiImages[key].includes('?') ? uiImages[key] : uiImages[key] + '?t=' + Date.now()
+    }
+    // Fallback ke URL storage langsung (kalau API belum load)
+    return `${UI_BASE_URL}/${key}.jpg?t=${Date.now()}`
+  }
+
+  const handleImageError = (e, fallback) => {
+    e.target.onerror = null
+    e.target.src = fallback
+  }
+
   // ===== LOGIKA MODAL (TIDAK BERUBAH) =====
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [ticketCount, setTicketCount] = useState(1)
@@ -104,7 +132,10 @@ function App() {
 
   const handleCompletePayment = (method, isTiket = false) => {
     setPaymentMethod(method)
-    setCurrentPage(isTiket ? 'berhasil-tiket' : 'berhasil-jadwal')
+    if (order) {
+      order.selectedMethod = method
+    }
+    setCurrentPage(isTiket ? 'konfirmasi-pembayaran-tiket' : 'konfirmasi-pembayaran-jadwal')
   }
 
   // Scroll to top when page changes (so new page appears at top)
@@ -125,8 +156,9 @@ function App() {
               <div className="absolute inset-0 z-0">
                 <img 
                   className="w-full h-full object-cover" 
-                  alt="cinematic wide shot of Gunung Galunggung crater lake with morning mist, lush green slopes, and soft sunlight filtering through clouds" 
-                  src={mtGalunggungImg} 
+                   alt="cinematic wide shot of Gunung Galunggung crater lake with morning mist, lush green slopes, and soft sunlight filtering through clouds" 
+                  src={getUiImage('home_hero', mtGalunggungImg)}
+                  onError={(e) => handleImageError(e, mtGalunggungImg)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/20 to-transparent"></div>
               </div>
@@ -185,11 +217,12 @@ function App() {
                     <img 
                       className="absolute right-0 bottom-0 w-1/2 h-full object-cover rounded-l-3xl opacity-20 group-hover:opacity-100 transition-opacity duration-700" 
                       alt="close-up of volcanic crater landscape" 
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWPZnH_HhfO5fVRsqrtEt_SGTe-pVC4AZi5PZlS2EYzSK1t4OJptEC_TNGaDF44TxVQCr1offxD74Oct9KQic6T2l7dHxI90vA4e1KiPKref9ekAHQKUBbXVTrwS8kOqUdTa_e3riXGX_d9RIC6Lgj0pzxGx6Yk408WVcNx-8r_WKWbTBhM6vtjXo-f1lCj9SYY3D1nTtmy8oPyLAoE4a3lbo38BjMC-97Q9KPGKE2_vOVJigKyvqcs_UsWONRjHAtHmf1KyKIAA" 
+                      src={getUiImage('home_kawah', 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWPZnH_HhfO5fVRsqrtEt_SGTe-pVC4AZi5PZlS2EYzSK1t4OJptEC_TNGaDF44TxVQCr1offxD74Oct9KQic6T2l7dHxI90vA4e1KiPKref9ekAHQKUBbXVTrwS8kOqUdTa_e3riXGX_d9RIC6Lgj0pzxGx6Yk408WVcNx-8r_WKWbTBhM6vtjXo-f1lCj9SYY3D1nTtmy8oPyLAoE4a3lbo38BjMC-97Q9KPGKE2_vOVJigKyvqcs_UsWONRjHAtHmf1KyKIAA')}
+                      onError={(e) => handleImageError(e, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWPZnH_HhfO5fVRsqrtEt_SGTe-pVC4AZi5PZlS2EYzSK1t4OJptEC_TNGaDF44TxVQCr1offxD74Oct9KQic6T2l7dHxI90vA4e1KiPKref9ekAHQKUBbXVTrwS8kOqUdTa_e3riXGX_d9RIC6Lgj0pzxGx6Yk408WVcNx-8r_WKWbTBhM6vtjXo-f1lCj9SYY3D1nTtmy8oPyLAoE4a3lbo38BjMC-97Q9KPGKE2_vOVJigKyvqcs_UsWONRjHAtHmf1KyKIAA')}
                     />
                   </div>
                   <div className="md:col-span-4 bg-surface-container-low rounded-xl overflow-hidden relative group min-h-[300px]">
-                    <img src={pemandianAirPanasImg} alt="Pemandian Air Panas" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
+                    <img src={getUiImage('home_pemandian', pemandianAirPanasImg)} onError={(e) => handleImageError(e, pemandianAirPanasImg)} alt="Pemandian Air Panas" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
                   </div>
                   <div className="md:col-span-4 bg-secondary-container p-8 rounded-xl flex flex-col justify-between">
                     <p className="text-on-secondary-container font-medium italic">"Pengalaman yang tak terlupakan. Tangga 620 memang menantang, tapi pemandangan di atas membayar semuanya."</p>
@@ -203,10 +236,10 @@ function App() {
                   </div>
                   <div className="md:col-span-8 grid grid-cols-2 gap-6">
                     <div className="bg-surface-container-low rounded-xl overflow-hidden relative group min-h-[220px]">
-                      <img src={bukitNangreuImg} alt="Area Camping" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
+                      <img src={getUiImage('home_bukit', bukitNangreuImg)} onError={(e) => handleImageError(e, bukitNangreuImg)} alt="Area Camping" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
                     </div>
                     <div className="bg-surface-container-low rounded-xl overflow-hidden relative group min-h-[220px]">
-                      <img src={spotImg} alt="Spot Foto" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
+                      <img src={getUiImage('home_spot', spotImg)} onError={(e) => handleImageError(e, spotImg)} alt="Spot Foto" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-100 transition-opacity duration-700" />
                     </div>
                   </div>
                 </div>
@@ -221,7 +254,8 @@ function App() {
                   <img 
                     className="rounded-[3rem] shadow-2xl relative z-10 w-full aspect-[4/5] object-cover" 
                     alt="dramatic mountain staircase" 
-                    src={mountainStaircaseImg} 
+                    src={getUiImage('home_staircase', mountainStaircaseImg)}
+                    onError={(e) => handleImageError(e, mountainStaircaseImg)}
                   />
                   <div className="absolute -bottom-8 -right-8 bg-surface p-6 rounded-2xl shadow-xl z-20 max-w-xs">
                     <p className="text-xs font-bold text-primary tracking-widest uppercase mb-2">Highlight Hari Ini</p>
@@ -278,6 +312,15 @@ function App() {
       case 'pembayaran-tiket':
         return (
           <Pembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} onComplete={(method) => handleCompletePayment(method, true)} onBack={handleBackFromPayment} />
+        )
+
+      case 'konfirmasi-pembayaran-jadwal':
+        return (
+          <KonfirmasiPembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} isTiket={false} />
+        )
+      case 'konfirmasi-pembayaran-tiket':
+        return (
+          <KonfirmasiPembayaran order={order} formatRupiah={formatRupiah} navigate={setCurrentPage} isTiket={true} />
         )
 
       case 'berhasil-jadwal':
@@ -363,7 +406,7 @@ function App() {
   }
 
   // ===== RENDER UTAMA =====
-  const isStandalonePage = currentPage.startsWith('pembayaran') || currentPage.startsWith('berhasil') || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket' || currentPage === 'admin-tiket-berhasil' || currentPage === 'admin-tiket-gagal'
+  const isStandalonePage = currentPage.startsWith('pembayaran') || currentPage.startsWith('konfirmasi-pembayaran') || currentPage.startsWith('berhasil') || currentPage === 'e-tiket' || currentPage === 'panduan-pendakian' || currentPage === 'admin-login' || currentPage === 'admin-ringkasan' || currentPage === 'admin-manajemen-tiket' || currentPage === 'admin-atur-tiket' || currentPage === 'admin-scan-tiket' || currentPage === 'admin-tiket-berhasil' || currentPage === 'admin-tiket-gagal'
 
   if (isStandalonePage) {
     return (

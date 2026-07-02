@@ -10,6 +10,30 @@ export default function ETiket({ order, navigate }) {
     window.print()
   }
 
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('ticket-print-area')
+    if (!element) return
+
+    const opt = {
+      margin:       0.2,
+      filename:     `e-tiket-${reference}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }
+
+    if (window.html2pdf) {
+      window.html2pdf().set(opt).from(element).save()
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+      script.onload = () => {
+        window.html2pdf().set(opt).from(element).save()
+      }
+      document.body.appendChild(script)
+    }
+  }
+
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen pb-20 selection:bg-primary-fixed selection:text-on-primary-fixed">
       {/* Top Action Bar */}
@@ -31,7 +55,7 @@ export default function ETiket({ order, navigate }) {
               <span>Cetak Tiket</span>
             </button>
             <button 
-              onClick={handlePrint}
+              onClick={handleDownloadPDF}
               className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-on-primary hover:opacity-90 transition-opacity duration-200 shadow-sm font-medium"
             >
               <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
@@ -43,7 +67,7 @@ export default function ETiket({ order, navigate }) {
 
       <main className="pt-28 pb-20 px-6 max-w-4xl mx-auto print:pt-4">
         {/* E-Ticket Container */}
-        <div className="relative bg-surface-container-lowest rounded-xl shadow-[0_40px_100px_rgba(22,52,34,0.06)] overflow-hidden border border-outline-variant/30 print:shadow-none print:border print:rounded-none">
+        <div id="ticket-print-area" className="relative bg-surface-container-lowest rounded-xl shadow-[0_40px_100px_rgba(22,52,34,0.06)] overflow-hidden border border-outline-variant/30 print:shadow-none print:border print:rounded-none">
           {/* Ticket Header */}
           <div className="relative h-32 bg-primary flex flex-col justify-center px-10 text-on-primary overflow-hidden">
             <div className="absolute inset-0 opacity-20">
@@ -84,44 +108,54 @@ export default function ETiket({ order, navigate }) {
             </div>
 
             {/* Expedition Details */}
-            <div className="flex-grow grid grid-cols-2 gap-y-8 gap-x-4">
-              <div className="col-span-2 md:col-span-1">
-                <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Rute Pendakian</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                    <span className="material-symbols-outlined text-lg">stairs</span>
+            {(() => {
+              const isTicket = String(reference).includes('TIK')
+              const typeLabel = isTicket ? 'Jenis Tiket' : 'Rute Pendakian'
+              const typeIcon = isTicket ? 'confirmation_number' : 'stairs'
+              const typeValue = isTicket ? (order?.jenisTiket || order?.item || 'Tiket Wisatawan Domestik') : route
+              const dateLabel = isTicket ? 'Tanggal Kunjungan' : 'Tanggal Pendakian'
+
+              return (
+                <div className="flex-grow grid grid-cols-2 gap-y-8 gap-x-4">
+                  <div className="col-span-2 md:col-span-1">
+                    <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">{typeLabel}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+                        <span className="material-symbols-outlined text-lg">{typeIcon}</span>
+                      </div>
+                      <span className="text-lg font-bold font-headline">{typeValue}</span>
+                    </div>
                   </div>
-                  <span className="text-lg font-bold font-headline">{route}</span>
-                </div>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Tanggal Pendakian</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-lg">calendar_today</span>
+                  <div className="col-span-2 md:col-span-1">
+                    <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">{dateLabel}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined text-lg">calendar_today</span>
+                      </div>
+                      <span className="text-lg font-bold font-headline">{date}</span>
+                    </div>
                   </div>
-                  <span className="text-lg font-bold font-headline">{date}</span>
-                </div>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Peserta</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
-                    <span className="material-symbols-outlined text-lg">group</span>
+                  <div className="col-span-2 md:col-span-1">
+                    <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Peserta</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
+                        <span className="material-symbols-outlined text-lg">group</span>
+                      </div>
+                      <span className="text-lg font-bold font-headline">{qty} Orang</span>
+                    </div>
                   </div>
-                  <span className="text-lg font-bold font-headline">{qty} Orang</span>
-                </div>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Lokasi</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
-                    <span className="material-symbols-outlined text-lg">location_on</span>
+                  <div className="col-span-2 md:col-span-1">
+                    <span className="block text-[10px] text-on-surface-variant uppercase tracking-widest font-label font-bold mb-1">Lokasi</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
+                        <span className="material-symbols-outlined text-lg">location_on</span>
+                      </div>
+                      <span className="text-lg font-bold font-headline">Tasikmalaya, Jabar</span>
+                    </div>
                   </div>
-                  <span className="text-lg font-bold font-headline">Tasikmalaya, Jabar</span>
                 </div>
-              </div>
-            </div>
+              )
+            })()}
           </div>
 
           {/* Visual Separation */}

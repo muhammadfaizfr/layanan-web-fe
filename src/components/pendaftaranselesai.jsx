@@ -16,6 +16,8 @@ export default function PendaftaranSelesai({ order, navigate }) {
     navigate?.('e-tiket')
   }
 
+
+
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
       {/* TopAppBar */}
@@ -90,6 +92,8 @@ export default function PendaftaranSelesai({ order, navigate }) {
                 </div>
               </div>
             </div>
+
+
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button 

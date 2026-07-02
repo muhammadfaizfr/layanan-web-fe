@@ -14,6 +14,8 @@ export default function BerhasilPembayaran({ order, navigate, formatRupiah }) {
     return order?.reference ?? `GG-${Math.floor(100000 + Math.random() * 900000)}`
   }, [order])
 
+
+
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
       <main className="pt-32 pb-24 px-6 sm:px-8 lg:px-10 max-w-6xl mx-auto">
@@ -62,7 +64,20 @@ export default function BerhasilPembayaran({ order, navigate, formatRupiah }) {
                 </div>
               </div>
 
-              <button onClick={() => navigate?.('home')} className="mt-2 w-full rounded-full bg-primary px-8 py-4 text-on-primary font-headline font-bold text-base shadow-lg shadow-primary/15 hover:bg-primary-container transition duration-200">
+
+
+              <button 
+                onClick={() => navigate?.('e-tiket')} 
+                className="mt-6 w-full rounded-full bg-[#163422] text-white px-8 py-4 font-headline font-bold text-base shadow-lg hover:bg-[#1f4a31] transition duration-200 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">download</span>
+                Unduh E-Tiket
+              </button>
+
+              <button 
+                onClick={() => navigate?.('home')} 
+                className="mt-3 w-full rounded-full bg-primary/10 text-primary px-8 py-4 font-headline font-bold text-base hover:bg-primary/20 transition duration-200"
+              >
                 Kembali ke Beranda
               </button>
             </div>

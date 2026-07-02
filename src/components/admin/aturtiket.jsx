@@ -95,6 +95,7 @@ export default function AturTiketAdmin({ navigate }) {
     { id: 'manajemen-galeri', label: 'Manajemen Galeri', icon: 'photo_library' },
     { id: 'kotak-masuk', label: 'Kotak Masuk', icon: 'inbox' },
     { id: 'laporan', label: 'Laporan', icon: 'analytics' },
+    { id: 'pengaturan-tampilan', label: 'Atur Tampilan', icon: 'web' },
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 

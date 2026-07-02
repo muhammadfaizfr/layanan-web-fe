@@ -25,6 +25,8 @@ export default function RingkasanAdmin({ navigate }) {
       navigate('admin-laporan')
     } else if (page === 'pengaturan') {
       navigate('admin-pengaturan')
+    } else if (page === 'pengaturan-tampilan') {
+      navigate('admin-pengaturan-tampilan')
     }
   }
 
@@ -32,28 +34,34 @@ export default function RingkasanAdmin({ navigate }) {
   const [errorLaporan, setErrorLaporan] = useState('')
   const [totalPelanggan, setTotalPelanggan] = useState(0)
   const [totalBooking, setTotalBooking] = useState(0)
-  const [totalTiketTerjual, setTotalTiketTerjual] = useState(0)
   const [totalPembayaran, setTotalPembayaran] = useState(0)
   const [totalPendapatan, setTotalPendapatan] = useState(0)
   const [recentBookings, setRecentBookings] = useState([])
   const [allBookings, setAllBookings] = useState([])
+
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1 // 1-indexed
+  const bulanNama = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoadingLaporan(true)
       setErrorLaporan('')
       try {
+        // Ambil laporan per bulan berjalan + semua booking
         const [laporan, booking] = await Promise.all([
-          laporanService.getAll().catch(() => null),
+          laporanService.getByMonth(currentYear, currentMonth).catch(() => null),
           bookingService.getAll().catch(() => []),
         ])
 
-        // Data KPI dari API /api/laporan
+        // Data KPI dari API /api/laporan (per bulan berjalan)
         if (laporan) {
           const data = laporan?.data || laporan
           setTotalPelanggan(data.total_pelanggan ?? 0)
           setTotalBooking(data.total_booking ?? 0)
           setTotalPembayaran(data.total_pembayaran ?? 0)
+          // total_pendapatan dari backend: sum total_harga booking dikonfirmasi/lunas bulan ini
           setTotalPendapatan(data.total_pendapatan ?? 0)
         }
 
@@ -65,7 +73,7 @@ export default function RingkasanAdmin({ navigate }) {
           return idB - idA
         })
         setAllBookings(sorted)
-        setRecentBookings(sorted.slice(0, 3))
+        setRecentBookings(sorted.slice(0, 5))
 
       } catch (err) {
         setErrorLaporan(err.userMessage || 'Gagal memuat data dashboard.')
@@ -89,6 +97,7 @@ export default function RingkasanAdmin({ navigate }) {
     { id: 'manajemen-galeri', label: 'Manajemen Galeri', icon: 'photo_library' },
     { id: 'kotak-masuk', label: 'Kotak Masuk', icon: 'inbox' },
     { id: 'laporan', label: 'Laporan', icon: 'analytics' },
+    { id: 'pengaturan-tampilan', label: 'Atur Tampilan', icon: 'web' },
     { id: 'pengaturan', label: 'Pengaturan', icon: 'settings' },
   ]
 
@@ -124,7 +133,7 @@ export default function RingkasanAdmin({ navigate }) {
                 activeTab === item.id
                   ? 'bg-[#163422] text-[#f9f9f7] rounded-xl shadow-lg shadow-[#163422]/10'
                   : 'text-[#695d47] dark:text-[#a1a1a1] hover:bg-[#e8e8e6] dark:hover:bg-[#2d2f2e] rounded-xl'
-              } flex items-center gap-3 py-3.5 px-4 font-['Inter'] font-medium text-sm transition-all scale-100 active:scale-98`}
+              } flex items-center gap-3 py-3.5 px-4 font-['Inter'] font-medium text-sm transition-all scale-100 active:scale-98 w-full`}
             >
               <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
               <span>{item.label}</span>
@@ -143,6 +152,7 @@ export default function RingkasanAdmin({ navigate }) {
           </button>
         </div>
       </aside>
+
       {/* Main Content Canvas */}
       <main className="ml-72 flex-1 min-h-screen flex flex-col relative overflow-hidden">
         {/* TopNavBar */}
@@ -171,6 +181,7 @@ export default function RingkasanAdmin({ navigate }) {
             </div>
           </div>
         </header>
+
         {/* Content Area */}
         <div className="p-10 space-y-10">
           {/* Header Section */}
@@ -180,20 +191,22 @@ export default function RingkasanAdmin({ navigate }) {
               <p className="text-secondary body-lg mt-2 font-medium">Memantau kabut di atas Gunung Galunggung hari ini.</p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm hover:opacity-95 transition-opacity flex items-center gap-2">
+              <div className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">calendar_today</span>
-                {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-              </button>
+                {bulanNama}
+              </div>
             </div>
           </section>
 
-          {/* KPI Cards Bento Grid — 4 cards */}
+          {/* Error banner */}
           {errorLaporan && (
             <div className="flex items-center gap-3 px-4 py-3 bg-error-container rounded-xl mb-4">
               <span className="material-symbols-outlined text-error text-lg">error</span>
               <p className="text-sm text-on-error-container font-medium">{errorLaporan}</p>
             </div>
           )}
+
+          {/* KPI Cards — 4 cards, data per bulan berjalan */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Total Pelanggan */}
             <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_40px_40px_-20px_rgba(22,52,34,0.04)] border border-outline-variant/10 relative overflow-hidden group">
@@ -206,7 +219,7 @@ export default function RingkasanAdmin({ navigate }) {
                   {loadingLaporan ? '...' : totalPelanggan}
                 </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Total terdaftar</p>
+              <p className="text-xs text-outline mt-6">Bulan {bulanNama}</p>
             </div>
 
             {/* Total Booking */}
@@ -220,7 +233,7 @@ export default function RingkasanAdmin({ navigate }) {
                   {loadingLaporan ? '...' : totalBooking}
                 </h3>
               </div>
-              <p className="text-xs text-outline mt-6">Tiket yang dipesan</p>
+              <p className="text-xs text-outline mt-6">Tiket yang dipesan bulan ini</p>
             </div>
 
             {/* Total Pembayaran */}
@@ -237,22 +250,22 @@ export default function RingkasanAdmin({ navigate }) {
               <p className="text-xs text-outline mt-6">Transaksi terkonfirmasi</p>
             </div>
 
-            {/* Total Pendapatan */}
+            {/* Total Pendapatan — SAMA dengan laporan bulan ini */}
             <div className="bg-primary text-on-primary p-8 rounded-2xl shadow-xl shadow-primary/20 relative overflow-hidden group">
               <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-primary-container/30 rounded-full blur-3xl"></div>
               <p className="text-label-md uppercase tracking-widest text-primary-fixed/60 font-bold mb-4">Total Pendapatan</p>
               <div className="flex items-end gap-3">
-                <h3 className="text-4xl font-display font-extrabold text-white leading-none">
+                <h3 className="text-3xl font-display font-extrabold text-white leading-none">
                   {loadingLaporan ? '...' : (
                     `Rp ${Number(totalPendapatan || 0).toLocaleString('id-ID')}`
                   )}
                 </h3>
               </div>
-              <p className="text-xs text-primary-fixed/40 mt-6">Akumulasi pembayaran lunas</p>
+              <p className="text-xs text-primary-fixed/40 mt-6">Akumulasi lunas — {bulanNama}</p>
             </div>
           </section>
 
-          {/* Main Layout: Table and Featured Item */}
+          {/* Main Layout: Table recent activity */}
           <section className="flex flex-col xl:flex-row gap-10">
             {/* Recent Activity Table */}
             <div className="flex-[2] bg-surface-container-low p-8 rounded-2xl">
@@ -266,8 +279,9 @@ export default function RingkasanAdmin({ navigate }) {
                     <tr className="text-left text-label-md text-secondary uppercase tracking-widest">
                       <th className="pb-4 font-bold pl-4">Nama Pendaki</th>
                       <th className="pb-4 font-bold">ID Tiket</th>
-                      <th className="pb-4 font-bold">Status Jalur</th>
-                      <th className="pb-4 font-bold text-right pr-4">Waktu Masuk</th>
+                      <th className="pb-4 font-bold">Jenis Tiket</th>
+                      <th className="pb-4 font-bold">Status</th>
+                      <th className="pb-4 font-bold text-right pr-4">Tanggal</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -281,34 +295,30 @@ export default function RingkasanAdmin({ navigate }) {
                         })
                       : recentBookings
                     ).map((booking, idx) => {
-                      // Ambil nama dari relasi pelanggan
                       const pelanggan = booking.pelanggan || {}
                       const name = pelanggan.nama_lengkap || pelanggan.nama || booking.name || booking.nama || booking.nama_lengkap || 'Pengunjung'
                       const idTiket = booking.id_tiket || ('BOOK-' + String(booking.id_booking || booking.id || '').padStart(4, '0'))
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                      
+                      const jenisTiket = booking.jenis_tiket || booking.type || 'Tiket Standar'
+
                       const statusRaw = booking.status_booking || booking.status || 'Menunggu Pembayaran'
-                      let badgeBg = 'bg-error-container text-on-error-container'
-                      let statusText = 'Terdaftar'
+                      let badgeBg = 'bg-amber-100 text-amber-800'
 
                       if (statusRaw === 'Selesai' || statusRaw === 'Lunas') {
                         badgeBg = 'bg-secondary-container text-secondary'
-                        statusText = 'Selesai'
                       } else if (statusRaw === 'Dikonfirmasi' || statusRaw === 'Diproses') {
                         badgeBg = 'bg-primary/10 text-primary'
-                        statusText = 'Di Jalur'
-                      } else if (statusRaw === 'Menunggu Pembayaran') {
-                        badgeBg = 'bg-amber-100 text-amber-800'
-                        statusText = 'Menunggu'
+                      } else if (statusRaw === 'Batal' || statusRaw === 'Dibatalkan') {
+                        badgeBg = 'bg-red-100 text-red-700'
                       }
 
                       const dateRaw = booking.created_at || booking.tanggal || ''
-                      let timeString = '08:00 AM'
+                      let dateString = '-'
                       if (dateRaw) {
                         try {
                           const d = new Date(dateRaw)
                           if (!isNaN(d.getTime())) {
-                            timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+                            dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                           }
                         } catch (e) {}
                       }
@@ -322,18 +332,28 @@ export default function RingkasanAdmin({ navigate }) {
                             </div>
                           </td>
                           <td className="py-4 font-medium text-secondary">{idTiket}</td>
+                          <td className="py-4 text-sm text-outline">{jenisTiket}</td>
                           <td className="py-4">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-tight ${badgeBg}`}>{statusText}</span>
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-tight ${badgeBg}`}>{statusRaw}</span>
                           </td>
-                          <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">{timeString}</td>
+                          <td className="py-4 text-right pr-4 text-outline text-sm tabular-nums">{dateString}</td>
                         </tr>
                       )
                     })}
 
-                    {recentBookings.length === 0 && (
+                    {recentBookings.length === 0 && !loadingLaporan && (
                       <tr>
-                        <td colSpan="4" className="py-8 text-center text-secondary text-sm">
-                          Belum ada data pengunjung terbaru.
+                        <td colSpan="5" className="py-8 text-center text-secondary text-sm">
+                          <span className="material-symbols-outlined block mx-auto mb-2 text-3xl text-outline/40">inbox</span>
+                          Belum ada data pengunjung. Data akan muncul setelah ada pembelian tiket.
+                        </td>
+                      </tr>
+                    )}
+
+                    {loadingLaporan && (
+                      <tr>
+                        <td colSpan="5" className="py-8 text-center text-secondary text-sm">
+                          Memuat data...
                         </td>
                       </tr>
                     )}
@@ -341,11 +361,10 @@ export default function RingkasanAdmin({ navigate }) {
                 </table>
               </div>
             </div>
-
           </section>
         </div>
 
-        {/* Background Decorative Element (Asymmetric Bleed) */}
+        {/* Background Decorative Element */}
         <div className="absolute -right-20 top-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       </main>
     </div>

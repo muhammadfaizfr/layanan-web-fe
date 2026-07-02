@@ -91,9 +91,13 @@ export default function Pembayaran({ order, formatRupiah, navigate, onComplete, 
         waktu_pembayaran: localTimeString,
         status_pembayaran: 'Menunggu Verifikasi'
       }
-      await pembayaranService.create(pembayaranData)
+      const resPembayaran = await pembayaranService.create(pembayaranData)
+      const pembayaranObj = resPembayaran?.data || resPembayaran
 
-      if (order) order.reference = `GG-TIK-${idBooking}`
+      if (order) {
+        order.reference = `GG-TIK-${idBooking}`
+        order.id_pembayaran = pembayaranObj?.id_pembayaran || pembayaranObj?.id
+      }
       
       if (typeof onComplete === 'function') {
         onComplete(selectedMethod)
